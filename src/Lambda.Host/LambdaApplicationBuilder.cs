@@ -8,16 +8,43 @@ namespace Lambda.Host;
 
 public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
 {
+    private readonly HostApplicationBuilder _hostBuilder;
+
+    public LambdaApplicationBuilder()
+    {
+        _hostBuilder = new HostApplicationBuilder();
+    }
+
+    public LambdaApplicationBuilder(string[] args)
+    {
+        _hostBuilder = new HostApplicationBuilder(args);
+    }
+
+    public LambdaApplicationBuilder(HostApplicationBuilderSettings settings)
+    {
+        _hostBuilder = new HostApplicationBuilder(settings);
+    }
+
     public void ConfigureContainer<TContainerBuilder>(
         IServiceProviderFactory<TContainerBuilder> factory,
         Action<TContainerBuilder>? configure = null
     )
-        where TContainerBuilder : notnull => throw new NotImplementedException();
+        where TContainerBuilder : notnull => _hostBuilder.ConfigureContainer(factory, configure);
 
-    public IDictionary<object, object> Properties { get; }
-    public IConfigurationManager Configuration { get; }
-    public IHostEnvironment Environment { get; }
-    public ILoggingBuilder Logging { get; }
-    public IMetricsBuilder Metrics { get; }
-    public IServiceCollection Services { get; }
+    public LambdaApplication Build()
+    {
+        var host = _hostBuilder.Build();
+        return new LambdaApplication(host);
+    }
+
+    public IDictionary<object, object> Properties => _hostBuilder.Properties;
+    public IConfigurationManager Configuration => _hostBuilder.Configuration;
+    public IHostEnvironment Environment => _hostBuilder.Environment;
+    public ILoggingBuilder Logging => _hostBuilder.Logging;
+    public IMetricsBuilder Metrics => _hostBuilder.Metrics;
+    public IServiceCollection Services => _hostBuilder.Services;
+
+    public static LambdaApplicationBuilder CreateBuilder() => new();
+    public static LambdaApplicationBuilder CreateBuilder(string[] args) => new(args);
+    public static LambdaApplicationBuilder CreateBuilder(HostApplicationBuilderSettings settings) => new(settings);
 }
