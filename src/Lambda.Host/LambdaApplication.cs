@@ -21,5 +21,5 @@ public sealed class LambdaApplication : IHost, IAsyncDisposable
 
     public IServiceProvider Services => _host.Services;
 
-    public ValueTask DisposeAsync() => _host.DisposeAsync();
+    public ValueTask DisposeAsync() => ((IAsyncDisposable)_host).DisposeAsync();
 }
