@@ -22,8 +22,12 @@ public sealed class LambdaApplication : IHost, IAsyncDisposable
 
     public IServiceProvider Services => _host.Services;
 
-    public void MapHandler(Delegate handler) =>
+    public LambdaApplication MapHandler(Delegate handler)
+    {
         _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+
+        return this;
+    }
 
     public static LambdaApplicationBuilder CreateBuilder() => new();
 }
