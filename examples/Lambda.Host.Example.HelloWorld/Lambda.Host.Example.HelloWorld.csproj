@@ -19,4 +19,8 @@
     <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Lambda.Host\Lambda.Host.csproj"/>
+  </ItemGroup>
+
 </Project>

@@ -5,7 +5,7 @@ namespace Lambda.Host;
 public sealed class LambdaApplication : IHost, IAsyncDisposable
 {
     private readonly IHost _host;
-    private Delegate _handler;
+    private Delegate? _handler;
 
     public LambdaApplication(IHost host) =>
         _host = host ?? throw new ArgumentNullException(nameof(host));
@@ -24,4 +24,6 @@ public sealed class LambdaApplication : IHost, IAsyncDisposable
 
     public void MapHandler(Delegate handler) =>
         _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+
+    public static LambdaApplicationBuilder CreateBuilder() => new();
 }
