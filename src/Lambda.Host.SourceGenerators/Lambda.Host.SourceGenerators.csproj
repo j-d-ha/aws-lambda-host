@@ -23,7 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Resources\" />
+    <EmbeddedResource Include="Templates\*.scriban"/>
   </ItemGroup>
+
 
 </Project>

@@ -2,7 +2,6 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Scriban;
 
 namespace Lambda.Host.SourceGenerators;
 
@@ -12,8 +11,14 @@ public class MapHandlerLambdaAnalyzer : IIncrementalGenerator
     private const string LambdaContextType = "Amazon.Lambda.Core.ILambdaContext";
     private const string RequestAttribute = "Lambda.Host.RequestAttribute";
     private const string VoidType = "void";
+
     private const string KeyedServiceAttribute =
         "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute";
+
+    private const string TaskType = "System.Threading.Tasks.Task";
+
+    private const string LambdaStartupServiceTemplateFile =
+        "Templates/LambdaStartupService.scriban";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -74,28 +79,7 @@ public class MapHandlerLambdaAnalyzer : IIncrementalGenerator
 
         // check for cast expression
         if (firstArgument.Expression is CastExpressionSyntax castExpression)
-        {
-            var castType = context.SemanticModel.GetTypeInfo(castExpression.Type).Type;
-
-            if (castType is INamedTypeSymbol namedType)
-            {
-                // Get type arguments for Func<string, IService, IService>
-                var typeArguments = namedType.TypeArguments; // [string, IService, IService]
-                var returnType = typeArguments.Last(); // IService
-                var parameterTypes = typeArguments.Take(typeArguments.Length - 1); // [string, IService]
-
-                // Or get via Invoke method
-                var invokeMethod = namedType
-                    .GetMembers("Invoke")
-                    .OfType<IMethodSymbol>()
-                    .FirstOrDefault();
-
-                var parameters = invokeMethod?.Parameters; // Parameter info with names and types
-                var returnTypeFromInvoke = invokeMethod?.ReturnType;
-            }
-
-            return null;
-        }
+            return ExtractInfoFromCastLambda(context, castExpression);
 
         return null;
     }
@@ -108,9 +92,7 @@ public class MapHandlerLambdaAnalyzer : IIncrementalGenerator
             .FirstOrDefault();
 
         if (namespaceDeclaration != null)
-        {
             return namespaceDeclaration.Name.ToString();
-        }
 
         // For top-level statements, get the default namespace from compilation
         var compilation = semanticModel.Compilation;
@@ -122,9 +104,7 @@ public class MapHandlerLambdaAnalyzer : IIncrementalGenerator
         ExpressionSyntax delegateExpression
     )
     {
-        var semanticModel = context.SemanticModel;
-
-        var symbolInfo = semanticModel.GetSymbolInfo(delegateExpression);
+        var symbolInfo = context.SemanticModel.GetSymbolInfo(delegateExpression);
 
         if (symbolInfo.Symbol is not IMethodSymbol methodSymbol)
         {
@@ -147,16 +127,13 @@ public class MapHandlerLambdaAnalyzer : IIncrementalGenerator
                     p.Type.ToDisplayString(),
                     p.Type.ContainingNamespace.ToDisplayString()
                 ),
-                p.HasExplicitDefaultValue,
-                p.HasExplicitDefaultValue,
-                p.HasExplicitDefaultValue ? p.ExplicitDefaultValue?.ToString() : null,
                 p.GetAttributes()
                     .Select(attr => new AttributeInfo(
                         attr.ToString(),
                         attr.AttributeClass?.ContainingNamespace.ToDisplayString(),
                         attr.ConstructorArguments.Select(a => a.Value?.ToString())
                             .Where(a => a is not null)
-                            .ToList()
+                            .ToList()!
                     ))
                     .ToList()
             ))
@@ -166,6 +143,76 @@ public class MapHandlerLambdaAnalyzer : IIncrementalGenerator
             methodSymbol.ReturnType.ToDisplayString(),
             methodSymbol.ReturnType.ContainingNamespace.ToDisplayString()
         );
+
+        return new DelegateInfo(
+            responseType,
+            parameters,
+            GetFileNamespace(context.Node, context.SemanticModel)
+        );
+    }
+
+    private static DelegateInfo? ExtractInfoFromCastLambda(
+        GeneratorSyntaxContext context,
+        CastExpressionSyntax castExpression
+    )
+    {
+        var castType = context.SemanticModel.GetTypeInfo(castExpression.Type).Type;
+
+        if (castType is not INamedTypeSymbol namedType)
+            return null;
+
+        var invokeMethod = namedType.GetMembers("Invoke").OfType<IMethodSymbol>().FirstOrDefault();
+
+        // The cast expression contains a parenthesized expression, which contains the lambda
+        if (castExpression.Expression is not ParenthesizedExpressionSyntax parenthesizedExpr)
+            return null;
+
+        // Now get the lambda from inside the parentheses
+        if (parenthesizedExpr.Expression is not ParenthesizedLambdaExpressionSyntax innerLambda)
+            return null;
+
+        var symbolInfo = context.SemanticModel.GetSymbolInfo(innerLambda);
+
+        if (symbolInfo.Symbol is not IMethodSymbol methodSymbol2)
+        {
+            // Handle method group case
+            if (
+                symbolInfo.CandidateSymbols.Length > 0
+                && symbolInfo.CandidateSymbols[0] is IMethodSymbol candidateMethod
+            )
+                methodSymbol2 = candidateMethod;
+            else
+                return null;
+        }
+
+        var parameters =
+            invokeMethod
+                ?.Parameters.Zip<IParameterSymbol?, IParameterSymbol, ParameterInfo?>(
+                    methodSymbol2.Parameters,
+                    (t, p) =>
+                        t is not null && p is not null
+                            ? new ParameterInfo(
+                                p.Name,
+                                new TypeInfo(
+                                    t.Type.ToDisplayString(),
+                                    t.Type.ContainingNamespace.ToDisplayString()
+                                ),
+                                p.GetAttributes()
+                                    .Select(attr => new AttributeInfo(
+                                        attr.ToString(),
+                                        attr.AttributeClass?.ContainingNamespace.ToDisplayString(),
+                                        attr.ConstructorArguments.Select(a => a.Value?.ToString())
+                                            .Where(a => a is not null)
+                                            .ToList()!
+                                    ))
+                                    .ToList()
+                            )
+                            : null
+                )
+                .Where(p => p is not null)
+                .ToList() ?? [];
+
+        var responseType = new TypeInfo(invokeMethod?.ReturnType.ToDisplayString() ?? VoidType, "");
 
         return new DelegateInfo(
             responseType,
@@ -195,9 +242,6 @@ public class MapHandlerLambdaAnalyzer : IIncrementalGenerator
                         p.Type.ToDisplayString(),
                         p.Type.ContainingNamespace.ToDisplayString()
                     ),
-                    p.HasExplicitDefaultValue,
-                    p.HasExplicitDefaultValue,
-                    p.HasExplicitDefaultValue ? p.ExplicitDefaultValue?.ToString() : null,
                     p.GetAttributes()
                         .Select(attr => new AttributeInfo(
                             attr.ToString(),
@@ -205,7 +249,7 @@ public class MapHandlerLambdaAnalyzer : IIncrementalGenerator
                             // get list of arguments for attribute
                             attr.ConstructorArguments.Select(a => a.Value?.ToString())
                                 .Where(a => a is not null)
-                                .ToList()
+                                .ToList()!
                         ))
                         .ToList()
                 );
@@ -266,15 +310,15 @@ public class MapHandlerLambdaAnalyzer : IIncrementalGenerator
 
         var returnTypeName = (ReturnType: returnTypeInfo?.TypeName, IsAsync: isAsync) switch
         {
-            (null, true) => "System.Threading.Tasks.Task",
+            (null, true) => TaskType,
             (null, false) => VoidType,
-            (_, true) returnType => $"System.Threading.Tasks.Task<{returnType.ReturnType}>",
+            (_, true) returnType => $"{TaskType}<{returnType.ReturnType}>",
             var (typeName, _) => typeName,
         };
 
         var responseType = new TypeInfo(
             returnTypeName,
-            returnTypeInfo?.Namespace ?? (isAsync ? "System.Threading.Tasks" : "System")
+            returnTypeInfo?.Namespace ?? (isAsync ? TaskType : "System")
         );
 
         return new DelegateInfo(
@@ -300,6 +344,7 @@ public class MapHandlerLambdaAnalyzer : IIncrementalGenerator
         // xTODO: build out func type
         // xTODO: build out lambda handler arguments
         // xTODO: build out lambda invocation arguments
+        // TODO: handle default values for parameters
         // TODO: add guards around number of arguments with request attributes
         // TODO: look into handling duplicate field names
         // TODO: look into handling namespace vs type
@@ -307,67 +352,6 @@ public class MapHandlerLambdaAnalyzer : IIncrementalGenerator
         // TODO: add support for default values
         // TODO: validate that nullable types work as expected
         // TODO: update to work with
-
-        List<string> baseNamespaces =
-        [
-            "Amazon.Lambda.RuntimeSupport",
-            "Amazon.Lambda.Serialization.SystemTextJson",
-            "Microsoft.Extensions.DependencyInjection",
-            "Microsoft.Extensions.Hosting",
-        ];
-
-        var template = Template.Parse(
-            """
-            // <auto-generated />
-            #nullable enable
-
-            namespace {{ @namespace }};
-
-            public class {{ service }} : Microsoft.Extensions.Hosting.IHostedService
-            {
-                private readonly global::Lambda.Host.DelegateHolder _delegateHolder;
-                private readonly global::System.IServiceProvider _serviceProvider;
-                
-                public {{ service }}(global::Lambda.Host.DelegateHolder delegateHolder, global::System.IServiceProvider serviceProvider)
-                {
-                    _delegateHolder = delegateHolder;
-                    _serviceProvider = serviceProvider;
-                }
-                
-                public async Task StartAsync(CancellationToken cancellationToken)
-                {
-                    if (!_delegateHolder.IsHandlerSet)
-                        throw new InvalidOperationException("Handler is not set");
-                
-                    if (_delegateHolder.Handler is not {{ delegate_type }}<{{ delegate_args }}> lambdaHandler)
-                        throw new InvalidOperationException("Invalid handler type.");
-
-                    await Amazon.Lambda.RuntimeSupport.LambdaBootstrapBuilder
-                        .Create(
-                            ({{ lambda_params | array.join ", " }}) => 
-                            {
-                                using var scope = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.CreateScope(_serviceProvider);
-                                
-                                {{~ for field in fields ~}}
-                                    {{~ if field.keyed_service_key ~}}
-                                var _{{ field.name }} = global::Microsoft.Extensions.DependencyInjection.ServiceProviderKeyedServiceExtensions.GetRequiredKeyedService<{{ field.type }}>(scope.ServiceProvider, "{{ field.keyed_service_key }}");
-                                    {{~ else ~}}
-                                var _{{ field.name }} = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<{{ field.type }}>(scope.ServiceProvider);
-                                    {{~ end ~}}
-                                {{~ end ~}}
-                            
-                                return lambdaHandler({{ handler_args }});
-                            },
-                            new Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer()
-                        )
-                        .Build()
-                        .RunAsync(cancellationToken);
-                }
-
-                public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-            }
-            """
-        );
 
         var delegateArguments = string.Join(
             ", ",
@@ -388,9 +372,7 @@ public class MapHandlerLambdaAnalyzer : IIncrementalGenerator
                     .Select(a => a.FullName)
                     .ToList(),
                 keyed_service_key = p
-                    .Attributes.Where(a =>
-                        a?.FullName?.StartsWith("KeyedServiceAttribute") ?? false
-                    )
+                    .Attributes.Where(a => a?.FullName?.StartsWith(KeyedServiceAttribute) ?? false)
                     .Select(a => a.Arguments.FirstOrDefault())
                     .FirstOrDefault(),
                 name = p.ParameterName.ToCamelCase(),
@@ -424,10 +406,31 @@ public class MapHandlerLambdaAnalyzer : IIncrementalGenerator
             lambda_params = lambdaParams,
         };
 
+        var template = TemplateHelper.LoadTemplate(LambdaStartupServiceTemplateFile);
+
         var outCode = template.Render(model);
 
         context.AddSource("LambdaStartup.g.cs", outCode);
     }
+}
+
+internal sealed class DelegateInfo2
+{
+    string ResponseType { get; set; }
+    string Namespace { get; set; }
+}
+
+internal sealed class ParameterInfo2
+{
+    string ParameterName { get; set; }
+    string Type { get; set; }
+    List<AttributeInfo2> Attributes { get; set; }
+}
+
+internal sealed class AttributeInfo2
+{
+    string Type { get; set; }
+    List<string> Arguments { get; set; }
 }
 
 public record DelegateInfo(
@@ -436,14 +439,7 @@ public record DelegateInfo(
     string? Namespace
 );
 
-public record ParameterInfo(
-    string ParameterName,
-    TypeInfo Type,
-    bool IsOptional,
-    bool HasDefaultValue,
-    string? DefaultValue,
-    List<AttributeInfo> Attributes
-);
+public record ParameterInfo(string ParameterName, TypeInfo Type, List<AttributeInfo> Attributes);
 
 public record TypeInfo(string TypeName, string Namespace);
 

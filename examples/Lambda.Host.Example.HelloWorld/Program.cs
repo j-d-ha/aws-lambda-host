@@ -21,7 +21,7 @@ var lambda = builder.Build();
 //     async ([Request] string input, IService service) => (await service.GetMessage()).ToUpper()
 // );
 
-lambda.MapHandler(HandlerFactory.Handler);
+// lambda.MapHandler(HandlerFactory.Handler);
 
 // lambda.MapHandler(
 //     IService ([Request] string input, IService service) =>
@@ -52,19 +52,23 @@ lambda.MapHandler(HandlerFactory.Handler);
 //         input == "other" ? new Service() : new OtherService()
 // );
 
-// lambda.MapHandler(
-//     (Func<string, IService, IService>)(
-//         ([Request] string input, IService service) =>
-//         {
-//             if (input == "other")
-//             {
-//                 return new Service();
-//             }
-//
-//             return new OtherService();
-//         }
-//     )
-// );
+lambda.MapHandler(
+    (Func<string, IService, string>)(
+        ([Request] string input, [FromKeyedServices("key")] IService service) =>
+        {
+            Console.WriteLine("hello world");
+
+            return "hello world";
+
+            // if (input == "other")
+            // {
+            //     return new Service();
+            // }
+            //
+            // return new OtherService();
+        }
+    )
+);
 
 // lambda.MapHandler(
 //     (Action<string, IService>)(
