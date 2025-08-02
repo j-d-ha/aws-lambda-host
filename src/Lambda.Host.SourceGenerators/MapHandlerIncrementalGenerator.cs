@@ -337,18 +337,17 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
 
         var delegateInfo = delegateInfos.First();
 
-        // TODO: build out lambda args parser
+        // xTODO: build out lambda args parser
         // xTODO: add using imports for all types
         // xTODO: add constructor parameters for all injected types
         // xTODO: build out func type
         // xTODO: build out lambda handler arguments
         // xTODO: build out lambda invocation arguments
-        // TODO: handle default values for parameters
+        // xTODO: handle default values for parameters -> not needed
         // TODO: add guards around number of arguments with request attributes
         // TODO: look into handling duplicate field names
-        // TODO: look into handling namespace vs type
-        // TODO: add code to handle injecting ILambdaSerializer
-        // TODO: add support for default values
+        // xTODO: look into handling namespace vs type -> using `global::`
+        // xTODO: add code to handle injecting ILambdaSerializer
         // TODO: validate that nullable types work as expected
         // TODO: update to handle situations where serializer is not needed
 
