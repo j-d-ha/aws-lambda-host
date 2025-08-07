@@ -8,10 +8,10 @@ namespace Lambda.Host.SourceGenerators;
 [Generator]
 public class MapHandlerIncrementalGenerator : IIncrementalGenerator
 {
-    private const string LambdaContextType = "global::Amazon.Lambda.Core.ILambdaContext";
-    private const string RequestAttribute = "Lambda.Host.RequestAttribute";
-    private const string VoidType = "void";
-    private const string TaskType = "global::System.Threading.Tasks.Task";
+    internal const string LambdaContextType = "global::Amazon.Lambda.Core.ILambdaContext";
+    internal const string RequestAttribute = "Lambda.Host.RequestAttribute";
+    internal const string VoidType = "void";
+    internal const string TaskType = "global::System.Threading.Tasks.Task";
 
     private const string KeyedServiceAttribute =
         "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute";
@@ -27,10 +27,12 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         // Find all MapHandler method calls with lambda analysis
         var mapHandlerCalls = context
             .SyntaxProvider.CreateSyntaxProvider(
-                static (s, _) => IsMapHandlerCall(s),
-                static (ctx, _) => AnalyzeMapHandlerLambda(ctx)
+                static (syntaxNode, cancellationToken) =>
+                    IsMapHandlerCall(syntaxNode, cancellationToken),
+                static (ctx, cancellationToken) => AnalyzeMapHandlerLambda(ctx, cancellationToken)
             )
-            .Where(static m => m is not null);
+            .Where(static m => m is not null)
+            .Select(static (m, _) => m!);
 
         // Generate source when calls are found
         context.RegisterSourceOutput(
@@ -40,7 +42,7 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
     }
 
     // Fast syntax check - look for MapHandler calls
-    private static bool IsMapHandlerCall(SyntaxNode node)
+    private static bool IsMapHandlerCall(SyntaxNode node, CancellationToken cancellationToken)
     {
         if (node is not InvocationExpressionSyntax invocation)
             return false;
@@ -50,7 +52,10 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
     }
 
     // Analyze the lambda expression passed to MapHandler
-    private static DelegateInfo? AnalyzeMapHandlerLambda(GeneratorSyntaxContext context)
+    private static DelegateInfo? AnalyzeMapHandlerLambda(
+        GeneratorSyntaxContext context,
+        CancellationToken token
+    )
     {
         // validate that the method is from the LambdaApplication type
         if (context.Node is not InvocationExpressionSyntax invocationExpr)
@@ -77,10 +82,6 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         // Check if it's from LambdaApplication
         if (methodSymbol?.ContainingType?.Name != LambdaApplicationClassName)
             return null;
-
-        // // commented out as we need to be able to handle type casts which will have two arguments
-        // if (invocationExpr.ArgumentList.Arguments.Count != 1)
-        //     return null;
 
         var firstArgument = invocationExpr.ArgumentList.Arguments[0];
 
@@ -284,7 +285,7 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         // 2. explicit return type
         // 3. implicit return type in expression body
         // 4. implicit return type in block body
-        // 5. void
+        // 5. default void (or Task if async)
 
         var isAsync = lambdaExpression.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword);
 
@@ -332,6 +333,7 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         {
             (null, true) => TaskType,
             (null, false) => VoidType,
+            (TaskType, true) => TaskType,
             (var type, true) => $"{TaskType}<{type}>",
             var (type, _) => type,
         };
@@ -347,7 +349,7 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
 
     private static void GenerateLambdaReport(
         SourceProductionContext context,
-        ImmutableArray<DelegateInfo?> delegateInfos
+        ImmutableArray<DelegateInfo> delegateInfos
     )
     {
         if (delegateInfos.Length == 0)
@@ -355,12 +357,12 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
 
         var delegateInfo = delegateInfos.First();
 
-        var delegateArguments = (delegateInfo?.Parameters.Select(p => p.Type) ?? [])
+        var delegateArguments = (delegateInfo.Parameters.Select(p => p.Type) ?? [])
             .Concat(new[] { delegateInfo?.ResponseType }.Where(t => t != null && t != VoidType))
             .ToList();
 
         var classFields = delegateInfo
-            ?.Parameters.Where(p =>
+            .Parameters.Where(p =>
                 p.Attributes.All(a => a.Type != RequestAttribute) && p.Type != LambdaContextType
             )
             .Select(p => new
@@ -376,27 +378,39 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
             .ToList();
 
         var handlerArgs =
-            delegateInfo?.Parameters.Select(p => p.ParameterName.ToCamelCase()).ToList() ?? [];
+            delegateInfo.Parameters.Select(p => p.ParameterName.ToCamelCase()).ToList() ?? [];
 
         var lambdaParams =
             delegateInfo
-                ?.Parameters.Where(p =>
+                .Parameters.Where(p =>
                     p.Attributes.Any(a => a.Type == RequestAttribute) || p.Type == LambdaContextType
                 )
                 .OrderBy(p => p.Type == LambdaContextType ? 1 : 0)
                 .Select(p => p.Type + " " + p.ParameterName.ToCamelCase())
                 .ToList() ?? [];
 
+        // 1. if Action -> no return
+        // 2. if Func + Task return type -> return value
+        // 3. if Func + Task return type + async -> no return
+        // 4. if Func + non-Task return type -> return value
+        var hasReturnValue = delegateInfo switch
+        {
+            { DelegateType: "Action" } => false,
+            { DelegateType: "Func", IsAsync: true, ResponseType: TaskType } => false,
+            _ => true,
+        };
+
         var model = new
         {
-            @namespace = delegateInfo?.Namespace,
+            @namespace = delegateInfo.Namespace,
             service = "LambdaStartupService",
             fields = classFields,
-            delegate_type = delegateInfo?.ResponseType == VoidType ? "Action" : "Func",
+            delegate_type = delegateInfo.DelegateType,
             delegate_args = delegateArguments,
             handler_args = handlerArgs,
             lambda_params = lambdaParams,
             is_lambda_async = delegateInfo?.IsAsync ?? false,
+            has_return_value = hasReturnValue,
         };
 
         var template = TemplateHelper.LoadTemplate(LambdaStartupServiceTemplateFile);
@@ -412,6 +426,9 @@ internal sealed class DelegateInfo
     internal required string ResponseType { get; set; }
     internal required string Namespace { get; set; }
     internal required bool IsAsync { get; set; }
+
+    internal string DelegateType =>
+        ResponseType == MapHandlerIncrementalGenerator.VoidType ? "Action" : "Func";
     internal List<ParameterInfo> Parameters { get; set; } = [];
 }
 

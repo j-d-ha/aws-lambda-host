@@ -467,6 +467,43 @@ public class MapHandlerIncrementalGeneratorVerifyTests
             """
         );
 
+    [Fact]
+    public async Task Test_ExpressionLambda_ReturnAsyncTask() =>
+        await Verify(
+            """
+            using System.Threading.Tasks;
+            using Lambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+            var lambda = builder.Build();
+
+            lambda.MapHandler(async Task () => { });
+
+            await lambda.RunAsync();
+            """
+        );
+
+    [Fact]
+    public async Task Test_ExpressionLambda_ReturnTask() =>
+        await Verify(
+            """
+            using System.Threading.Tasks;
+            using Lambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+            var lambda = builder.Build();
+
+            lambda.MapHandler(Task () =>
+            {
+                return Task.CompletedTask;
+            });
+
+            await lambda.RunAsync();
+            """
+        );
+
     private static Task Verify(string source)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source);

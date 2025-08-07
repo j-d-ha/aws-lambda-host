@@ -21,3 +21,6 @@
 - [ ] Look into adding code to fail fast for DI stuff at startup
 - [ ] Look into adding support for dependencies inside of an object like minimal APIs have
 - [ ] Handle IServiceScope and IServiceProvider as arguments
+- [ ] Clean up code and reduce duplication -> add cast info after and then check all info is valid?
+- [ ] Let the user control the startup class name by setting partial class with annotation. Needed for AOT
+- [ ] Add support for AOT using directives and alternative logic
