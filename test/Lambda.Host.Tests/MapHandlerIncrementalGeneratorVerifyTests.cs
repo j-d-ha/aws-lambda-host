@@ -1,18 +1,10 @@
-﻿using System.Reflection;
-using Amazon.Lambda.Core;
+﻿using Amazon.Lambda.Core;
 using AwesomeAssertions;
 using Basic.Reference.Assemblies;
 using Lambda.Host.SourceGenerators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Testing;
-using Microsoft.CodeAnalysis.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using VerifyCS = Microsoft.CodeAnalysis.CSharp.Testing.CSharpSourceGeneratorTest<
-    Lambda.Host.SourceGenerators.MapHandlerIncrementalGenerator,
-    Microsoft.CodeAnalysis.Testing.DefaultVerifier
->;
 
 namespace Lambda.Host.Tests;
 

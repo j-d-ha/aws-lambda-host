@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -355,23 +354,6 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
             return;
 
         var delegateInfo = delegateInfos.First();
-
-        // xTODO: build out lambda args parser
-        // xTODO: add using imports for all types
-        // xTODO: add constructor parameters for all injected types
-        // xTODO: build out func type
-        // xTODO: build out lambda handler arguments
-        // xTODO: build out lambda invocation arguments
-        // xTODO: handle default values for parameters -> not needed
-        // TODO: add guards around number of arguments with request attributes and number of arguments with ILambdaContext
-        // TODO: look into handling duplicate field names
-        // xTODO: look into handling namespace vs type -> using `global::`
-        // xTODO: add code to handle injecting ILambdaSerializer
-        // xTODO: validate that nullable types work as expected and body
-        // TODO: update to handle situations where serializer is not needed
-        // TODO: look into adding code to fail fast for DI stuff at startup.
-        // TODO: look into adding support for dependencies inside of an object like minimal APIs have.
-        // TODO: handle IServiceScope and IServiceProvider as arguments
 
         var delegateArguments = (delegateInfo?.Parameters.Select(p => p.Type) ?? [])
             .Concat(new[] { delegateInfo?.ResponseType }.Where(t => t != null && t != VoidType))
