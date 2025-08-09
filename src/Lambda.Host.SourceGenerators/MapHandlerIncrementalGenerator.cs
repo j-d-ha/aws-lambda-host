@@ -8,15 +8,7 @@ namespace Lambda.Host.SourceGenerators;
 [Generator]
 public class MapHandlerIncrementalGenerator : IIncrementalGenerator
 {
-    internal const string LambdaContextType = "global::Amazon.Lambda.Core.ILambdaContext";
-    internal const string RequestAttribute = "Lambda.Host.RequestAttribute";
-    internal const string VoidType = "void";
-    internal const string TaskType = "global::System.Threading.Tasks.Task";
-
-    private const string KeyedServiceAttribute =
-        "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute";
-
-    private const string LambdaApplicationClassName = "LambdaApplication";
+    private const string StartupClassName = "LambdaApplication";
     private const string MapHandlerMethodName = "MapHandler";
 
     private const string LambdaStartupServiceTemplateFile =
@@ -80,7 +72,7 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         }
 
         // Check if it's from LambdaApplication
-        if (methodSymbol?.ContainingType?.Name != LambdaApplicationClassName)
+        if (methodSymbol?.ContainingType?.Name != StartupClassName)
             return null;
 
         var firstArgument = invocationExpr.ArgumentList.Arguments[0];
@@ -239,7 +231,7 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
 
         return new DelegateInfo
         {
-            ResponseType = invokeMethod?.ReturnType.GetAsGlobal() ?? VoidType,
+            ResponseType = invokeMethod?.ReturnType.GetAsGlobal() ?? TypeConstants.Void,
             Namespace = GetFileNamespace(context.Node, context.SemanticModel),
             IsAsync = invokeMethod?.IsAsync ?? false,
             Parameters = parameters!,
@@ -318,10 +310,10 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
 
         var returnTypeName = (ReturnType: returnType, IsAsync: isAsync) switch
         {
-            (null, true) => TaskType,
-            (null, false) => VoidType,
-            (TaskType, true) => TaskType,
-            (var type, true) => $"{TaskType}<{type}>",
+            (null, true) => TypeConstants.Task,
+            (null, false) => TypeConstants.Void,
+            (TypeConstants.Task, true) => TypeConstants.Task,
+            (var type, true) => $"{TypeConstants.Task}<{type}>",
             var (type, _) => type,
         };
 
@@ -345,18 +337,25 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         var delegateInfo = delegateInfos.First();
 
         var delegateArguments = (delegateInfo.Parameters.Select(p => p.Type) ?? [])
-            .Concat(new[] { delegateInfo?.ResponseType }.Where(t => t != null && t != VoidType))
+            .Concat(
+                new[] { delegateInfo?.ResponseType }.Where(t =>
+                    t != null && t != TypeConstants.Void
+                )
+            )
             .ToList();
 
         var classFields = delegateInfo
             .Parameters.Where(p =>
-                p.Attributes.All(a => a.Type != RequestAttribute) && p.Type != LambdaContextType
+                p.Attributes.All(a => a.Type != AttributeConstants.Request)
+                && p.Type != TypeConstants.ILambdaContext
             )
             .Select(p => new
             {
                 attributes = p.Attributes.Select(a => a.Type).ToList(),
                 keyed_service_key = p
-                    .Attributes.Where(a => a?.Type?.StartsWith(KeyedServiceAttribute) ?? false)
+                    .Attributes.Where(a =>
+                        a?.Type?.StartsWith(AttributeConstants.FromKeyedService) ?? false
+                    )
                     .Select(a => a.Arguments.FirstOrDefault())
                     .FirstOrDefault(),
                 name = p.ParameterName.ToCamelCase(),
@@ -370,9 +369,10 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         var lambdaParams =
             delegateInfo
                 .Parameters.Where(p =>
-                    p.Attributes.Any(a => a.Type == RequestAttribute) || p.Type == LambdaContextType
+                    p.Attributes.Any(a => a.Type == AttributeConstants.Request)
+                    || p.Type == TypeConstants.ILambdaContext
                 )
-                .OrderBy(p => p.Type == LambdaContextType ? 1 : 0)
+                .OrderBy(p => p.Type == TypeConstants.ILambdaContext ? 1 : 0)
                 .Select(p => p.Type + " " + p.ParameterName.ToCamelCase())
                 .ToList() ?? [];
 
@@ -383,7 +383,7 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         var hasReturnValue = delegateInfo switch
         {
             { DelegateType: "Action" } => false,
-            { DelegateType: "Func", IsAsync: true, ResponseType: TaskType } => false,
+            { DelegateType: "Func", IsAsync: true, ResponseType: TypeConstants.Task } => false,
             _ => true,
         };
 
@@ -414,8 +414,7 @@ internal sealed class DelegateInfo
     internal required string Namespace { get; set; }
     internal required bool IsAsync { get; set; }
 
-    internal string DelegateType =>
-        ResponseType == MapHandlerIncrementalGenerator.VoidType ? "Action" : "Func";
+    internal string DelegateType => ResponseType == TypeConstants.Void ? "Action" : "Func";
     internal List<ParameterInfo> Parameters { get; set; } = [];
 }
 
