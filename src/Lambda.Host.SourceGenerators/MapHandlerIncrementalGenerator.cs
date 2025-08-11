@@ -326,6 +326,39 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         };
     }
 
+    private static List<ParameterInfo> ExtractLambdaParameters(
+        GeneratorSyntaxContext context,
+        ParenthesizedLambdaExpressionSyntax lambdaExpression
+    )
+    {
+        var sematicModel = context.SemanticModel;
+
+        // extract parameter information
+        return lambdaExpression
+            .ParameterList.Parameters.AsEnumerable()
+            .Select(p => sematicModel.GetDeclaredSymbol(p))
+            .Where(p => p is not null)
+            .Select(p =>
+            {
+                return new ParameterInfo
+                {
+                    ParameterName = p!.Name,
+                    Type = p.Type.GetAsGlobal(),
+                    Attributes = p.GetAttributes()
+                        .Select(a => new AttributeInfo
+                        {
+                            Type = a.ToString(),
+                            Arguments = a
+                                .ConstructorArguments.Select(aa => aa.Value?.ToString())
+                                .Where(aa => aa is not null)
+                                .ToList()!,
+                        })
+                        .ToList(),
+                };
+            })
+            .ToList();
+    }
+
     private static void GenerateLambdaReport(
         SourceProductionContext context,
         ImmutableArray<DelegateInfo> delegateInfos
