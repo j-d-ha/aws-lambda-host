@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -79,15 +80,12 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
 
         var result = handler switch
         {
-            // handle delegate expression
             IdentifierNameSyntax or MemberAccessExpressionSyntax => ExtractInfoFromDelegate(
                 context,
                 handler
             ),
 
-            // lambda MUST be a ParenthesizedLambdaExpression as
-            // SimpleLambdaExpression won't satisfy the Delegate type for MapHandler
-            ParenthesizedLambdaExpressionSyntax lambda => ExtractInfoFromLambda(context, lambda),
+            LambdaExpressionSyntax lambda => ExtractInfoFromLambda(context, lambda),
 
             _ => null,
         };
@@ -114,8 +112,11 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
             // static method on a class - e.g. (Func<Int32>)MyClass.Handler
             MemberAccessExpressionSyntax memberAccess => memberAccess,
 
-            // lambda expression - e.g. (Func<Int32>)() => 1
+            // parenthesized lambda expression - e.g. (Func<Int32>)() => 1
             ParenthesizedLambdaExpressionSyntax parenthesizedLambda => parenthesizedLambda,
+
+            // simple lambda expression - e.g. (Func<Int32, Int32>)x => x + 1
+            SimpleLambdaExpressionSyntax simpleLambda => simpleLambda,
 
             // default, not a supported delegate type
             _ => null,
@@ -239,14 +240,23 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
 
     private static DelegateInfo ExtractInfoFromLambda(
         GeneratorSyntaxContext context,
-        ParenthesizedLambdaExpressionSyntax lambdaExpression
+        LambdaExpressionSyntax lambdaExpression
     )
     {
         var sematicModel = context.SemanticModel;
 
+        var parameterSyntaxes = lambdaExpression switch
+        {
+            SimpleLambdaExpressionSyntax simpleLambda => new[] { simpleLambda.Parameter }.Where(p =>
+                p != null
+            ),
+            ParenthesizedLambdaExpressionSyntax parenthesizedLambda =>
+                parenthesizedLambda.ParameterList.Parameters.AsEnumerable(),
+            _ => [],
+        };
+
         // extract parameter information
-        var parameters = lambdaExpression
-            .ParameterList.Parameters.AsEnumerable()
+        var parameters = parameterSyntaxes
             .Select(p => sematicModel.GetDeclaredSymbol(p))
             .Where(p => p is not null)
             .Select(p =>
@@ -281,7 +291,8 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         var returnType = lambdaExpression switch
         {
             // check for explicit return type
-            { ReturnType: var syntax } when syntax is not null => sematicModel
+            ParenthesizedLambdaExpressionSyntax { ReturnType: var syntax }
+                when syntax is not null => sematicModel
                 .GetTypeInfo(syntax)
                 .Type?.GetAsGlobal(syntax),
 

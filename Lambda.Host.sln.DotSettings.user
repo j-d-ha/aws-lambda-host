@@ -42,9 +42,7 @@
   &lt;Assembly Path="/Users/jonasha/.nuget/packages/system.text.json/9.0.7/analyzers/dotnet/roslyn4.4/cs/System.Text.Json.SourceGeneration.dll" /&gt;
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=38fee708_002Dd5d2_002D402d_002Dbc08_002D224ff477c338/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="Test_StaticMethodHandler_TypeCast" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::A8CEB01A-C729-48BE-95E0-919BEBC1F49F::net8.0::Lambda.Host.Tests.MapHandlerIncrementalGeneratorVerifyTests&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
+  &lt;Solution /&gt;
 &lt;/SessionState&gt;</s:String>
 	
 	
