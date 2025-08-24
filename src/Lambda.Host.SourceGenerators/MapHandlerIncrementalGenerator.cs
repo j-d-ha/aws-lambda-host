@@ -62,35 +62,71 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         if (methodSymbol.ContainingType?.Name != StartupClassName)
             return null;
 
-        var firstArgument = invocationExpr.ArgumentList.Arguments[0];
+        // setup list of mutator functions
+        List<Updater> updaters = [];
 
-        return firstArgument.Expression switch
+        var handler = invocationExpr.ArgumentList.Arguments.ElementAtOrDefault(0)?.Expression;
+
+        // if we are dealing with a cast expression, set up a mutator to update the delegate type
+        if (handler is CastExpressionSyntax castExpression)
+        {
+            handler = GetDelegateFromCast(castExpression);
+            if (handler is null)
+                return null;
+
+            updaters.Add(UpdateTypesFromCast(context, castExpression));
+        }
+
+        var result = handler switch
         {
             // handle delegate expression
             IdentifierNameSyntax or MemberAccessExpressionSyntax => ExtractInfoFromDelegate(
                 context,
-                firstArgument.Expression
+                handler
             ),
 
-            // We can know that the lambda MUST be a ParenthesizedLambdaExpression as
+            // lambda MUST be a ParenthesizedLambdaExpression as
             // SimpleLambdaExpression won't satisfy the Delegate type for MapHandler
             ParenthesizedLambdaExpressionSyntax lambda => ExtractInfoFromLambda(context, lambda),
 
-            // check for cast expression
-            CastExpressionSyntax castExpression => ExtractInfoFromCastLambda(
-                context,
-                castExpression
-            ),
+            _ => null,
+        };
 
+        return updaters.Aggregate(result, (current, updater) => updater(current!));
+    }
+
+    private static ExpressionSyntax? GetDelegateFromCast(CastExpressionSyntax castExpression)
+    {
+        // must have at least 2 children -> expression at index 1, cast at index 0
+        var expression = castExpression.ChildNodes().ElementAtOrDefault(1);
+        if (expression is null)
+            return null;
+
+        // unwrap parenthesized expressions
+        while (expression is ParenthesizedExpressionSyntax parenthesizedExpression)
+            expression = parenthesizedExpression.Expression;
+
+        return expression switch
+        {
+            // top level static method - e.g. (Func<Int32>)Handler
+            IdentifierNameSyntax identifier => identifier,
+
+            // static method on a class - e.g. (Func<Int32>)MyClass.Handler
+            MemberAccessExpressionSyntax memberAccess => memberAccess,
+
+            // lambda expression - e.g. (Func<Int32>)() => 1
+            ParenthesizedLambdaExpressionSyntax parenthesizedLambda => parenthesizedLambda,
+
+            // default, not a supported delegate type
             _ => null,
         };
     }
 
-    private static Func<DelegateInfo, DelegateInfo> UpdateTypesFromCast(
+    private static Updater UpdateTypesFromCast(
         GeneratorSyntaxContext context,
         CastExpressionSyntax castExpression
     ) =>
-        (delegateInfo) =>
+        delegateInfo =>
         {
             var castTypeInfo = context.SemanticModel.GetTypeInfo(castExpression.Type);
 
@@ -164,17 +200,11 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
     {
         var symbolInfo = context.SemanticModel.GetSymbolInfo(delegateExpression);
 
-        if (symbolInfo.Symbol is not IMethodSymbol methodSymbol)
-        {
-            // Handle method group case
-            if (
-                symbolInfo.CandidateSymbols.Length > 0
-                && symbolInfo.CandidateSymbols[0] is IMethodSymbol candidateMethod
-            )
-                methodSymbol = candidateMethod;
-            else
-                return null;
-        }
+        // if a symbol is not found, try to find a candidate symbol as backup
+        var symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
+
+        if (symbol is not IMethodSymbol methodSymbol)
+            return null;
 
         var parameters = methodSymbol
             .Parameters.AsEnumerable()
@@ -207,88 +237,12 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         };
     }
 
-    private static DelegateInfo? ExtractInfoFromCastLambda(
-        GeneratorSyntaxContext context,
-        CastExpressionSyntax castExpression
-    )
-    {
-        var castTypeInfo = context.SemanticModel.GetTypeInfo(castExpression.Type);
-
-        if (castTypeInfo.Type is IErrorTypeSymbol)
-            throw new InvalidOperationException(
-                $"Failed to resolve type info for {castTypeInfo.Type.ToDisplayString()}."
-            );
-
-        if (castTypeInfo.Type is not INamedTypeSymbol namedType)
-            return null;
-
-        var invokeMethod = namedType.GetMembers("Invoke").OfType<IMethodSymbol>().FirstOrDefault();
-
-        // The cast expression contains a parenthesized expression, which contains the lambda
-        if (castExpression.Expression is not ParenthesizedExpressionSyntax parenthesizedExpr)
-            return null;
-
-        // Now get the lambda from inside the parentheses
-        if (parenthesizedExpr.Expression is not ParenthesizedLambdaExpressionSyntax innerLambda)
-            return null;
-
-        var symbolInfo = context.SemanticModel.GetSymbolInfo(innerLambda);
-
-        if (symbolInfo.Symbol is not IMethodSymbol methodSymbol2)
-        {
-            // Handle method group case
-            if (
-                symbolInfo.CandidateSymbols.Length > 0
-                && symbolInfo.CandidateSymbols[0] is IMethodSymbol candidateMethod
-            )
-                methodSymbol2 = candidateMethod;
-            else
-                return null;
-        }
-
-        var parameters =
-            invokeMethod
-                ?.Parameters.Zip<IParameterSymbol?, IParameterSymbol, ParameterInfo?>(
-                    methodSymbol2.Parameters,
-                    (t, p) =>
-                        t is not null && p is not null
-                            ? new ParameterInfo
-                            {
-                                ParameterName = p.Name,
-                                Type = t.Type.GetAsGlobal(),
-                                Attributes = p.GetAttributes()
-                                    .Select(a => new AttributeInfo
-                                    {
-                                        Type = a.ToString(),
-                                        Arguments = a
-                                            .ConstructorArguments.Select(aa => aa.Value?.ToString())
-                                            .Where(aa => aa is not null)
-                                            .ToList()!,
-                                    })
-                                    .ToList(),
-                            }
-                            : null
-                )
-                .Where(p => p is not null)
-                .ToList() ?? [];
-
-        return new DelegateInfo
-        {
-            ResponseType = invokeMethod?.ReturnType.GetAsGlobal() ?? TypeConstants.Void,
-            Namespace = GetFileNamespace(context.Node, context.SemanticModel),
-            IsAsync = invokeMethod?.IsAsync ?? false,
-            Parameters = parameters!,
-        };
-    }
-
-    private static DelegateInfo? ExtractInfoFromLambda(
+    private static DelegateInfo ExtractInfoFromLambda(
         GeneratorSyntaxContext context,
         ParenthesizedLambdaExpressionSyntax lambdaExpression
     )
     {
         var sematicModel = context.SemanticModel;
-        var lambdaTypeInfo = sematicModel.GetTypeInfo(lambdaExpression);
-        var delegateType = lambdaTypeInfo.ConvertedType as INamedTypeSymbol;
 
         // extract parameter information
         var parameters = lambdaExpression
@@ -367,94 +321,6 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
             IsAsync = isAsync,
             Parameters = parameters,
         };
-    }
-
-    private static List<ParameterInfo> ExtractLambdaParameters(
-        GeneratorSyntaxContext context,
-        ParenthesizedLambdaExpressionSyntax lambdaExpression
-    )
-    {
-        var sematicModel = context.SemanticModel;
-
-        // extract parameter information
-        return lambdaExpression
-            .ParameterList.Parameters.AsEnumerable()
-            .Select(p => sematicModel.GetDeclaredSymbol(p))
-            .Where(p => p is not null)
-            .Select(p =>
-            {
-                return new ParameterInfo
-                {
-                    ParameterName = p!.Name,
-                    Type = p.Type.GetAsGlobal(),
-                    Attributes = p.GetAttributes()
-                        .Select(a => new AttributeInfo
-                        {
-                            Type = a.ToString(),
-                            Arguments = a
-                                .ConstructorArguments.Select(aa => aa.Value?.ToString())
-                                .Where(aa => aa is not null)
-                                .ToList()!,
-                        })
-                        .ToList(),
-                };
-            })
-            .ToList();
-    }
-
-    private static (string returnType, bool isAsync) ExtractLambdaReturnType(
-        GeneratorSyntaxContext context,
-        ParenthesizedLambdaExpressionSyntax lambdaExpression
-    )
-    {
-        var sematicModel = context.SemanticModel;
-
-        var isAsync = lambdaExpression.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword);
-
-        // Hierarchy for determining lambda return type.
-        //
-        // 1. type conversion (not handled here)
-        // 2. explicit return type
-        // 3. implicit return type in expression body
-        // 4. implicit return type in block body
-        // 5. default void (or Task if async)
-        var returnType = lambdaExpression switch
-        {
-            // check for explicit return type
-            { ReturnType: var syntax } when syntax is not null => sematicModel
-                .GetTypeInfo(syntax)
-                .Type?.GetAsGlobal(syntax),
-
-            // Handle implicit return type for expression lambda
-            { Body: var expression } when expression is ExpressionSyntax => sematicModel
-                .GetTypeInfo(expression)
-                .Type?.GetAsGlobal(),
-
-            // Handle implicit return type for block lambda
-            { Body: var block } when block is BlockSyntax => block
-                .DescendantNodes()
-                .OfType<ReturnStatementSyntax>()
-                .FirstOrDefault(syntax => syntax.Expression is not null)
-                ?.Transform(syntax =>
-                    syntax.Expression is null
-                        ? null
-                        : sematicModel.GetTypeInfo(syntax.Expression).Type?.GetAsGlobal()
-                ),
-
-            // Default to void if no return type is found
-            _ => null,
-        };
-
-        var returnTypeName = (ReturnType: returnType, IsAsync: isAsync) switch
-        {
-            (null, true) => TypeConstants.Task,
-            (null, false) => TypeConstants.Void,
-            (TypeConstants.Task, true) => TypeConstants.Task,
-            (var type, true) => $"{TypeConstants.Task}<{type}>",
-            var (type, _) => type,
-        };
-
-        return (returnTypeName, isAsync);
     }
 
     private static void GenerateLambdaReport(
@@ -537,13 +403,15 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
 
         context.AddSource("LambdaStartup.g.cs", outCode);
     }
+
+    private delegate DelegateInfo Updater(DelegateInfo delegateInfo);
 }
 
 internal sealed class DelegateInfo
 {
     internal required string? ResponseType { get; set; } = TypeConstants.Void;
-    internal required string? Namespace { get; set; } = null;
-    internal required bool IsAsync { get; set; } = false;
+    internal required string? Namespace { get; set; }
+    internal required bool IsAsync { get; set; }
 
     internal string DelegateType => ResponseType == TypeConstants.Void ? "Action" : "Func";
     internal List<ParameterInfo> Parameters { get; set; } = [];
@@ -551,13 +419,13 @@ internal sealed class DelegateInfo
 
 internal sealed class ParameterInfo
 {
-    internal required string? ParameterName { get; set; } = null;
-    internal required string? Type { get; set; } = null;
+    internal required string? ParameterName { get; set; }
+    internal required string? Type { get; set; }
     internal List<AttributeInfo> Attributes { get; set; } = [];
 }
 
 internal sealed class AttributeInfo
 {
-    internal required string? Type { get; set; } = null;
+    internal required string? Type { get; set; }
     internal List<string> Arguments { get; set; } = [];
 }
