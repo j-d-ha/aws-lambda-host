@@ -1,51 +1,48 @@
-using System.Collections;
-using System.Collections.Immutable;
+using Lambda.Host.SourceGenerators.Extensions;
+using Lambda.Host.SourceGenerators.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Lambda.Host.SourceGenerators;
 
-[Generator]
-public class MapHandlerIncrementalGenerator : IIncrementalGenerator
+internal static class MapHandlerSyntaxProvider
 {
-    private const string StartupClassName = "LambdaApplication";
-    private const string MapHandlerMethodName = "MapHandler";
-
-    private const string LambdaStartupServiceTemplateFile =
-        "Templates/LambdaStartupService.scriban";
-
-    public void Initialize(IncrementalGeneratorInitializationContext context)
-    {
-        // Find all MapHandler method calls with lambda analysis
-        var mapHandlerCalls = context
-            .SyntaxProvider.CreateSyntaxProvider(
-                static (syntaxNode, cancellationToken) =>
-                    IsMapHandlerCall(syntaxNode, cancellationToken),
-                static (ctx, cancellationToken) => AnalyzeMapHandlerLambda(ctx, cancellationToken)
-            )
-            .Where(static m => m is not null)
-            .Select(static (m, _) => m!);
-
-        // Generate source when calls are found
-        context.RegisterSourceOutput(
-            mapHandlerCalls.Collect(),
-            static (spc, calls) => GenerateLambdaReport(spc, calls)
-        );
-    }
-
-    // Fast syntax check - look for MapHandler calls
-    private static bool IsMapHandlerCall(SyntaxNode node, CancellationToken cancellationToken)
+    /// <summary>
+    ///     Determines whether the specified <paramref name="node" /> represents a valid invocation of the
+    ///     method
+    ///     identified by <see cref="GeneratorConstants.MapHandlerMethodName" />.
+    /// </summary>
+    /// <param name="node">The syntax node to evaluate.</param>
+    /// <param name="cancellationToken">The cancellation token used to observe cancellation requests.</param>
+    /// <returns>
+    ///     <c>true</c> if the specified <paramref name="node" /> is an invocation of the MapHandler
+    ///     method;
+    ///     otherwise, <c>false</c>.
+    /// </returns>
+    internal static bool Predicate(SyntaxNode node, CancellationToken cancellationToken)
     {
         if (node is not InvocationExpressionSyntax invocation)
             return false;
 
         return invocation.Expression
-            is MemberAccessExpressionSyntax { Name.Identifier.ValueText: MapHandlerMethodName };
+            is MemberAccessExpressionSyntax
+            {
+                Name.Identifier.ValueText: GeneratorConstants.MapHandlerMethodName
+            };
     }
 
-    // Analyze the lambda expression passed to MapHandler
-    private static DelegateInfo? AnalyzeMapHandlerLambda(
+    /// <summary>
+    ///     Extracts a <see cref="DelegateInfo" /> object from the given syntax context
+    ///     if the syntax node represents a valid MapHandler invocation.
+    /// </summary>
+    /// <param name="context">The context containing the syntax information and semantic model.</param>
+    /// <param name="token">The cancellation token to observe cancellation requests.</param>
+    /// <returns>
+    ///     A <see cref="DelegateInfo" /> object containing details about the delegate if the syntax
+    ///     corresponds to a valid handler invocation; otherwise, <c>null</c>.
+    /// </returns>
+    internal static DelegateInfo? Transformer(
         GeneratorSyntaxContext context,
         CancellationToken token
     )
@@ -54,13 +51,13 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         if (context.Node is not InvocationExpressionSyntax invocationExpr)
             return null;
 
-        var symbolInfo = context.SemanticModel.GetSymbolInfo(invocationExpr);
+        var symbolInfo = ModelExtensions.GetSymbolInfo(context.SemanticModel, invocationExpr);
 
         if (symbolInfo.Symbol is not IMethodSymbol methodSymbol)
             return null;
 
         // Check if it's from LambdaApplication
-        if (methodSymbol.ContainingType?.Name != StartupClassName)
+        if (methodSymbol.ContainingType?.Name != GeneratorConstants.StartupClassName)
             return null;
 
         // setup list of mutator functions
@@ -129,7 +126,10 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
     ) =>
         delegateInfo =>
         {
-            var castTypeInfo = context.SemanticModel.GetTypeInfo(castExpression.Type);
+            var castTypeInfo = ModelExtensions.GetTypeInfo(
+                context.SemanticModel,
+                castExpression.Type
+            );
 
             if (castTypeInfo.Type is IErrorTypeSymbol)
                 throw new InvalidOperationException(
@@ -199,7 +199,7 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         ExpressionSyntax delegateExpression
     )
     {
-        var symbolInfo = context.SemanticModel.GetSymbolInfo(delegateExpression);
+        var symbolInfo = ModelExtensions.GetSymbolInfo(context.SemanticModel, delegateExpression);
 
         // if a symbol is not found, try to find a candidate symbol as backup
         var symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
@@ -292,8 +292,8 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         {
             // check for explicit return type
             ParenthesizedLambdaExpressionSyntax { ReturnType: var syntax }
-                when syntax is not null => sematicModel
-                .GetTypeInfo(syntax)
+                when syntax is not null => ModelExtensions
+                .GetTypeInfo(sematicModel, syntax)
                 .Type?.GetAsGlobal(syntax),
 
             // Handle implicit return type for expression lambda
@@ -309,7 +309,9 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
                 ?.Transform(syntax =>
                     syntax.Expression is null
                         ? null
-                        : sematicModel.GetTypeInfo(syntax.Expression).Type?.GetAsGlobal()
+                        : ModelExtensions
+                            .GetTypeInfo(sematicModel, syntax.Expression)
+                            .Type?.GetAsGlobal()
                 ),
 
             // Default to void if no return type is found
@@ -334,109 +336,5 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         };
     }
 
-    private static void GenerateLambdaReport(
-        SourceProductionContext context,
-        ImmutableArray<DelegateInfo> delegateInfos
-    )
-    {
-        if (delegateInfos.Length == 0)
-            return;
-
-        var delegateInfo = delegateInfos.First();
-
-        var delegateArguments = (delegateInfo.Parameters.Select(p => p.Type) ?? [])
-            .Concat(
-                new[] { delegateInfo?.ResponseType }.Where(t =>
-                    t != null && t != TypeConstants.Void
-                )
-            )
-            .ToList();
-
-        var classFields = delegateInfo
-            .Parameters.Where(p =>
-                p.Attributes.All(a => a.Type != AttributeConstants.Request)
-                && p.Type != TypeConstants.ILambdaContext
-            )
-            .Select(p => new
-            {
-                attributes = p.Attributes.Select(a => a.Type).ToList(),
-                keyed_service_key = p
-                    .Attributes.Where(a =>
-                        a?.Type?.StartsWith(AttributeConstants.FromKeyedService) ?? false
-                    )
-                    .Select(a => a.Arguments.FirstOrDefault())
-                    .FirstOrDefault(),
-                name = p.ParameterName.ToCamelCase(),
-                type = p.Type,
-            })
-            .ToList();
-
-        var handlerArgs =
-            delegateInfo.Parameters.Select(p => p.ParameterName.ToCamelCase()).ToList() ?? [];
-
-        var lambdaParams =
-            delegateInfo
-                .Parameters.Where(p =>
-                    p.Attributes.Any(a => a.Type == AttributeConstants.Request)
-                    || p.Type == TypeConstants.ILambdaContext
-                )
-                .OrderBy(p => p.Type == TypeConstants.ILambdaContext ? 1 : 0)
-                .Select(p => p.Type + " " + p.ParameterName.ToCamelCase())
-                .ToList() ?? [];
-
-        // 1. if Action -> no return
-        // 3. if Func + Task return type + async -> no return
-        // 2. if Func + Task return type -> return value
-        // 4. if Func + non-Task return type -> return value
-        var hasReturnValue = delegateInfo switch
-        {
-            { DelegateType: "Action" } => false,
-            { DelegateType: "Func", IsAsync: true, ResponseType: TypeConstants.Task } => false,
-            _ => true,
-        };
-
-        var model = new
-        {
-            @namespace = delegateInfo.Namespace,
-            service = "LambdaStartupService",
-            fields = classFields,
-            delegate_type = delegateInfo.DelegateType,
-            delegate_args = delegateArguments,
-            handler_args = handlerArgs,
-            lambda_params = lambdaParams,
-            is_lambda_async = delegateInfo?.IsAsync ?? false,
-            has_return_value = hasReturnValue,
-        };
-
-        var template = TemplateHelper.LoadTemplate(LambdaStartupServiceTemplateFile);
-
-        var outCode = template.Render(model);
-
-        context.AddSource("LambdaStartup.g.cs", outCode);
-    }
-
     private delegate DelegateInfo Updater(DelegateInfo delegateInfo);
-}
-
-internal sealed class DelegateInfo
-{
-    internal required string? ResponseType { get; set; } = TypeConstants.Void;
-    internal required string? Namespace { get; set; }
-    internal required bool IsAsync { get; set; }
-
-    internal string DelegateType => ResponseType == TypeConstants.Void ? "Action" : "Func";
-    internal List<ParameterInfo> Parameters { get; set; } = [];
-}
-
-internal sealed class ParameterInfo
-{
-    internal required string? ParameterName { get; set; }
-    internal required string? Type { get; set; }
-    internal List<AttributeInfo> Attributes { get; set; } = [];
-}
-
-internal sealed class AttributeInfo
-{
-    internal required string? Type { get; set; }
-    internal List<string> Arguments { get; set; } = [];
 }
