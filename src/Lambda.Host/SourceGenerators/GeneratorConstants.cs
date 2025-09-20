@@ -5,9 +5,9 @@ namespace Lambda.Host.SourceGenerators;
 /// </summary>
 internal static class TypeConstants
 {
-    public const string ILambdaContext = "global::Amazon.Lambda.Core.ILambdaContext";
-    public const string Task = "global::System.Threading.Tasks.Task";
-    public const string Void = "void";
+    internal const string ILambdaContext = "global::Amazon.Lambda.Core.ILambdaContext";
+    internal const string Task = "global::System.Threading.Tasks.Task";
+    internal const string Void = "void";
 }
 
 /// <summary>
@@ -15,8 +15,17 @@ internal static class TypeConstants
 /// </summary>
 internal static class AttributeConstants
 {
-    public const string Request = "Lambda.Host.RequestAttribute";
+    internal const string Request = "Lambda.Host.RequestAttribute";
 
-    public const string FromKeyedService =
+    internal const string FromKeyedService =
         "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute";
+}
+
+internal static class GeneratorConstants
+{
+    internal const string StartupClassName = "LambdaApplication";
+    internal const string MapHandlerMethodName = "MapHandler";
+
+    internal const string LambdaStartupServiceTemplateFile =
+        "Templates/LambdaStartupService.scriban";
 }
