@@ -25,26 +25,3 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         );
     }
 }
-
-internal sealed class DelegateInfo
-{
-    internal required string? ResponseType { get; set; } = TypeConstants.Void;
-    internal required string? Namespace { get; set; }
-    internal required bool IsAsync { get; set; }
-
-    internal string DelegateType => ResponseType == TypeConstants.Void ? "Action" : "Func";
-    internal List<ParameterInfo> Parameters { get; set; } = [];
-}
-
-internal sealed class ParameterInfo
-{
-    internal required string? ParameterName { get; set; }
-    internal required string? Type { get; set; }
-    internal List<AttributeInfo> Attributes { get; set; } = [];
-}
-
-internal sealed class AttributeInfo
-{
-    internal required string? Type { get; set; }
-    internal List<string> Arguments { get; set; } = [];
-}
