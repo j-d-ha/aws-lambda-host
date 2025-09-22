@@ -43,7 +43,9 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
             .ToArray();
 
         if (!hostedServiceTypes.Any())
-            throw new InvalidOperationException("No hosted services found.");
+            throw new InvalidOperationException(
+                "No instances of IHostedService found for DI registration."
+            );
 
         foreach (var serviceType in hostedServiceTypes)
         {

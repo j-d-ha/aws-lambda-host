@@ -33,16 +33,16 @@ internal static class MapHandlerSyntaxProvider
     }
 
     /// <summary>
-    ///     Extracts a <see cref="DelegateInfo" /> object from the given syntax context
+    ///     Extracts a <see cref="MapHandlerInvocationInfo" /> object from the given syntax context
     ///     if the syntax node represents a valid MapHandler invocation.
     /// </summary>
     /// <param name="context">The context containing the syntax information and semantic model.</param>
     /// <param name="token">The cancellation token to observe cancellation requests.</param>
     /// <returns>
-    ///     A <see cref="DelegateInfo" /> object containing details about the delegate if the syntax
+    ///     A <see cref="MapHandlerInvocationInfo" /> object containing details about the delegate if the syntax
     ///     corresponds to a valid handler invocation; otherwise, <c>null</c>.
     /// </returns>
-    internal static DelegateInfo? Transformer(
+    internal static MapHandlerInvocationInfo? Transformer(
         GeneratorSyntaxContext context,
         CancellationToken token
     )
@@ -87,7 +87,14 @@ internal static class MapHandlerSyntaxProvider
             _ => null,
         };
 
-        return updaters.Aggregate(result, (current, updater) => updater(current!));
+        if (result is null)
+            return null;
+
+        return new MapHandlerInvocationInfo
+        {
+            Location = context.Node.GetLocation(),
+            DelegateInfo = updaters.Aggregate(result, (current, updater) => updater(current!)),
+        };
     }
 
     private static ExpressionSyntax? GetDelegateFromCast(CastExpressionSyntax castExpression)
