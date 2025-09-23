@@ -1,5 +1,3 @@
-using Microsoft.CodeAnalysis;
-
 namespace Lambda.Host.SourceGenerators.Models;
 
 internal sealed class DelegateInfo

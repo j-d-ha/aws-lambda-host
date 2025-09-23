@@ -39,7 +39,8 @@ internal static class MapHandlerSyntaxProvider
     /// <param name="context">The context containing the syntax information and semantic model.</param>
     /// <param name="token">The cancellation token to observe cancellation requests.</param>
     /// <returns>
-    ///     A <see cref="MapHandlerInvocationInfo" /> object containing details about the delegate if the syntax
+    ///     A <see cref="MapHandlerInvocationInfo" /> object containing details about the delegate if the
+    ///     syntax
     ///     corresponds to a valid handler invocation; otherwise, <c>null</c>.
     /// </returns>
     internal static MapHandlerInvocationInfo? Transformer(
