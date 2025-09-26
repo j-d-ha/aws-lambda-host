@@ -109,14 +109,7 @@ internal static class MapHandlerSourceOutput
                 .Skip(1)
                 .Select(df =>
                     Diagnostic.Create(
-                        new DiagnosticDescriptor(
-                            DiagnosticCodeConstants.MapHandlerCalledMultipleTimes,
-                            "Method can only be invoked once per project",
-                            "Method '{0}' can only be invoked once per project. Remove this duplicate invocation.",
-                            "Lambda.Host",
-                            DiagnosticSeverity.Error,
-                            true
-                        ),
+                        Diagnostics.MultipleMethodCalls,
                         df.Location,
                         "LambdaApplication.MapHandler(Delegate)"
                     )

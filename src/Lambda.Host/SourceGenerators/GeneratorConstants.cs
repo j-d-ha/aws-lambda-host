@@ -29,8 +29,3 @@ internal static class GeneratorConstants
     internal const string LambdaStartupServiceTemplateFile =
         "Templates/LambdaStartupService.scriban";
 }
-
-internal static class DiagnosticCodeConstants
-{
-    internal const string MapHandlerCalledMultipleTimes = "LH0001";
-}
