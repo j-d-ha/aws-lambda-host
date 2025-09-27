@@ -9,13 +9,20 @@ internal static class MapHandlerSourceOutput
 {
     internal static void Generate(
         SourceProductionContext context,
-        ImmutableArray<DelegateInfo> delegateInfos
+        ImmutableArray<MapHandlerInvocationInfo> delegateInfos
     )
     {
         if (delegateInfos.Length == 0)
             return;
 
-        var delegateInfo = delegateInfos.First();
+        var diagnostics = ValidateGeneratorData(delegateInfos);
+        if (diagnostics.Any())
+        {
+            diagnostics.ForEach(context.ReportDiagnostic);
+            return;
+        }
+
+        var delegateInfo = delegateInfos.First().DelegateInfo;
 
         var delegateArguments = (delegateInfo.Parameters.Select(p => p.Type) ?? [])
             .Concat(
@@ -88,5 +95,27 @@ internal static class MapHandlerSourceOutput
         var outCode = template.Render(model);
 
         context.AddSource("LambdaStartup.g.cs", outCode);
+    }
+
+    private static List<Diagnostic> ValidateGeneratorData(
+        ImmutableArray<MapHandlerInvocationInfo> delegateInfos
+    )
+    {
+        var diagnostics = new List<Diagnostic>();
+
+        // check for multiple invocations of MapHandler
+        diagnostics.AddRange(
+            delegateInfos
+                .Skip(1)
+                .Select(invocationInfo =>
+                    Diagnostic.Create(
+                        Diagnostics.MultipleMethodCalls,
+                        invocationInfo.Location,
+                        "LambdaApplication.MapHandler(Delegate)"
+                    )
+                )
+        );
+
+        return diagnostics;
     }
 }
