@@ -12,6 +12,27 @@ namespace Lambda.Host.Tests;
 public class MapHandlerIncrementalGeneratorDiagnosticTests
 {
     [Fact]
+    public void Test_MultipleMapHandlersNotFound()
+    {
+        var diagnostics = GenerateDiagnostics(
+            """
+            using Lambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.MapHandler(() => "hello world");
+
+            await lambda.RunAsync();
+            """
+        );
+
+        diagnostics.Length.Should().Be(0);
+    }
+
+    [Fact]
     public void Test_MultipleMapHandlersFound()
     {
         var diagnostics = GenerateDiagnostics(

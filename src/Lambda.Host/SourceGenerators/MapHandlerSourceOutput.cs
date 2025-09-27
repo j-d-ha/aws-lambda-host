@@ -107,10 +107,10 @@ internal static class MapHandlerSourceOutput
         diagnostics.AddRange(
             delegateInfos
                 .Skip(1)
-                .Select(df =>
+                .Select(invocationInfo =>
                     Diagnostic.Create(
                         Diagnostics.MultipleMethodCalls,
-                        df.Location,
+                        invocationInfo.Location,
                         "LambdaApplication.MapHandler(Delegate)"
                     )
                 )
