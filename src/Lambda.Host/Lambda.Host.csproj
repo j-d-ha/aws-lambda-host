@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net8.0;net9.0</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -21,7 +21,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Scriban" Version="6.3.0" IncludeAssets="Build"/>
+    <PackageReference Include="Scriban" Version="6.4.0" IncludeAssets="Build" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0"/>
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3"/>
   </ItemGroup>
