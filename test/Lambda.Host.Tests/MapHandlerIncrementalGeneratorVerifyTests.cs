@@ -1,10 +1,4 @@
-﻿using Amazon.Lambda.Core;
-using AwesomeAssertions;
-using Basic.Reference.Assemblies;
-using Lambda.Host.SourceGenerators;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.DependencyInjection;
+﻿using AwesomeAssertions;
 
 namespace Lambda.Host.Tests;
 

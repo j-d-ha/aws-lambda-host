@@ -1,5 +1,4 @@
 using Amazon.Lambda.Core;
-using AwesomeAssertions;
 using Basic.Reference.Assemblies;
 using Lambda.Host.SourceGenerators;
 using Microsoft.CodeAnalysis;
