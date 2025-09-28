@@ -680,6 +680,23 @@ public class MapHandlerIncrementalGeneratorVerifyTests
             """
         );
 
+    [Fact]
+    public async Task Test_ExpressionLambda_AsksForMultipleCancellationTokens() =>
+        await Verify(
+            """
+            using System.Threading;
+            using Lambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+            var lambda = builder.Build();
+
+            lambda.MapHandler((CancellationToken ct, CancellationToken ct2) => "hello world");
+
+            await lambda.RunAsync();
+            """
+        );
+
     private static Task Verify(string source)
     {
         var (driver, originalCompilation) = GeneratorTestHelpers.GenerateFromSource(source);

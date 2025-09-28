@@ -137,9 +137,10 @@ internal static class MapHandlerSourceOutput
             lambda_context_parameter_name = lambdaParams
                 .FirstOrDefault(cf => cf.type == TypeConstants.ILambdaContext)
                 ?.name,
-            cancellation_token_var_name = handlerArgs
-                .FirstOrDefault(ha => ha.type == TypeConstants.CancellationToken)
-                ?.name,
+            cancellation_token_var_names = handlerArgs
+                .Where(ha => ha.type == TypeConstants.CancellationToken)
+                .Select(ha => ha.name)
+                .ToList(),
         };
 
         // 1. if Action -> no return
