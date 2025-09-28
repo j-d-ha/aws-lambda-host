@@ -645,6 +645,41 @@ public class MapHandlerIncrementalGeneratorVerifyTests
             """
         );
 
+    [Fact]
+    public async Task Test_ExpressionLambda_AsksForCancellationToken() =>
+        await Verify(
+            """
+            using System.Threading;
+            using Lambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+            var lambda = builder.Build();
+
+            lambda.MapHandler((CancellationToken cancellationToken) => "hello world");
+
+            await lambda.RunAsync();
+            """
+        );
+
+    [Fact]
+    public async Task Test_ExpressionLambda_AsksForCancellationTokenAndLambdaContext() =>
+        await Verify(
+            """
+            using System.Threading;
+            using Amazon.Lambda.Core;
+            using Lambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+            var lambda = builder.Build();
+
+            lambda.MapHandler((CancellationToken ct, ILambdaContext ctx) => "hello world");
+
+            await lambda.RunAsync();
+            """
+        );
+
     private static Task Verify(string source)
     {
         var (driver, originalCompilation) = GeneratorTestHelpers.GenerateFromSource(source);

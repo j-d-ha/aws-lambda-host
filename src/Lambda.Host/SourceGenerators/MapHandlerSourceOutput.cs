@@ -25,6 +25,12 @@ internal static class MapHandlerSourceOutput
         ParameterName = "lambdaCancellationTokenSourceFactory",
     };
 
+    private static readonly DependencyInfo ILambdaContextInfo = new()
+    {
+        Type = TypeConstants.ILambdaContext,
+        ParameterName = TypeConstants.ILambdaContextName,
+    };
+
     private static readonly ImmutableList<DependencyInfo> DefaultInjectedDependencies =
     [
         DelegateHolderInfo,
@@ -83,6 +89,7 @@ internal static class MapHandlerSourceOutput
             .Parameters.Where(p =>
                 p.Attributes.All(a => a.Type != AttributeConstants.Request)
                 && p.Type != TypeConstants.ILambdaContext
+                && p.Type != TypeConstants.CancellationToken
             )
             .Select(p => new
             {
@@ -99,17 +106,41 @@ internal static class MapHandlerSourceOutput
             .ToList();
 
         var handlerArgs = delegateInfo
-            .Parameters.Select(p => p.ParameterName.ToCamelCase())
+            .Parameters.Select(p => new { name = p.ParameterName.ToCamelCase(), type = p.Type })
             .ToList();
 
         var lambdaParams = delegateInfo
-            .Parameters.Where(p =>
+            .Parameters.Concat(
+                isCancellationTokenRequested
+                && delegateInfo.Parameters.All(p => p.Type != TypeConstants.ILambdaContext)
+                    ?
+                    [
+                        new ParameterInfo
+                        {
+                            ParameterName = ILambdaContextInfo.InternalVariableName,
+                            Type = ILambdaContextInfo.Type,
+                        },
+                    ]
+                    : []
+            )
+            .Where(p =>
                 p.Attributes.Any(a => a.Type == AttributeConstants.Request)
                 || p.Type == TypeConstants.ILambdaContext
             )
             .OrderBy(p => p.Type == TypeConstants.ILambdaContext ? 1 : 0)
-            .Select(p => p.Type + " " + p.ParameterName.ToCamelCase())
+            .Select(p => new { type = p.Type, name = p.ParameterName.ToCamelCase() })
             .ToList();
+
+        var cancellationTokenDetails = new
+        {
+            is_cancellation_token_requested = isCancellationTokenRequested,
+            lambda_context_parameter_name = lambdaParams
+                .FirstOrDefault(cf => cf.type == TypeConstants.ILambdaContext)
+                ?.name,
+            cancellation_token_var_name = handlerArgs
+                .FirstOrDefault(ha => ha.type == TypeConstants.CancellationToken)
+                ?.name,
+        };
 
         // 1. if Action -> no return
         // 3. if Func + Task return type + async -> no return
@@ -128,13 +159,14 @@ internal static class MapHandlerSourceOutput
             @namespace = delegateInfo.Namespace,
             service = "LambdaStartupService",
             injected_dependencies = injectedDependencies,
-            fields = classFields,
+            class_fields = classFields,
             delegate_type = delegateInfo.DelegateType,
             delegate_args = delegateArguments,
             handler_args = handlerArgs,
             lambda_params = lambdaParams,
             is_lambda_async = delegateInfo.IsAsync,
             has_return_value = hasReturnValue,
+            cancellation_token_details = cancellationTokenDetails,
         };
 
         var template = TemplateHelper.LoadTemplate(

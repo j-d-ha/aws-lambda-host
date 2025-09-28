@@ -33,21 +33,26 @@ public class {{ service }} : global::Microsoft.Extensions.Hosting.IHostedService
 
         await global::Amazon.Lambda.RuntimeSupport.LambdaBootstrapBuilder
             .Create(
-                {{ if is_lambda_async ~}} async {{ end ~}}({{ lambda_params | array.join ", " }}) => 
+                {{ if is_lambda_async ~}} async {{ end ~}}({{ for lambda_param in lambda_params }}{{ lambda_param.type }} {{ lambda_param.name }}{{ if !for.last }}, {{ end }}{{ end }}) => 
                 {
+                    {{~ if cancellation_token_details.is_cancellation_token_requested ~}}
+                    using var __cancellationTokenSource = _lambdaCancellationTokenSourceFactory.NewCancellationTokenSource({{ cancellation_token_details.lambda_context_parameter_name }});
+                    var {{ cancellation_token_details.cancellation_token_var_name }} = __cancellationTokenSource.Token;
+                    
+                    {{~ end ~}}
                     using var __scope = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.CreateScope(this._serviceProvider);
                     
-                    {{~ if fields.size > 0 ~}}
-                    {{~ for field in fields ~}}
-                        {{~ if field.keyed_service_key ~}}
+                    {{~ if class_fields.size > 0 ~}}
+                        {{~ for field in class_fields ~}}
+                            {{~ if field.keyed_service_key ~}}
                     var {{ field.name }} = global::Microsoft.Extensions.DependencyInjection.ServiceProviderKeyedServiceExtensions.GetRequiredKeyedService<{{ field.type }}>(__scope.ServiceProvider, "{{ field.keyed_service_key }}");
-                        {{~ else ~}}
+                            {{~ else ~}}
                     var {{ field.name }} = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<{{ field.type }}>(__scope.ServiceProvider);
+                            {{~ end ~}}
                         {{~ end ~}}
-                    {{~ end ~}}
                     
                     {{~ end ~}}
-                    {{ if has_return_value ~}}var __response = {{ end ~}}{{~ if is_lambda_async ~}} await {{ end ~}}lambdaHandler({{ handler_args | array.join ", " }});
+                    {{ if has_return_value ~}}var __response = {{ end ~}}{{~ if is_lambda_async ~}} await {{ end ~}}lambdaHandler({{ for handler_arg in handler_args }}{{ handler_arg.name }}{{ if !for.last }}, {{ end }}{{ end }});
                     {{~ if has_return_value ~}}
                     
                     return __response;
