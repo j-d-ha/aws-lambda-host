@@ -15,6 +15,7 @@
     <PackageReference Include="Basic.Reference.Assemblies.Net472" Version="1.8.3"/>
     <PackageReference Include="Basic.Reference.Assemblies.Net80" Version="1.8.3"/>
     <PackageReference Include="coverlet.collector" Version="6.0.4"/>
+    <PackageReference Include="JetBrains.Annotations" Version="2025.2.2"/>
     <PackageReference Include="Microsoft.CodeAnalysis" Version="4.14.0"/>
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.14.0"/>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="1.1.2"/>
@@ -37,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Snapshots\"/>
+    <Folder Include="\SourceGenerators\Snapshots\"/>
   </ItemGroup>
 
 </Project>

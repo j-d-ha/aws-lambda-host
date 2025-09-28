@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Lambda.Host.Tests;
+namespace Lambda.Host.Tests.SourceGenerators;
 
 internal static class GeneratorTestHelpers
 {

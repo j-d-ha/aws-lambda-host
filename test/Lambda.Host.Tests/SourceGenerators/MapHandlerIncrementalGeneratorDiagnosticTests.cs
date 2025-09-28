@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using AwesomeAssertions;
 using Microsoft.CodeAnalysis;
 
-namespace Lambda.Host.Tests;
+namespace Lambda.Host.Tests.SourceGenerators;
 
 public class MapHandlerIncrementalGeneratorDiagnosticTests
 {

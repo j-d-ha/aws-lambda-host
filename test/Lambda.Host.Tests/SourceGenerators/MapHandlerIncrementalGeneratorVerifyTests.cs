@@ -1,6 +1,6 @@
 ﻿using AwesomeAssertions;
 
-namespace Lambda.Host.Tests;
+namespace Lambda.Host.Tests.SourceGenerators;
 
 public class MapHandlerIncrementalGeneratorVerifyTests
 {
