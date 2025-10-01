@@ -12,4 +12,13 @@ internal static class Diagnostics
         DiagnosticSeverity.Error,
         true
     );
+
+    internal static readonly DiagnosticDescriptor MultipleParametersOfSameType = new(
+        "LH0002",
+        "Multiple parameters of the same type detected",
+        "Handler method contains multiple parameters of type '{0}'. Only one parameter of this type is allowed.",
+        "Usage",
+        DiagnosticSeverity.Error,
+        true
+    );
 }

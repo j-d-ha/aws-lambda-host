@@ -52,6 +52,63 @@ public class MapHandlerIncrementalGeneratorDiagnosticTests
         diagnostics[0].Severity.Should().Be(DiagnosticSeverity.Error);
     }
 
+    [Fact]
+    public void Test_MultipleCancellationTokensFound()
+    {
+        var diagnostics = GenerateDiagnostics(
+            """
+            using System.Threading;
+            using Lambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.MapHandler((CancellationToken ct1, CancellationToken ct2) => "hello world");
+
+            await lambda.RunAsync();
+            """
+        );
+
+        diagnostics.Length.Should().Be(1);
+
+        foreach (var diagnostic in diagnostics)
+        {
+            diagnostic.Id.Should().Be("LH0002");
+            diagnostic.Severity.Should().Be(DiagnosticSeverity.Error);
+        }
+    }
+
+    [Fact]
+    public void Test_MultipleILambdaContextsFound()
+    {
+        var diagnostics = GenerateDiagnostics(
+            """
+            using System.Threading;
+            using Amazon.Lambda.Core;
+            using Lambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.MapHandler((ILambdaContext ctx1, ILambdaContext ctx2, ILambdaContext ctx3) => "hello world");
+
+            await lambda.RunAsync();
+            """
+        );
+
+        diagnostics.Length.Should().Be(2);
+
+        foreach (var diagnostic in diagnostics)
+        {
+            diagnostic.Id.Should().Be("LH0002");
+            diagnostic.Severity.Should().Be(DiagnosticSeverity.Error);
+        }
+    }
+
     private static ImmutableArray<Diagnostic> GenerateDiagnostics(string source)
     {
         var (driver, _) = GeneratorTestHelpers.GenerateFromSource(source);

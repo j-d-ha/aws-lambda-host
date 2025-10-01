@@ -118,6 +118,7 @@ internal static class MapHandlerSourceOutput
                         new ParameterInfo
                         {
                             ParameterName = ILambdaContextInfo.InternalVariableName,
+                            LocationInfo = null,
                             Type = ILambdaContextInfo.Type,
                         },
                     ]
@@ -157,17 +158,17 @@ internal static class MapHandlerSourceOutput
 
         var model = new
         {
-            @namespace = delegateInfo.Namespace,
-            service = "LambdaStartupService",
-            injected_dependencies = injectedDependencies,
-            class_fields = classFields,
-            delegate_type = delegateInfo.DelegateType,
-            delegate_args = delegateArguments,
-            handler_args = handlerArgs,
-            lambda_params = lambdaParams,
-            is_lambda_async = delegateInfo.IsAsync,
-            has_return_value = hasReturnValue,
-            cancellation_token_details = cancellationTokenDetails,
+            delegateInfo.Namespace,
+            Service = "LambdaStartupService",
+            InjectedDependencies = injectedDependencies,
+            ClassFields = classFields,
+            delegateInfo.DelegateType,
+            DelegateArgs = delegateArguments,
+            HandlerArgs = handlerArgs,
+            LambdaParams = lambdaParams,
+            IsLambdaAsync = delegateInfo.IsAsync,
+            HasReturnValue = hasReturnValue,
+            CancellationTokenDetails = cancellationTokenDetails,
         };
 
         var template = TemplateHelper.LoadTemplate(
@@ -192,12 +193,45 @@ internal static class MapHandlerSourceOutput
                 .Select(invocationInfo =>
                     Diagnostic.Create(
                         Diagnostics.MultipleMethodCalls,
-                        invocationInfo.Location,
+                        invocationInfo?.LocationInfo?.ToLocation(),
                         "LambdaApplication.MapHandler(Delegate)"
                     )
                 )
         );
 
+        // Validate parameters
+        foreach (var invocationInfo in delegateInfos)
+        {
+            // check for more than one ILambdaContext parameter or CancellationToken parameter
+            CheckForDuplicateTypeParameters(
+                invocationInfo.DelegateInfo.Parameters,
+                TypeConstants.CancellationToken
+            );
+
+            // check for more than one ILambdaContext parameter or CancellationToken parameter
+            CheckForDuplicateTypeParameters(
+                invocationInfo.DelegateInfo.Parameters,
+                TypeConstants.ILambdaContext
+            );
+        }
+
         return diagnostics;
+
+        void CheckForDuplicateTypeParameters(
+            IEnumerable<ParameterInfo> parameterInfos,
+            string type
+        ) =>
+            diagnostics.AddRange(
+                parameterInfos
+                    .Where(p => p.Type == type)
+                    .Skip(1)
+                    .Select(p =>
+                        Diagnostic.Create(
+                            Diagnostics.MultipleParametersOfSameType,
+                            p.LocationInfo?.ToLocation(),
+                            type
+                        )
+                    )
+            );
     }
 }

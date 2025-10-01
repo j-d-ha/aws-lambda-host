@@ -93,7 +93,7 @@ internal static class MapHandlerSyntaxProvider
 
         return new MapHandlerInvocationInfo
         {
-            Location = context.Node.GetLocation(),
+            LocationInfo = LocationInfo.CreateFrom(context.Node),
             DelegateInfo = updaters.Aggregate(result, (current, updater) => updater(current!)),
         };
     }
@@ -173,6 +173,7 @@ internal static class MapHandlerSyntaxProvider
                         {
                             ParameterName = originalParam.ParameterName,
                             Type = castParam.Type.GetAsGlobal(),
+                            LocationInfo = LocationInfo.CreateFrom(castParam),
                             Attributes = originalParam.Attributes,
                         }
                 )
@@ -223,6 +224,7 @@ internal static class MapHandlerSyntaxProvider
                 {
                     ParameterName = p!.Name,
                     Type = p.Type.GetAsGlobal(),
+                    LocationInfo = LocationInfo.CreateFrom(p),
                     Attributes = p.GetAttributes()
                         .Select(a => new AttributeInfo
                         {
@@ -273,6 +275,7 @@ internal static class MapHandlerSyntaxProvider
                 {
                     ParameterName = p!.Name,
                     Type = p.Type.GetAsGlobal(),
+                    LocationInfo = LocationInfo.CreateFrom(p),
                     Attributes = p.GetAttributes()
                         .Select(a => new AttributeInfo
                         {
