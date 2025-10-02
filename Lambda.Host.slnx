@@ -1,0 +1,6 @@
+﻿<Solution>
+  <Project Path="examples\Lambda.Host.Example.HelloWorld\Lambda.Host.Example.HelloWorld.csproj"
+           Type="Classic C#"/>
+  <Project Path="src\Lambda.Host\Lambda.Host.csproj" Type="Classic C#"/>
+  <Project Path="test\Lambda.Host.Tests\Lambda.Host.Tests.csproj" Type="Classic C#"/>
+</Solution>
