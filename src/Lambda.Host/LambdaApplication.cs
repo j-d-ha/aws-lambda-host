@@ -24,15 +24,12 @@ public sealed class LambdaApplication : IHost, IAsyncDisposable
 
     public LambdaApplication MapHandler(Delegate handler)
     {
-        if (handler == null)
-            throw new ArgumentNullException(nameof(handler));
-
         var delegateHolder = Services.GetRequiredService<DelegateHolder>();
 
         if (delegateHolder.IsHandlerSet)
             throw new InvalidOperationException("Handler is already set");
 
-        delegateHolder.Handler = handler;
+        delegateHolder.Handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
         return this;
     }
