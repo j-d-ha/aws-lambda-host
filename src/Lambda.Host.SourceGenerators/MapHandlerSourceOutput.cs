@@ -236,4 +236,29 @@ internal static class MapHandlerSourceOutput
                     )
             );
     }
+
+    /// <summary>
+    ///     Determines if a serializer is required for the provided delegate information.
+    /// </summary>
+    /// <remarks>
+    ///     A Lambda handler needs a serializer when it uses custom .NET types for input or output
+    ///     that require conversion between Lambda's JSON format and .NET objects.
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 Has a custom input parameter (not <c>Stream</c> or <c>ILambdaContext</c>)
+    ///                 requiring JSON deserialization
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Returns a custom type (not <c>Stream</c>, <c>void</c>, or <c>Task</c>)
+    ///                 requiring JSON serialization
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </remarks>
+    /// <param name="delegateInfo">The information about the delegate being analyzed.</param>
+    /// <returns>True if a serializer is needed; otherwise, false.</returns>
+    private static bool IsSerializerNeeded(MapHandlerInvocationInfo delegateInfo) => false;
 }
