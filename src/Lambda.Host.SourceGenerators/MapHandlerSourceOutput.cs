@@ -283,15 +283,9 @@ internal static class MapHandlerSourceOutput
             return true;
 
         // true if the handler returns a type not Stream, void, or Task
-        if (
-            delegateInfo.ResponseType
+        return delegateInfo.ResponseType
             is not TypeConstants.Stream
                 and not TypeConstants.Void
-                and not TypeConstants.Task
-        )
-            return true;
-
-        // default is false
-        return false;
+                and not TypeConstants.Task;
     }
 }
