@@ -34,8 +34,6 @@ public class LambdaStartupService : global::Microsoft.Extensions.Hosting.IHosted
             .Create(
                 () => 
                 {
-                    using var __scope = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.CreateScope(this._serviceProvider);
-                    
                     var __response = lambdaHandler();
                     
                     return __response;

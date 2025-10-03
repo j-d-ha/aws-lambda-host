@@ -39,8 +39,6 @@ public class LambdaStartupService : global::Microsoft.Extensions.Hosting.IHosted
                     using var __cancellationTokenSource = _lambdaCancellationTokenSourceFactory.NewCancellationTokenSource(ctx);
                     var ct = __cancellationTokenSource.Token;
                     
-                    using var __scope = global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.CreateScope(this._serviceProvider);
-                    
                     var __response = lambdaHandler(ct, ctx);
                     
                     return __response;
