@@ -21,7 +21,7 @@ public class {{ service }} : global::Microsoft.Extensions.Hosting.IHostedService
         {{~ end ~}}
     }
     
-    public async global::System.Threading.Tasks.Task StartAsync(global::System.Threading.CancellationToken cancellationToken)
+    public global::System.Threading.Tasks.Task StartAsync(global::System.Threading.CancellationToken cancellationToken)
     {
         if (!this._delegateHolder.IsHandlerSet)
             throw new global::System.InvalidOperationException("Handler is not set");
@@ -29,7 +29,7 @@ public class {{ service }} : global::Microsoft.Extensions.Hosting.IHostedService
         if (this._delegateHolder.Handler is not {{ delegate_type }} {{~ if delegate_args.size > 0 ~}} <{{ delegate_args | array.join ", " }}> {{~ end }} lambdaHandler)
             throw new global::System.InvalidOperationException("Invalid handler type.");
             
-        await global::Amazon.Lambda.RuntimeSupport.LambdaBootstrapBuilder
+        global::Amazon.Lambda.RuntimeSupport.LambdaBootstrapBuilder
             .Create(
                 {{ if is_lambda_async ~}} async {{ end ~}}({{ for lambda_param in lambda_params }}{{ lambda_param.type }} {{ lambda_param.name }}{{ if !for.last }}, {{ end }}{{ end }}) => 
                 {
@@ -60,6 +60,8 @@ public class {{ service }} : global::Microsoft.Extensions.Hosting.IHostedService
             )
             .Build()
             .RunAsync(cancellationToken);
+        
+        return global::System.Threading.Tasks.Task.CompletedTask;
     }
 
     public global::System.Threading.Tasks.Task StopAsync(global::System.Threading.CancellationToken cancellationToken)

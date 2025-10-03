@@ -20,7 +20,7 @@ public class LambdaStartupService : global::Microsoft.Extensions.Hosting.IHosted
         this._serviceProvider = serviceProvider;
     }
     
-    public async global::System.Threading.Tasks.Task StartAsync(global::System.Threading.CancellationToken cancellationToken)
+    public global::System.Threading.Tasks.Task StartAsync(global::System.Threading.CancellationToken cancellationToken)
     {
         if (!this._delegateHolder.IsHandlerSet)
             throw new global::System.InvalidOperationException("Handler is not set");
@@ -28,7 +28,7 @@ public class LambdaStartupService : global::Microsoft.Extensions.Hosting.IHosted
         if (this._delegateHolder.Handler is not global::System.Func<global::System.IO.Stream> lambdaHandler)
             throw new global::System.InvalidOperationException("Invalid handler type.");
             
-        await global::Amazon.Lambda.RuntimeSupport.LambdaBootstrapBuilder
+        global::Amazon.Lambda.RuntimeSupport.LambdaBootstrapBuilder
             .Create(
                 () => 
                 {
@@ -39,6 +39,8 @@ public class LambdaStartupService : global::Microsoft.Extensions.Hosting.IHosted
             )
             .Build()
             .RunAsync(cancellationToken);
+        
+        return global::System.Threading.Tasks.Task.CompletedTask;
     }
 
     public global::System.Threading.Tasks.Task StopAsync(global::System.Threading.CancellationToken cancellationToken)
