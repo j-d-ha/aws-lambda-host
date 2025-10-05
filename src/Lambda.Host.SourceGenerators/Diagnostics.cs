@@ -32,4 +32,13 @@ internal static class Diagnostics
         DiagnosticSeverity.Error,
         true
     );
+
+    internal static readonly DiagnosticDescriptor MultipleParametersUseAttribute = new(
+        "LH0004",
+        "Multiple parameters use attribute",
+        "Handler method contains multiple parameters that use the '{0}' attribute. Only one parameter can use this attribute.",
+        UsageCategory,
+        DiagnosticSeverity.Error,
+        true
+    );
 }

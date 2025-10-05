@@ -240,6 +240,22 @@ internal static class MapHandlerSourceOutput
                         )
                     )
             );
+
+            // check for multiple parameters that use the `[Request]` attribute
+            diagnostics.AddRange(
+                invocationInfo
+                    .DelegateInfo.Parameters.Where(p =>
+                        p.Attributes.Any(a => a.Type == AttributeConstants.Request)
+                    )
+                    .Skip(1)
+                    .Select(p =>
+                        Diagnostic.Create(
+                            Diagnostics.MultipleParametersUseAttribute,
+                            p.LocationInfo?.ToLocation(),
+                            AttributeConstants.Request
+                        )
+                    )
+            );
         }
 
         return diagnostics;
