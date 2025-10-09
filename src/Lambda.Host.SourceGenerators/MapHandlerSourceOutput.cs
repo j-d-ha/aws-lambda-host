@@ -45,30 +45,25 @@ internal static class MapHandlerSourceOutput
         ServiceProviderInfo,
     ];
 
-    internal static void Generate(
-        SourceProductionContext context,
-        (ImmutableArray<MapHandlerInvocationInfo> delegateInfos, bool compilationHasErrors) combined
-    )
+    internal static void Generate(SourceProductionContext context, CompilationInfo compilationInfo)
     {
-        var (delegateInfos, compilationHasErrors) = combined;
-
         // if any upstream errors are encountered, we will silently exit early.
-        if (compilationHasErrors)
+        if (compilationInfo.CompilationHasErrors)
             return;
 
         // if no MapHandler calls were found, we will silently exit early.
-        if (delegateInfos.Length == 0)
+        if (compilationInfo.MapHandlerInvocationInfos.Length == 0)
             return;
 
         // validate the generator data and report any diagnostics before exiting.
-        var diagnostics = ValidateGeneratorData(delegateInfos);
+        var diagnostics = ValidateGeneratorData(compilationInfo.MapHandlerInvocationInfos);
         if (diagnostics.Any())
         {
             diagnostics.ForEach(context.ReportDiagnostic);
             return;
         }
 
-        var delegateInfo = delegateInfos.First().DelegateInfo;
+        var delegateInfo = compilationInfo.MapHandlerInvocationInfos.First().DelegateInfo;
 
         var isSerializerNeeded = IsSerializerNeeded(delegateInfo);
 
@@ -177,8 +172,7 @@ internal static class MapHandlerSourceOutput
 
         var model = new
         {
-            delegateInfo.Namespace,
-            Service = "LambdaStartupService",
+            Service = compilationInfo.StartupClassInfo.ClassName,
             InjectedDependencies = injectedDependencies,
             ClassFields = classFields,
             delegateInfo.DelegateType,
@@ -189,6 +183,8 @@ internal static class MapHandlerSourceOutput
             HasReturnValue = hasReturnValue,
             CancellationTokenDetails = cancellationTokenDetails,
             IsSerializerNeeded = isSerializerNeeded,
+            IsGlobalNamespace = compilationInfo.StartupClassInfo.Namespace == "<global namespace>",
+            ClassNamespace = compilationInfo.StartupClassInfo.Namespace,
         };
 
         var template = TemplateHelper.LoadTemplate(
