@@ -731,7 +731,31 @@ public class MapHandlerIncrementalGeneratorVerifyTests
             await lambda.RunAsync();
 
             [LambdaHost]
-            public class MyHost : LambdaHostedService;
+            public partial class MyHost : LambdaHostedService;
+            """
+        );
+
+    [Fact]
+    public async Task Test_PartialClassLambdaHostedService_DifferentNamespace() =>
+        await Verify(
+            """
+            using Lambda.Host;
+            using Microsoft.Extensions.Hosting;
+            using MyNamespace;
+
+            var builder = LambdaApplication.CreateBuilder<MyHost>();
+
+            var lambda = builder.Build();
+
+            lambda.MapHandler(() => "hello world");
+
+            await lambda.RunAsync();
+
+            namespace MyNamespace
+            {
+                [LambdaHost]
+                public partial class MyHost : LambdaHostedService;
+            }
             """
         );
 

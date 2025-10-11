@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading;
 using Lambda.Host.SourceGenerators.Models;
 using Microsoft.CodeAnalysis;
@@ -17,14 +16,6 @@ internal static class LambdaHostSyntaxProvider
 
         // Check if it has the partial modifier (required for source generators)
         if (!classDeclaration.Modifiers.Any(SyntaxKind.PartialKeyword))
-            return false;
-
-        // Check if it's public or internal
-        var hasPublicOrInternal = classDeclaration.Modifiers.Any(m =>
-            m.IsKind(SyntaxKind.PublicKeyword)
-        );
-
-        if (!hasPublicOrInternal)
             return false;
 
         return true;

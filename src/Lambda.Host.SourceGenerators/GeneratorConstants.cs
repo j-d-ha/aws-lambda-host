@@ -42,7 +42,7 @@ internal static class GeneratorConstants
 
     internal const string MapHandlerMethodName = "MapHandler";
 
-    internal const string GlobalNamespace = "<global namespace>;";
+    internal const string GlobalNamespace = "<global namespace>";
 
     internal const string LambdaStartupServiceTemplateFile =
         "Templates/LambdaStartupService.scriban";
