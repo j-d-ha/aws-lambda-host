@@ -1,4 +1,3 @@
-using System.Linq;
 using Lambda.Host.SourceGenerators.Models;
 using Microsoft.CodeAnalysis;
 
@@ -17,18 +16,6 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
             )
             .Where(static m => m is not null);
 
-        // Get the compilation and check for errors
-        var compilationHasErrors = context.CompilationProvider.Select(
-            (compilation, cancellationToken) =>
-                compilation
-                    .GetDiagnostics(cancellationToken)
-                    .Where(d => d.Severity == DiagnosticSeverity.Error)
-                    .Any(d =>
-                        d.Location.SourceTree != null
-                        && !d.Location.SourceTree.FilePath.Contains(".g.cs")
-                    )
-        );
-
         // Find all MapHandler method calls with lambda analysis
         var mapHandlerCalls = context
             .SyntaxProvider.CreateSyntaxProvider(
@@ -41,14 +28,12 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
         // combine the compilation and map handler calls
         var combined = mapHandlerCalls
             .Collect()
-            .Combine(compilationHasErrors)
             .Combine(startupClassInfo.Collect())
             .Select(
                 (t, _) =>
                     new CompilationInfo
                     {
-                        MapHandlerInvocationInfos = t.Left.Left,
-                        CompilationHasErrors = t.Left.Right,
+                        MapHandlerInvocationInfos = t.Left,
                         StartupClassInfos = t.Right,
                     }
             );

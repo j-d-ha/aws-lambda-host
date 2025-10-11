@@ -47,14 +47,6 @@ internal static class MapHandlerSourceOutput
 
     internal static void Generate(SourceProductionContext context, CompilationInfo compilationInfo)
     {
-        // if any upstream errors are encountered, we will silently exit early.
-        if (compilationInfo.CompilationHasErrors)
-            return;
-
-        // if no MapHandler calls were found, we will silently exit early.
-        if (compilationInfo.MapHandlerInvocationInfos.Length == 0)
-            return;
-
         // validate the generator data and report any diagnostics before exiting.
         var diagnostics = ValidateGeneratorData(compilationInfo);
         if (diagnostics.Any())
@@ -62,6 +54,10 @@ internal static class MapHandlerSourceOutput
             diagnostics.ForEach(context.ReportDiagnostic);
             return;
         }
+
+        // if no MapHandler calls were found, we will silently exit early.
+        if (compilationInfo.MapHandlerInvocationInfos.Length == 0)
+            return;
 
         var delegateInfo = compilationInfo.MapHandlerInvocationInfos.First().DelegateInfo;
         StartupClassInfo? startupClassInfo = compilationInfo.StartupClassInfos.FirstOrDefault();
