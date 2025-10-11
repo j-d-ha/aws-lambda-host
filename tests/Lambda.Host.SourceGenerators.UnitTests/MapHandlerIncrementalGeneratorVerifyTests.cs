@@ -759,6 +759,26 @@ public class MapHandlerIncrementalGeneratorVerifyTests
             """
         );
 
+    [Fact]
+    public async Task Test_PartialClassLambdaHostedService_InternalAccessibility() =>
+        await Verify(
+            """
+            using Lambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder<MyHost>();
+
+            var lambda = builder.Build();
+
+            lambda.MapHandler(() => "hello world");
+
+            await lambda.RunAsync();
+
+            [LambdaHost]
+            internal partial class MyHost : LambdaHostedService;
+            """
+        );
+
     private static Task Verify(string source)
     {
         var (driver, originalCompilation) = GeneratorTestHelpers.GenerateFromSource(source);

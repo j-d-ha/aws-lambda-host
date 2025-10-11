@@ -38,10 +38,6 @@ internal static class LambdaHostSyntaxProvider
         if (!classDeclaration.Modifiers.Any(SyntaxKind.PartialKeyword))
             return null;
 
-        // Check accessibility (public)
-        if (classSymbol.DeclaredAccessibility != Accessibility.Public)
-            return null;
-
         // Check if it inherits from the specified abstract base class (direct inheritance only)
         var directBase = classSymbol.BaseType;
 
@@ -59,6 +55,20 @@ internal static class LambdaHostSyntaxProvider
             Namespace = classSymbol.ContainingNamespace.ToDisplayString(),
             ClassName = classSymbol.Name,
             LocationInfo = LocationInfo.CreateFrom(classDeclaration),
+            Accessibility = classSymbol.DeclaredAccessibility.GetAccessibilityString(),
         };
     }
+
+    private static string GetAccessibilityString(this Accessibility accessibility) =>
+        accessibility switch
+        {
+            Accessibility.Public => "public",
+            Accessibility.Internal => "internal",
+            Accessibility.Private => "private",
+            Accessibility.Protected => "protected",
+            Accessibility.ProtectedOrInternal => "protected internal",
+            Accessibility.ProtectedAndInternal => "private protected",
+            Accessibility.NotApplicable => "",
+            _ => "",
+        };
 }

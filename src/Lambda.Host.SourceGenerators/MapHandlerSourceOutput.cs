@@ -170,6 +170,7 @@ internal static class MapHandlerSourceOutput
         var model = new
         {
             IsPartialClass = startupClassInfo is not null,
+            Accessibility = startupClassInfo?.Accessibility ?? "public",
             Service = startupClassInfo?.ClassName ?? GeneratorConstants.StartupClassName,
             InjectedDependencies = injectedDependencies,
             ClassFields = classFields,
