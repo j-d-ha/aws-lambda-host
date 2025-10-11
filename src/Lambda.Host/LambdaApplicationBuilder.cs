@@ -82,9 +82,10 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
                 );
         }
 
-        // register LambdaHostedService as IHostedService
+        // Register LambdaHostedService as IHostedService
         Services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<LambdaHostedService>());
 
+        // Register DelegateHolder to pass the handler delegate to the generated LambdaApplication
         Services.AddSingleton<DelegateHolder>();
 
         // Attempt to add a default cancellation token source factory if one is not already
