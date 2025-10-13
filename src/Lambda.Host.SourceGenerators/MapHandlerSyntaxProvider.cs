@@ -96,11 +96,10 @@ internal static class MapHandlerSyntaxProvider
         if (result is null)
             return null;
 
-        return new MapHandlerInvocationInfo
-        {
-            LocationInfo = LocationInfo.CreateFrom(context.Node),
-            DelegateInfo = updaters.Aggregate(result.Value, (current, updater) => updater(current)),
-        };
+        return new MapHandlerInvocationInfo(
+            LocationInfo: LocationInfo.CreateFrom(context.Node),
+            DelegateInfo: updaters.Aggregate(result.Value, (current, updater) => updater(current))
+        );
     }
 
     private static ExpressionSyntax? GetDelegateFromCast(CastExpressionSyntax castExpression)
@@ -182,13 +181,12 @@ internal static class MapHandlerSyntaxProvider
                 )
                 .ToEquatableArray();
 
-            return new DelegateInfo
-            {
-                ResponseType = invokeMethod.ReturnType.GetAsGlobal(),
-                Namespace = delegateInfo.Namespace,
-                IsAsync = invokeMethod.IsAsync,
-                Parameters = updatedParameters,
-            };
+            return new DelegateInfo(
+                ResponseType: invokeMethod.ReturnType.GetAsGlobal(),
+                Namespace: delegateInfo.Namespace,
+                IsAsync: invokeMethod.IsAsync,
+                Parameters: updatedParameters
+            );
         };
 
     private static string GetFileNamespace(SyntaxNode node, SemanticModel semanticModel)
@@ -221,29 +219,27 @@ internal static class MapHandlerSyntaxProvider
 
         var parameters = methodSymbol
             .Parameters.AsEnumerable()
-            .Select(p => new ParameterInfo
-            {
-                ParameterName = p!.Name,
-                Type = p.Type.GetAsGlobal(),
-                LocationInfo = LocationInfo.CreateFrom(p),
-                Attributes = p.GetAttributes()
+            .Select(p => new ParameterInfo(
+                p!.Name,
+                p.Type.GetAsGlobal(),
+                LocationInfo.CreateFrom(p),
+                p.GetAttributes()
                     .Select(a => new AttributeInfo(
                         a.ToString(),
                         a.ConstructorArguments.Where(aa => aa.Value is not null)
                             .Select(aa => aa.Value!.ToString())
                             .ToEquatableArray()
                     ))
-                    .ToEquatableArray(),
-            })
+                    .ToEquatableArray()
+            ))
             .ToEquatableArray();
 
-        return new DelegateInfo
-        {
-            ResponseType = methodSymbol.ReturnType.GetAsGlobal(),
-            Namespace = GetFileNamespace(context.Node, context.SemanticModel),
-            IsAsync = methodSymbol.IsAsync,
-            Parameters = parameters,
-        };
+        return new DelegateInfo(
+            ResponseType: methodSymbol.ReturnType.GetAsGlobal(),
+            Namespace: GetFileNamespace(context.Node, context.SemanticModel),
+            IsAsync: methodSymbol.IsAsync,
+            Parameters: parameters
+        );
     }
 
     private static DelegateInfo ExtractInfoFromLambda(
