@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Lambda.Host.SourceGenerators.Extensions;
 using Lambda.Host.SourceGenerators.Models;
+using Lambda.Host.SourceGenerators.Types;
 using Microsoft.CodeAnalysis;
 
 namespace Lambda.Host.SourceGenerators;
@@ -56,11 +57,14 @@ internal static class MapHandlerSourceOutput
         }
 
         // if no MapHandler calls were found, we will silently exit early.
-        if (compilationInfo.MapHandlerInvocationInfos.Length == 0)
+        if (compilationInfo.MapHandlerInvocationInfos.Count == 0)
             return;
 
         var delegateInfo = compilationInfo.MapHandlerInvocationInfos.First().DelegateInfo;
-        StartupClassInfo? startupClassInfo = compilationInfo.StartupClassInfos.FirstOrDefault();
+        StartupClassInfo? startupClassInfo =
+            compilationInfo.StartupClassInfos.Count > 0
+                ? compilationInfo.StartupClassInfos.First()
+                : null;
 
         // Report generation mode to the user
         context.ReportDiagnostic(
@@ -117,9 +121,7 @@ internal static class MapHandlerSourceOutput
             {
                 attributes = p.Attributes.Select(a => a.Type).ToList(),
                 keyed_service_key = p
-                    .Attributes.Where(a =>
-                        a?.Type?.StartsWith(AttributeConstants.FromKeyedService) ?? false
-                    )
+                    .Attributes.Where(a => a.Type.StartsWith(AttributeConstants.FromKeyedService))
                     .Select(a => a.Arguments.FirstOrDefault())
                     .FirstOrDefault(),
                 name = p.ParameterName.ToCamelCase(),
@@ -147,7 +149,10 @@ internal static class MapHandlerSourceOutput
                     : []
             )
             .Where(p =>
-                p.Attributes.Any(a => a.Type == AttributeConstants.RequestAttribute)
+                (
+                    p.Attributes.Count > 0
+                    && p.Attributes.Any(a => a.Type == AttributeConstants.RequestAttribute)
+                )
                 || p.Type == TypeConstants.ILambdaContext
             )
             .OrderBy(p => p.Type == TypeConstants.ILambdaContext ? 1 : 0)
@@ -214,24 +219,24 @@ internal static class MapHandlerSourceOutput
         var startupClassInfos = compilationInfo.StartupClassInfos;
 
         // check for multiple invocations of MapHandler
-        if (delegateInfos.Length > 1)
+        if (delegateInfos.Count > 1)
             diagnostics.AddRange(
                 delegateInfos.Select(invocationInfo =>
                     Diagnostic.Create(
                         Diagnostics.MultipleMethodCalls,
-                        invocationInfo?.LocationInfo?.ToLocation(),
+                        invocationInfo.LocationInfo?.ToLocation(),
                         "LambdaApplication.MapHandler(Delegate)"
                     )
                 )
             );
 
         // check for multiple classes decorated with LambdaStartup
-        if (startupClassInfos.Length > 1)
+        if (startupClassInfos.Count > 1)
             diagnostics.AddRange(
                 startupClassInfos.Select(startupClassInfo =>
                     Diagnostic.Create(
                         Diagnostics.MultipleClassesWithAttribute,
-                        startupClassInfo?.LocationInfo?.ToLocation(),
+                        startupClassInfo.LocationInfo?.ToLocation(),
                         "LambdaHostAttribute"
                     )
                 )
@@ -291,7 +296,7 @@ internal static class MapHandlerSourceOutput
         return diagnostics;
 
         void CheckForDuplicateTypeParameters(
-            ImmutableArray<ParameterInfo> parameterInfos,
+            EquatableArray<ParameterInfo> parameterInfos,
             string type
         )
         {
@@ -340,7 +345,7 @@ internal static class MapHandlerSourceOutput
             .Parameters.FirstOrDefault(p =>
                 p.Attributes.Any(a => a.Type == AttributeConstants.RequestAttribute)
             )
-            ?.Type;
+            .Type;
 
         if (inputType is not null and not TypeConstants.Stream)
             return true;

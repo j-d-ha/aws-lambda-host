@@ -1,15 +1,14 @@
-using System.Collections.Immutable;
+using Lambda.Host.SourceGenerators.Types;
 
 namespace Lambda.Host.SourceGenerators.Models;
 
-internal sealed class DelegateInfo
+internal readonly record struct DelegateInfo(
+    string? Namespace,
+    bool IsAsync,
+    string? ResponseType = TypeConstants.Void,
+    EquatableArray<ParameterInfo> Parameters = new()
+)
 {
-    internal required string? ResponseType { get; set; } = TypeConstants.Void;
-    internal required string? Namespace { get; set; }
-    internal required bool IsAsync { get; set; }
-
     internal string DelegateType =>
         ResponseType == TypeConstants.Void ? TypeConstants.Action : TypeConstants.Func;
-
-    internal ImmutableArray<ParameterInfo> Parameters { get; set; } = [];
 }

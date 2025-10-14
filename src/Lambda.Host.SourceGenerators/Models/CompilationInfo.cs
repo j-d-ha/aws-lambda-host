@@ -1,10 +1,8 @@
-using System.Collections.Immutable;
+using Lambda.Host.SourceGenerators.Types;
 
 namespace Lambda.Host.SourceGenerators.Models;
 
-internal readonly record struct CompilationInfo
-{
-    internal required ImmutableArray<MapHandlerInvocationInfo> MapHandlerInvocationInfos { get; init; }
-
-    internal required ImmutableArray<StartupClassInfo?> StartupClassInfos { get; init; }
-}
+internal readonly record struct CompilationInfo(
+    EquatableArray<MapHandlerInvocationInfo> MapHandlerInvocationInfos,
+    EquatableArray<StartupClassInfo> StartupClassInfos
+);

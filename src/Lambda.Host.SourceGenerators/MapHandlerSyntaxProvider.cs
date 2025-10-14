@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using Lambda.Host.SourceGenerators.Extensions;
 using Lambda.Host.SourceGenerators.Models;
+using Lambda.Host.SourceGenerators.Types;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -33,7 +33,7 @@ internal static class MapHandlerSyntaxProvider
         return invocation.Expression
             is MemberAccessExpressionSyntax
             {
-                Name.Identifier.ValueText: GeneratorConstants.MapHandlerMethodName
+                Name.Identifier.ValueText: GeneratorConstants.MapHandlerMethodName,
             };
     }
 
@@ -96,11 +96,10 @@ internal static class MapHandlerSyntaxProvider
         if (result is null)
             return null;
 
-        return new MapHandlerInvocationInfo
-        {
-            LocationInfo = LocationInfo.CreateFrom(context.Node),
-            DelegateInfo = updaters.Aggregate(result, (current, updater) => updater(current!)),
-        };
+        return new MapHandlerInvocationInfo(
+            LocationInfo: LocationInfo.CreateFrom(context.Node),
+            DelegateInfo: updaters.Aggregate(result.Value, (current, updater) => updater(current))
+        );
     }
 
     private static ExpressionSyntax? GetDelegateFromCast(CastExpressionSyntax castExpression)
@@ -164,33 +163,30 @@ internal static class MapHandlerSyntaxProvider
                     $"Cast type {namedType.ToDisplayString()} is not a valid delegate type (missing Invoke method)."
                 );
 
-            if (invokeMethod.Parameters.Length != delegateInfo.Parameters.Length)
+            if (invokeMethod.Parameters.Length != delegateInfo.Parameters.Count)
                 throw new InvalidOperationException(
                     $"Parameter count mismatch: cast delegate has {invokeMethod.Parameters.Length} parameters, "
-                        + $"but existing delegate has {delegateInfo.Parameters.Length} parameters."
+                        + $"but existing delegate has {delegateInfo.Parameters.Count} parameters."
                 );
 
             var updatedParameters = invokeMethod
                 .Parameters.Zip(
                     delegateInfo.Parameters,
                     (castParam, originalParam) =>
-                        new ParameterInfo
+                        originalParam with
                         {
-                            ParameterName = originalParam.ParameterName,
                             Type = castParam.Type.GetAsGlobal(),
                             LocationInfo = LocationInfo.CreateFrom(castParam),
-                            Attributes = originalParam.Attributes,
                         }
                 )
-                .ToImmutableArray();
+                .ToEquatableArray();
 
-            return new DelegateInfo
-            {
-                ResponseType = invokeMethod.ReturnType.GetAsGlobal(),
-                Namespace = delegateInfo.Namespace,
-                IsAsync = invokeMethod.IsAsync,
-                Parameters = updatedParameters,
-            };
+            return new DelegateInfo(
+                ResponseType: invokeMethod.ReturnType.GetAsGlobal(),
+                Namespace: delegateInfo.Namespace,
+                IsAsync: invokeMethod.IsAsync,
+                Parameters: updatedParameters
+            );
         };
 
     private static string GetFileNamespace(SyntaxNode node, SemanticModel semanticModel)
@@ -223,34 +219,27 @@ internal static class MapHandlerSyntaxProvider
 
         var parameters = methodSymbol
             .Parameters.AsEnumerable()
-            .Select(p =>
-            {
-                return new ParameterInfo
-                {
-                    ParameterName = p!.Name,
-                    Type = p.Type.GetAsGlobal(),
-                    LocationInfo = LocationInfo.CreateFrom(p),
-                    Attributes = p.GetAttributes()
-                        .Select(a => new AttributeInfo
-                        {
-                            Type = a.ToString(),
-                            Arguments = a
-                                .ConstructorArguments.Select(aa => aa.Value?.ToString())
-                                .Where(aa => aa is not null)
-                                .ToList()!,
-                        })
-                        .ToList(),
-                };
-            })
-            .ToImmutableArray();
+            .Select(p => new ParameterInfo(
+                p!.Name,
+                p.Type.GetAsGlobal(),
+                LocationInfo.CreateFrom(p),
+                p.GetAttributes()
+                    .Select(a => new AttributeInfo(
+                        a.ToString(),
+                        a.ConstructorArguments.Where(aa => aa.Value is not null)
+                            .Select(aa => aa.Value!.ToString())
+                            .ToEquatableArray()
+                    ))
+                    .ToEquatableArray()
+            ))
+            .ToEquatableArray();
 
-        return new DelegateInfo
-        {
-            ResponseType = methodSymbol.ReturnType.GetAsGlobal(),
-            Namespace = GetFileNamespace(context.Node, context.SemanticModel),
-            IsAsync = methodSymbol.IsAsync,
-            Parameters = parameters,
-        };
+        return new DelegateInfo(
+            ResponseType: methodSymbol.ReturnType.GetAsGlobal(),
+            Namespace: GetFileNamespace(context.Node, context.SemanticModel),
+            IsAsync: methodSymbol.IsAsync,
+            Parameters: parameters
+        );
     }
 
     private static DelegateInfo ExtractInfoFromLambda(
@@ -274,26 +263,20 @@ internal static class MapHandlerSyntaxProvider
         var parameters = parameterSyntaxes
             .Select(p => sematicModel.GetDeclaredSymbol(p))
             .Where(p => p is not null)
-            .Select(p =>
-            {
-                return new ParameterInfo
-                {
-                    ParameterName = p!.Name,
-                    Type = p.Type.GetAsGlobal(),
-                    LocationInfo = LocationInfo.CreateFrom(p),
-                    Attributes = p.GetAttributes()
-                        .Select(a => new AttributeInfo
-                        {
-                            Type = a.ToString(),
-                            Arguments = a
-                                .ConstructorArguments.Select(aa => aa.Value?.ToString())
-                                .Where(aa => aa is not null)
-                                .ToList()!,
-                        })
-                        .ToList(),
-                };
-            })
-            .ToImmutableArray();
+            .Select(p => new ParameterInfo(
+                p!.Name,
+                p.Type.GetAsGlobal(),
+                LocationInfo.CreateFrom(p),
+                p.GetAttributes()
+                    .Select(a => new AttributeInfo(
+                        a.ToString(),
+                        a.ConstructorArguments.Where(aa => aa.Value is not null)
+                            .Select(aa => aa.Value!.ToString())
+                            .ToEquatableArray()
+                    ))
+                    .ToEquatableArray()
+            ))
+            .ToEquatableArray();
 
         var isAsync = lambdaExpression.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword);
 
@@ -342,13 +325,12 @@ internal static class MapHandlerSyntaxProvider
             var (type, _) => type,
         };
 
-        return new DelegateInfo
-        {
-            ResponseType = returnTypeName,
-            Namespace = GetFileNamespace(context.Node, context.SemanticModel),
-            IsAsync = isAsync,
-            Parameters = parameters,
-        };
+        return new DelegateInfo(
+            GetFileNamespace(context.Node, context.SemanticModel),
+            isAsync,
+            returnTypeName,
+            parameters
+        );
     }
 
     private delegate DelegateInfo Updater(DelegateInfo delegateInfo);

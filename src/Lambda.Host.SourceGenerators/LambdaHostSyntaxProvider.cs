@@ -50,13 +50,12 @@ internal static class LambdaHostSyntaxProvider
             return null;
 
         // Extract relevant information
-        return new StartupClassInfo
-        {
-            Namespace = classSymbol.ContainingNamespace.ToDisplayString(),
-            ClassName = classSymbol.Name,
-            LocationInfo = LocationInfo.CreateFrom(classDeclaration),
-            Accessibility = classSymbol.DeclaredAccessibility.GetAccessibilityString(),
-        };
+        return new StartupClassInfo(
+            classSymbol.ContainingNamespace.ToDisplayString(),
+            classSymbol.Name,
+            LocationInfo.CreateFrom(classDeclaration),
+            classSymbol.DeclaredAccessibility.GetAccessibilityString()
+        );
     }
 
     private static string GetAccessibilityString(this Accessibility accessibility) =>
