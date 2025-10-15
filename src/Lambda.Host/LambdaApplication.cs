@@ -40,13 +40,7 @@ public sealed class LambdaApplication : IHost, IAsyncDisposable
 
     public static LambdaApplicationBuilder CreateBuilder() => new();
 
-    public static LambdaApplicationBuilder CreateBuilder<T>()
-        where T : LambdaHostedService
-    {
-        var builder = new LambdaApplicationBuilder();
+    public static LambdaApplicationBuilder CreateBuilder(string[]? args) => new(args);
 
-        builder.Services.AddSingleton<LambdaHostedService, T>();
-
-        return builder;
-    }
+    public static LambdaApplicationBuilder CreateEmptyBuilder() => new();
 }
