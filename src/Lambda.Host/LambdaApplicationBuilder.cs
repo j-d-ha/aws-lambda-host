@@ -22,14 +22,13 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
     internal LambdaApplicationBuilder(string[]? args) =>
         _hostBuilder = new HostApplicationBuilder(args);
 
-    internal LambdaApplicationBuilder(HostApplicationBuilderSettings settings) =>
-        _hostBuilder = new HostApplicationBuilder(settings);
-
-    public void ConfigureContainer<TContainerBuilder>(
-        IServiceProviderFactory<TContainerBuilder> factory,
-        Action<TContainerBuilder>? configure = null
-    )
-        where TContainerBuilder : notnull => _hostBuilder.ConfigureContainer(factory, configure);
+    internal LambdaApplicationBuilder(
+        HostApplicationBuilderSettings settings,
+        bool empty = false
+    ) =>
+        _hostBuilder = empty
+            ? Microsoft.Extensions.Hosting.Host.CreateEmptyApplicationBuilder(settings)
+            : new HostApplicationBuilder(settings);
 
     public IDictionary<object, object> Properties =>
         ((IHostApplicationBuilder)_hostBuilder).Properties;
@@ -39,6 +38,12 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
     public ILoggingBuilder Logging => _hostBuilder.Logging;
     public IMetricsBuilder Metrics => _hostBuilder.Metrics;
     public IServiceCollection Services => _hostBuilder.Services;
+
+    public void ConfigureContainer<TContainerBuilder>(
+        IServiceProviderFactory<TContainerBuilder> factory,
+        Action<TContainerBuilder>? configure = null
+    )
+        where TContainerBuilder : notnull => _hostBuilder.ConfigureContainer(factory, configure);
 
     public LambdaApplication Build()
     {
@@ -101,11 +106,4 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
 
         return new LambdaApplication(host);
     }
-
-    public static LambdaApplicationBuilder CreateBuilder() => new();
-
-    public static LambdaApplicationBuilder CreateBuilder(string[] args) => new(args);
-
-    public static LambdaApplicationBuilder CreateBuilder(HostApplicationBuilderSettings settings) =>
-        new(settings);
 }
