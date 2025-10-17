@@ -7,10 +7,14 @@ namespace Lambda.Host;
 
 public sealed class LambdaApplication : IHost, IAsyncDisposable
 {
+    private readonly DelegateHolder _delegateHolder;
     private readonly IHost _host;
 
-    internal LambdaApplication(IHost host) =>
+    internal LambdaApplication(IHost host)
+    {
         _host = host ?? throw new ArgumentNullException(nameof(host));
+        _delegateHolder = Services.GetRequiredService<DelegateHolder>();
+    }
 
     public ValueTask DisposeAsync() => ((IAsyncDisposable)_host).DisposeAsync();
 
@@ -26,12 +30,10 @@ public sealed class LambdaApplication : IHost, IAsyncDisposable
 
     public LambdaApplication MapHandler(Delegate handler)
     {
-        var delegateHolder = Services.GetRequiredService<DelegateHolder>();
-
-        if (delegateHolder.IsHandlerSet)
+        if (_delegateHolder.IsHandlerSet)
             throw new InvalidOperationException("Handler is already set");
 
-        delegateHolder.Handler = handler ?? throw new ArgumentNullException(nameof(handler));
+        _delegateHolder.Handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
         return this;
     }
