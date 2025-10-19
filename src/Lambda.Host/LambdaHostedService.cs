@@ -1,4 +1,7 @@
+using Amazon.Lambda.Core;
 using Lambda.Host.Interfaces;
+using Lambda.Host.Middleware;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
@@ -10,12 +13,14 @@ public abstract class LambdaHostedService : IHostedService
     protected readonly ILambdaCancellationTokenSourceFactory LambdaCancellationTokenSourceFactory;
     protected readonly LambdaHostSettings LambdaHostSettings;
     protected readonly IServiceProvider ServiceProvider;
+    protected readonly IServiceScopeFactory ServiceScopeFactory;
 
     protected LambdaHostedService(
         IOptions<LambdaHostSettings> lambdaHostSettings,
         DelegateHolder delegateHolder,
         IServiceProvider serviceProvider,
-        ILambdaCancellationTokenSourceFactory lambdaCancellationTokenSourceFactory
+        ILambdaCancellationTokenSourceFactory lambdaCancellationTokenSourceFactory,
+        IServiceScopeFactory serviceScopeFactory
     )
     {
         LambdaHostSettings =
@@ -26,6 +31,8 @@ public abstract class LambdaHostedService : IHostedService
         LambdaCancellationTokenSourceFactory =
             lambdaCancellationTokenSourceFactory
             ?? throw new ArgumentNullException(nameof(lambdaCancellationTokenSourceFactory));
+        ServiceScopeFactory =
+            serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
     }
 
     public virtual Task StartAsync(CancellationToken cancellationToken) =>
@@ -34,4 +41,23 @@ public abstract class LambdaHostedService : IHostedService
         );
 
     public virtual Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    protected ILambdaHostContext CreateLambdaHostContext(
+        ILambdaContext lambdaContext,
+        IServiceScopeFactory serviceScopeFactory,
+        CancellationToken cancellationToken
+    ) => new LambdaHostContext(lambdaContext, serviceScopeFactory, cancellationToken);
+
+    protected LambdaInvocationDelegate BuildMiddlewarePipeline(LambdaInvocationDelegate handler)
+    {
+        var pipeline = handler;
+
+        for (var i = DelegateHolder.Middlewares.Count - 1; i >= 0; i--)
+        {
+            var middleware = DelegateHolder.Middlewares[i];
+            pipeline = middleware(pipeline);
+        }
+
+        return pipeline;
+    }
 }
