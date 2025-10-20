@@ -13,11 +13,13 @@
 
 namespace System.Runtime.CompilerServices
 {
-    using System;
-
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    file sealed class InterceptsLocationAttribute(string filePath, int line, int column)
-        : Attribute;
+    file sealed class InterceptsLocationAttribute : Attribute
+    {
+        public InterceptsLocationAttribute(int version, string data)
+        {
+        }
+    }
 }
 
 namespace Lambda.Host
@@ -29,37 +31,26 @@ namespace Lambda.Host
 
     file static class LambdaHostMapHandlerExtensions
     {
-        [InterceptsLocation("Service.cs", 10, 13)]
+        // Location: {{ location.display_location }}
+        [InterceptsLocation({{ location.version }}, "{{ location.data }}")]
         internal static ILambdaApplication MapHandlerInterceptor(
             this ILambdaApplication application,
             Delegate handler
         )
         {
-            var castHandler =
-                (Func<
-                    global::Request,
-                    global::IService,
-                    global::System.Threading.CancellationToken,
-                    global::System.Threading.Tasks.Task<global::Response>
-                >)
-                    handler;
+            var castHandler = ({{ delegate_type }} {{~ if delegate_args.size > 0 ~}} <{{ delegate_args | array.join ", " }}> {{~ end }})handler;
 
             async Task InvocationDelegate(ILambdaHostContext context)
             {
-                var arg0 = context.LambdaSerializer.Deserialize<global::Request>(
-                    context.RequestStream
-                );
-                var arg1 = context.ServiceProvider.GetRequiredService<global::IService>();
-                var arg2 = context.CancellationToken;
-
-                var response = await castHandler.Invoke(arg0, arg1, arg2);
-
-                context.ResponseStream.SetLength(0L);
-                context.LambdaSerializer.Serialize<global::Response>(
-                    response,
-                    context.ResponseStream
-                );
-                context.ResponseStream.Position = 0L;
+                {{~ for arg in handler_args ~}}
+                var {{ arg.var_name }} = {{ arg.assignment_statement }};
+                {{~ end ~}}
+                {{ if has_response ~}} var response = {{ end }}{{ if should_await ~}} await {{ end ~}} castHandler.Invoke({{ for arg in handler_args }}{{ arg.var_name }}{{ if !for.last }}, {{ end }}{{ end }});
+                {{~ if has_response ~}}
+                // context.ResponseStream.SetLength(0L);
+                // context.LambdaSerializer.Serialize<global::Response>(response, context.ResponseStream);
+                // context.ResponseStream.Position = 0L;
+                {{~ end ~}}
             }
 
             return application.MapHandler(InvocationDelegate);

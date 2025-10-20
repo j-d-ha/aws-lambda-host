@@ -23,7 +23,9 @@ internal static class MapHandlerSourceOutput
         if (compilationInfo.MapHandlerInvocationInfos.Count == 0)
             return;
 
-        var delegateInfo = compilationInfo.MapHandlerInvocationInfos.First().DelegateInfo;
+        var mapHandlerInvocationInfo = compilationInfo.MapHandlerInvocationInfos.First();
+        var delegateInfo = mapHandlerInvocationInfo.DelegateInfo;
+
         StartupClassInfo? startupClassInfo =
             compilationInfo.StartupClassInfos.Count > 0
                 ? compilationInfo.StartupClassInfos.First()
@@ -152,13 +154,75 @@ internal static class MapHandlerSourceOutput
             ClassNamespace = startupClassInfo?.Namespace ?? delegateInfo.Namespace,
         };
 
-        var template = TemplateHelper.LoadTemplate(
-            GeneratorConstants.LambdaStartupServiceTemplateFile
-        );
+        // var template = TemplateHelper.LoadTemplate(
+        //     GeneratorConstants.LambdaStartupServiceTemplateFile
+        // );
+        //
+        // var outCode = template.Render(model);
+        //
+        // context.AddSource("LambdaStartup.g.cs", outCode);
 
-        var outCode = template.Render(model);
+        var handlerArgs2 = delegateInfo
+            .Parameters.Select(
+                (param, index) =>
+                {
+                    return new
+                    {
+                        VarName = $"arg{index}",
+                        AssignmentStatement = param switch
+                        {
+                            // Request + type is stream -> pass as stream
+                            { Type: TypeConstants.Stream, Attributes: var attrs }
+                                when attrs.Any(a => a.Type == AttributeConstants.EventAttribute) =>
+                                "context.RequestStream",
 
-        context.AddSource("LambdaStartup.g.cs", outCode);
+                            // Request -> deserialize to type
+                            { Attributes: var attrs }
+                                when attrs.Any(a => a.Type == AttributeConstants.EventAttribute) =>
+                                $"context.LambdaSerializer.Deserialize<{param.Type}>(context.RequestStream)",
+
+                            // ILambdaContext OR ILambdaHostContext -> use context directly
+                            {
+                                Type: TypeConstants.ILambdaContext
+                                    or TypeConstants.ILambdaHostContext
+                            } => "context.RequestStream",
+
+                            // inject keyed service from the DI container
+                            { Attributes: var attrs }
+                                when attrs.FirstOrDefault(a =>
+                                    a.Type == AttributeConstants.FromKeyedService
+                                )
+                                    is { Arguments: { Count: > 0 } args } =>
+                                $"context.ServiceProvider.GetRequiredKeyedService<{param.Type}>(\"{args.First()}\")",
+
+                            // default: inject service from the DI container
+                            _ => $"context.ServiceProvider.GetRequiredService<{param.Type}>()",
+                        },
+                    };
+                }
+            )
+            .ToArray();
+
+        var shouldAwait = delegateInfo.ResponseType.StartsWith(TypeConstants.Task);
+
+        var hasResponse =
+            delegateInfo.ResponseType is not TypeConstants.Task and not TypeConstants.Void;
+
+        var model2 = new
+        {
+            Location = mapHandlerInvocationInfo.InterceptableLocationInfo,
+            delegateInfo.DelegateType,
+            DelegateArgs = delegateArguments,
+            HandlerArgs = handlerArgs2,
+            ShouldAwait = shouldAwait,
+            HasResponse = hasResponse,
+        };
+
+        var template = TemplateHelper.LoadTemplate(GeneratorConstants.LambdaHandlerTemplateFile);
+
+        var outCode = template.Render(model2);
+
+        context.AddSource("LambdaHandler.g.cs", outCode);
     }
 
     private static List<Diagnostic> ValidateGeneratorData(CompilationInfo compilationInfo)

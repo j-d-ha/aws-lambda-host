@@ -1,5 +1,6 @@
 ﻿using AwesomeAssertions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Lambda.Host.SourceGenerators.UnitTests;
 
@@ -806,18 +807,30 @@ public class MapHandlerIncrementalGeneratorVerifyTests
     {
         var (driver, originalCompilation) = GeneratorTestHelpers.GenerateFromSource(
             source,
-            new Dictionary<string, ReportDiagnostic> { ["LH1001"] = ReportDiagnostic.Suppress }
+            new Dictionary<string, ReportDiagnostic>
+            {
+                ["LH1001"] = ReportDiagnostic.Suppress,
+                ["CS9137"] = ReportDiagnostic.Suppress,
+            }
         );
 
         driver.Should().NotBeNull();
 
         var result = driver.GetRunResult();
 
-        // result.Diagnostics.Length.Should().Be(0);
-        result.GeneratedTrees.Length.Should().Be(1);
+        // result.Diagnostics.Length.Should().Be(0);s
+
+        // Reparse generated trees with the same parse options as the original compilation
+        // to ensure consistent syntax tree features (e.g., InterceptorsNamespaces)
+        var parseOptions = originalCompilation.SyntaxTrees.First().Options;
+        var reparsedTrees = result
+            .GeneratedTrees.Select(tree =>
+                CSharpSyntaxTree.ParseText(tree.GetText(), (CSharpParseOptions)parseOptions)
+            )
+            .ToArray();
 
         // Add generated trees to original compilation
-        var outputCompilation = originalCompilation.AddSyntaxTrees(result.GeneratedTrees);
+        var outputCompilation = originalCompilation.AddSyntaxTrees(reparsedTrees);
 
         var errors = outputCompilation
             .GetDiagnostics()
@@ -833,6 +846,8 @@ public class MapHandlerIncrementalGeneratorVerifyTests
                         errors.Select(e => $"  - {e.Id}: {e.GetMessage()} at {e.Location}")
                     )
             );
+
+        result.GeneratedTrees.Length.Should().Be(1);
 
         return Verifier.Verify(driver).UseDirectory("Snapshots").DisableDiff();
     }

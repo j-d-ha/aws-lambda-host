@@ -17,7 +17,11 @@ internal static class GeneratorTestHelpers
         Dictionary<string, ReportDiagnostic>? diagnosticsToSuppress = null
     )
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        var parseOptions = CSharpParseOptions.Default.WithFeatures(
+            [new KeyValuePair<string, string>("InterceptorsNamespaces", "Lambda.Host")]
+        );
+
+        var syntaxTree = CSharpSyntaxTree.ParseText(source, parseOptions, path: "InputFile.cs");
 
         List<MetadataReference> references =
         [

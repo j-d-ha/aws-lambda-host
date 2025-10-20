@@ -63,8 +63,10 @@ internal static class MapHandlerSyntaxProvider
             return null;
 
         // Check if it's from LambdaApplication
-        if (methodSymbol.ContainingType?.Name != GeneratorConstants.StartupClassName)
-            return null;
+        // if (methodSymbol.ContainingType?.Name != GeneratorConstants.StartupClassName)
+        //     return null;
+
+        // TODO: make sure it's the right overload
 
         // setup list of mutator functions
         List<Updater> updaters = [];
@@ -96,9 +98,17 @@ internal static class MapHandlerSyntaxProvider
         if (result is null)
             return null;
 
+        // get interceptable location
+        var interceptableLocation = context.SemanticModel.GetInterceptableLocation(invocationExpr)!;
+
         return new MapHandlerInvocationInfo(
             LocationInfo: LocationInfo.CreateFrom(context.Node),
-            DelegateInfo: updaters.Aggregate(result.Value, (current, updater) => updater(current))
+            DelegateInfo: updaters.Aggregate(result.Value, (current, updater) => updater(current)),
+            InterceptableLocationInfo: new InterceptableLocationInfo(
+                interceptableLocation.Version,
+                interceptableLocation.Data,
+                interceptableLocation.GetDisplayLocation()
+            )
         );
     }
 

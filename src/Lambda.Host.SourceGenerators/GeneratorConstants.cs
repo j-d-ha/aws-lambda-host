@@ -8,6 +8,8 @@ internal static class TypeConstants
     internal const string ILambdaContext = "global::Amazon.Lambda.Core.ILambdaContext";
     internal const string ILambdaContextName = "lambdaContext";
 
+    internal const string ILambdaHostContext = "global::Lambda.Host.ILambdaHostContext";
+
     internal const string CancellationToken = "global::System.Threading.CancellationToken";
 
     internal const string Task = "global::System.Threading.Tasks.Task";
@@ -46,4 +48,6 @@ internal static class GeneratorConstants
 
     internal const string LambdaStartupServiceTemplateFile =
         "Templates/LambdaStartupService.scriban";
+
+    internal const string LambdaHandlerTemplateFile = "Templates/LambdaHandler.scriban";
 }
