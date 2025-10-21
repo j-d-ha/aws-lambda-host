@@ -25,6 +25,7 @@ namespace System.Runtime.CompilerServices
 namespace Lambda.Host
 {
     using System;
+    using System.IO;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
@@ -40,16 +41,28 @@ namespace Lambda.Host
         {
             var castHandler = ({{ delegate_type }} {{~ if delegate_args.size > 0 ~}} <{{ delegate_args | array.join ", " }}> {{~ end }})handler;
 
-            async Task InvocationDelegate(ILambdaHostContext context)
+            {{ if should_await ~}} async {{ end ~}} Task InvocationDelegate(ILambdaHostContext context)
             {
                 {{~ for arg in handler_args ~}}
                 var {{ arg.var_name }} = {{ arg.assignment_statement }};
                 {{~ end ~}}
                 {{ if has_response ~}} var response = {{ end }}{{ if should_await ~}} await {{ end ~}} castHandler.Invoke({{ for arg in handler_args }}{{ arg.var_name }}{{ if !for.last }}, {{ end }}{{ end }});
                 {{~ if has_response ~}}
-                // context.ResponseStream.SetLength(0L);
-                // context.LambdaSerializer.Serialize<global::Response>(response, context.ResponseStream);
-                // context.ResponseStream.Position = 0L;
+                {{~ if response_is_stream ~}}
+                // No need to serialize the response, as it is a stream.
+                context.ResponseStream = response;
+                {{~ else ~}}
+                // Creating a new stream and serializing the response to it.
+                context.ResponseStream = new MemoryStream();
+                context.ResponseStream.SetLength(0L);
+                context.LambdaSerializer.Serialize<{{ response_type }}>(response, context.ResponseStream);
+                context.ResponseStream.Position = 0L;
+                {{~ end ~}}
+                {{~ else ~}}
+                // No response, so not setting a response stream.
+                {{~ end ~}}
+                {{~ if !should_await ~}}
+                return Task.CompletedTask;  
                 {{~ end ~}}
             }
 

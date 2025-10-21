@@ -165,8 +165,7 @@ internal static class MapHandlerSourceOutput
         var handlerArgs2 = delegateInfo
             .Parameters.Select(
                 (param, index) =>
-                {
-                    return new
+                    new
                     {
                         VarName = $"arg{index}",
                         AssignmentStatement = param switch
@@ -185,7 +184,11 @@ internal static class MapHandlerSourceOutput
                             {
                                 Type: TypeConstants.ILambdaContext
                                     or TypeConstants.ILambdaHostContext
-                            } => "context.RequestStream",
+                            } => "context",
+
+                            // CancellationToken -> get from context
+                            { Type: TypeConstants.CancellationToken } =>
+                                "context.CancellationToken",
 
                             // inject keyed service from the DI container
                             { Attributes: var attrs }
@@ -198,8 +201,7 @@ internal static class MapHandlerSourceOutput
                             // default: inject service from the DI container
                             _ => $"context.ServiceProvider.GetRequiredService<{param.Type}>()",
                         },
-                    };
-                }
+                    }
             )
             .ToArray();
 
@@ -207,6 +209,8 @@ internal static class MapHandlerSourceOutput
 
         var hasResponse =
             delegateInfo.ResponseType is not TypeConstants.Task and not TypeConstants.Void;
+
+        var responseIsStream = delegateInfo.ResponseType == TypeConstants.Stream;
 
         var model2 = new
         {
@@ -216,6 +220,8 @@ internal static class MapHandlerSourceOutput
             HandlerArgs = handlerArgs2,
             ShouldAwait = shouldAwait,
             HasResponse = hasResponse,
+            ResponseIsStream = responseIsStream,
+            ResponseType = delegateInfo.ResponseType,
         };
 
         var template = TemplateHelper.LoadTemplate(GeneratorConstants.LambdaHandlerTemplateFile);

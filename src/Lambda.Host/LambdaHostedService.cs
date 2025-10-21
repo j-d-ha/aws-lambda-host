@@ -1,3 +1,4 @@
+using Amazon.Lambda.Core;
 using Amazon.Lambda.RuntimeSupport;
 using Lambda.Host.Interfaces;
 using Lambda.Host.Middleware;
@@ -36,33 +37,41 @@ public class LambdaHostedService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        LambdaBootstrapBuilder
-            .Create(
-                async (request, lambdaContext) =>
-                {
-                    var response = new MemoryStream();
+        var handler = HandlerWrapper.GetHandlerWrapper(
+            async Task<Stream> (Stream inputStream, ILambdaContext lambdaContext) =>
+            {
+                using var cancellationTokenSource =
+                    _cancellationTokenSourceFactory.NewCancellationTokenSource(lambdaContext);
 
-                    using var cancellationTokenSource =
-                        _cancellationTokenSourceFactory.NewCancellationTokenSource(lambdaContext);
+                await using var lambdaHostContext = new LambdaHostContext(
+                    lambdaContext,
+                    _scopeFactory,
+                    cancellationTokenSource.Token,
+                    inputStream,
+                    _settings.LambdaSerializer
+                );
 
-                    await using var lambdaHostContext = new LambdaHostContext(
-                        lambdaContext,
-                        _scopeFactory,
-                        cancellationTokenSource.Token,
-                        request,
-                        response,
-                        _settings.LambdaSerializer
-                    );
+                var handler = BuildMiddlewarePipeline(_delegateHolder.Handler!);
 
-                    var handler = BuildMiddlewarePipeline(_delegateHolder.Handler!);
+                await handler(lambdaHostContext);
 
-                    await handler(lambdaHostContext);
+                if (lambdaHostContext.ResponseStream == null)
+                    return new MemoryStream(0);
 
-                    return response;
-                }
-            )
-            .Build()
-            .RunAsync(cancellationToken);
+                return lambdaHostContext.ResponseStream;
+            }
+        );
+
+        var bootstrap = _settings.BootstrapHttpClient is null
+            ? new LambdaBootstrap(handler, _settings.BootstrapOptions, null)
+            : new LambdaBootstrap(
+                _settings.BootstrapHttpClient,
+                handler,
+                _settings.BootstrapOptions,
+                null
+            );
+
+        bootstrap.RunAsync(cancellationToken);
 
         return Task.CompletedTask;
     }

@@ -8,9 +8,9 @@ namespace Lambda.Host;
 /// </summary>
 public interface ILambdaHostContext : ILambdaContext
 {
-    Stream RequestStream { get; }
+    Stream RequestStream { get; set; }
 
-    Stream ResponseStream { get; }
+    Stream? ResponseStream { get; set; }
 
     /// <summary>
     ///     Gets or sets the <see cref="IServiceProvider" /> that provides access to the invocation's

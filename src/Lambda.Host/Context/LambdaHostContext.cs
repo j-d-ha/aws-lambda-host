@@ -16,7 +16,6 @@ internal class LambdaHostContext : ILambdaHostContext, IAsyncDisposable
         IServiceScopeFactory serviceScopeFactory,
         CancellationToken cancellationToken,
         Stream requestStream,
-        Stream responseStream,
         ILambdaSerializer lambdaSerializer
     )
     {
@@ -25,7 +24,6 @@ internal class LambdaHostContext : ILambdaHostContext, IAsyncDisposable
             serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
         CancellationToken = cancellationToken;
         RequestStream = requestStream;
-        ResponseStream = responseStream;
         LambdaSerializer = lambdaSerializer;
     }
 
@@ -53,8 +51,8 @@ internal class LambdaHostContext : ILambdaHostContext, IAsyncDisposable
     public int MemoryLimitInMB => _lambdaContext.MemoryLimitInMB;
     public TimeSpan RemainingTime => _lambdaContext.RemainingTime;
 
-    public Stream RequestStream { get; }
-    public Stream ResponseStream { get; }
+    public Stream RequestStream { get; set; }
+    public Stream? ResponseStream { get; set; }
 
     public IServiceProvider ServiceProvider
     {
