@@ -36,6 +36,11 @@ internal class LambdaHostedService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
+        // If a custom serializer is set, add it to the beginning of the pipeline.
+        if (_delegateHolder.SerializerMiddleware is not null)
+            _delegateHolder.Middlewares.Insert(0, _delegateHolder.SerializerMiddleware);
+
+        // Build the middleware pipeline and wrap the handler.
         var handler = BuildMiddlewarePipeline(
             _delegateHolder.Middlewares,
             _delegateHolder.Handler!
@@ -80,16 +85,8 @@ internal class LambdaHostedService : IHostedService
     private static LambdaInvocationDelegate BuildMiddlewarePipeline(
         List<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>> middlewares,
         LambdaInvocationDelegate handler
-    )
-    {
-        var pipeline = handler;
-
-        for (var i = middlewares.Count - 1; i >= 0; i--)
-        {
-            var middleware = middlewares[i];
-            pipeline = middleware(pipeline);
-        }
-
-        return pipeline;
-    }
+    ) =>
+        middlewares
+            .Reverse<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>>()
+            .Aggregate(handler, (next, middleware) => middleware(next));
 }
