@@ -42,10 +42,12 @@ lambda.MapHandler(
         [Event] Request request,
         IService service,
         ILogger<Program> logger,
+        ILambdaHostContext context,
         CancellationToken cancellationToken
     ) =>
     {
         logger.LogInformation("Handler called");
+
         var message = await service.SayHello(request.Name, cancellationToken);
         return new Response(message, DateTime.Now);
     }

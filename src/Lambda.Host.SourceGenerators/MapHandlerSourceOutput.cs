@@ -54,12 +54,12 @@ internal static class MapHandlerSourceOutput
                             // Request + type is stream -> pass as stream
                             { Type: TypeConstants.Stream, Attributes: var attrs }
                                 when attrs.Any(a => a.Type == AttributeConstants.EventAttribute) =>
-                                "context.RequestStream",
+                                "context.InputStream",
 
                             // Request -> deserialize to type
                             { Attributes: var attrs }
                                 when attrs.Any(a => a.Type == AttributeConstants.EventAttribute) =>
-                                $"context.LambdaSerializer.Deserialize<{param.Type}>(context.RequestStream)",
+                                $"context.LambdaSerializer.Deserialize<{param.Type}>(context.InputStream)",
 
                             // ILambdaContext OR ILambdaHostContext -> use context directly
                             {

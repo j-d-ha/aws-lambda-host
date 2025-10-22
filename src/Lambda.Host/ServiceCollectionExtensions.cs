@@ -8,9 +8,4 @@ public static class ServiceCollectionExtensions
         this IServiceCollection serviceCollection,
         Action<LambdaHostSettings> configure
     ) => serviceCollection.PostConfigure(configure);
-
-    public static IServiceCollection AddLambdaHostedService<T>(
-        this IServiceCollection serviceCollection
-    )
-        where T : LambdaHostedService => serviceCollection.AddSingleton<LambdaHostedService, T>();
 }

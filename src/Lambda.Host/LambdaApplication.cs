@@ -30,12 +30,20 @@ public sealed class LambdaApplication : IHost, ILambdaApplication, IAsyncDisposa
 
     public IServiceProvider Services => _host.Services;
 
-    public ILambdaApplication MapHandler(LambdaInvocationDelegate handler)
+    public ILambdaApplication MapHandler(
+        LambdaInvocationDelegate handler,
+        LambdaMiddlewareDelegate? serializer = null
+    )
     {
         if (_delegateHolder.IsHandlerSet)
-            throw new InvalidOperationException("Handler is already set");
+            throw new InvalidOperationException(
+                "Lambda Handler is already set. Only one is allowed."
+            );
 
         _delegateHolder.Handler = handler ?? throw new ArgumentNullException(nameof(handler));
+
+        if (serializer is not null)
+            _delegateHolder.SerializerMiddleware = next => context => serializer(context, next);
 
         return this;
     }

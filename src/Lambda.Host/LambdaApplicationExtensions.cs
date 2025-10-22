@@ -19,4 +19,9 @@ public static class LambdaApplicationExtensions
 
         return application;
     }
+
+    public static ILambdaApplication UseMiddleware(
+        this ILambdaApplication application,
+        LambdaMiddlewareDelegate middleware
+    ) => application.Use(next => context => middleware(context, next));
 }

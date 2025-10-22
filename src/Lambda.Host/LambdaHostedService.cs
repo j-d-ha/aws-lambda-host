@@ -7,14 +7,14 @@ using Microsoft.Extensions.Options;
 
 namespace Lambda.Host;
 
-public class LambdaHostedService : IHostedService
+internal class LambdaHostedService : IHostedService
 {
     private readonly ILambdaCancellationTokenSourceFactory _cancellationTokenSourceFactory;
     private readonly DelegateHolder _delegateHolder;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly LambdaHostSettings _settings;
 
-    public LambdaHostedService(
+    internal LambdaHostedService(
         IOptions<LambdaHostSettings> lambdaHostSettings,
         DelegateHolder delegateHolder,
         ILambdaCancellationTokenSourceFactory lambdaCancellationTokenSourceFactory,
@@ -36,7 +36,12 @@ public class LambdaHostedService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var handler = HandlerWrapper.GetHandlerWrapper(
+        var handler = BuildMiddlewarePipeline(
+            _delegateHolder.Middlewares,
+            _delegateHolder.Handler!
+        );
+
+        var wrappedHandler = HandlerWrapper.GetHandlerWrapper(
             async Task<Stream> (Stream inputStream, ILambdaContext lambdaContext) =>
             {
                 using var cancellationTokenSource =
@@ -50,22 +55,17 @@ public class LambdaHostedService : IHostedService
                     _settings.LambdaSerializer
                 );
 
-                var handler = BuildMiddlewarePipeline(_delegateHolder.Handler!);
-
                 await handler(lambdaHostContext);
 
-                if (lambdaHostContext.ResponseStream == null)
-                    return new MemoryStream(0);
-
-                return lambdaHostContext.ResponseStream;
+                return lambdaHostContext.OutputStream ?? new MemoryStream(0);
             }
         );
 
         var bootstrap = _settings.BootstrapHttpClient is null
-            ? new LambdaBootstrap(handler, _settings.BootstrapOptions, null)
+            ? new LambdaBootstrap(wrappedHandler, _settings.BootstrapOptions, null)
             : new LambdaBootstrap(
                 _settings.BootstrapHttpClient,
-                handler,
+                wrappedHandler,
                 _settings.BootstrapOptions,
                 null
             );
@@ -77,13 +77,16 @@ public class LambdaHostedService : IHostedService
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-    private LambdaInvocationDelegate BuildMiddlewarePipeline(LambdaInvocationDelegate handler)
+    private static LambdaInvocationDelegate BuildMiddlewarePipeline(
+        List<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>> middlewares,
+        LambdaInvocationDelegate handler
+    )
     {
         var pipeline = handler;
 
-        for (var i = _delegateHolder.Middlewares.Count - 1; i >= 0; i--)
+        for (var i = middlewares.Count - 1; i >= 0; i--)
         {
-            var middleware = _delegateHolder.Middlewares[i];
+            var middleware = middlewares[i];
             pipeline = middleware(pipeline);
         }
 

@@ -2,11 +2,17 @@ using Lambda.Host.Middleware;
 
 namespace Lambda.Host;
 
-public sealed class DelegateHolder
+internal sealed class DelegateHolder
 {
-    public LambdaInvocationDelegate? Handler { get; set; }
+    internal LambdaInvocationDelegate? Handler { get; set; }
 
-    public List<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>> Middlewares { get; } = [];
+    internal List<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>> Middlewares { get; } =
+        [];
 
-    public bool IsHandlerSet => Handler != null;
+    internal Func<
+        LambdaInvocationDelegate,
+        LambdaInvocationDelegate
+    >? SerializerMiddleware { get; set; }
+
+    internal bool IsHandlerSet => Handler != null;
 }
