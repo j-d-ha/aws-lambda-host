@@ -9,11 +9,6 @@ internal sealed class DelegateHolder
     internal List<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>> Middlewares { get; } =
         [];
 
-    internal Func<
-        LambdaInvocationDelegate,
-        LambdaInvocationDelegate
-    >? SerializerMiddleware { get; set; }
-
     internal Action<ILambdaHostContext, Stream>? Deserializer { get; set; }
 
     internal Func<ILambdaHostContext, Stream>? Serializer { get; set; }
