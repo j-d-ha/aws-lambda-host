@@ -53,11 +53,33 @@ namespace Lambda.Host
             
             Stream Serializer(ILambdaHostContext context)
             {
-                // No response, return empty stream.
                 return new MemoryStream(0);
             }
 
             return application.MapHandler(InvocationDelegate, Deserializer, Serializer);
+        }
+    }
+    
+    file static class HelperExtensions
+    {
+        public static T GetEventT<T>(this ILambdaHostContext context)
+        {
+            if (!context.TryGetEvent<T>(out var eventT))
+            {
+                throw new InvalidOperationException($"Lambda event of type '{typeof(T).FullName}' is not available in the context.");
+            }
+            
+            return eventT!;
+        }
+
+        public static T GetResponseT<T>(this ILambdaHostContext context)
+        {
+            if (!context.TryGetResponse<T>(out var responseT))
+            {
+                throw new InvalidOperationException($"Lambda response of type '{typeof(T).FullName}' is not available in the context.");
+            }
+            
+            return responseT!;
         }
     }
 }

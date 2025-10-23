@@ -1,4 +1,5 @@
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Lambda.Host.SourceGenerators.Extensions;
 
@@ -9,6 +10,12 @@ internal static class TypeExtractorExtensions
             SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
         );
 
-    internal static string GetAsGlobal(this ITypeSymbol typeSymbol) =>
-        typeSymbol.ToDisplayString(Format);
+    internal static string GetAsGlobal(this ITypeSymbol typeSymbol, TypeSyntax? typeSyntax = null)
+    {
+        var baseTypeName = typeSymbol.ToDisplayString(Format);
+
+        return typeSyntax is NullableTypeSyntax && !baseTypeName.EndsWith("?")
+            ? baseTypeName + "?"
+            : baseTypeName;
+    }
 }

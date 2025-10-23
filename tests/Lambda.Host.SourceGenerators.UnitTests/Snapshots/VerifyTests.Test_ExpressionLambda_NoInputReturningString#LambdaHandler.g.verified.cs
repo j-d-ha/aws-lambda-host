@@ -53,8 +53,7 @@ namespace Lambda.Host
             
             Stream Serializer(ILambdaHostContext context)
             {
-                // Creating a new stream and serializing the response to it.
-                var response = context.GetResponse<string>() ?? throw new InvalidOperationException($"Lambda response of type '{typeof(string).FullName}' is not available in the context.");
+                var response = context.GetResponseT<string>();
                 var outputStream = new MemoryStream();
                 outputStream.SetLength(0L);
                 context.LambdaSerializer.Serialize<string>(response, outputStream);
@@ -63,6 +62,29 @@ namespace Lambda.Host
             }
 
             return application.MapHandler(InvocationDelegate, Deserializer, Serializer);
+        }
+    }
+    
+    file static class HelperExtensions
+    {
+        public static T GetEventT<T>(this ILambdaHostContext context)
+        {
+            if (!context.TryGetEvent<T>(out var eventT))
+            {
+                throw new InvalidOperationException($"Lambda event of type '{typeof(T).FullName}' is not available in the context.");
+            }
+            
+            return eventT!;
+        }
+
+        public static T GetResponseT<T>(this ILambdaHostContext context)
+        {
+            if (!context.TryGetResponse<T>(out var responseT))
+            {
+                throw new InvalidOperationException($"Lambda response of type '{typeof(T).FullName}' is not available in the context.");
+            }
+            
+            return responseT!;
         }
     }
 }

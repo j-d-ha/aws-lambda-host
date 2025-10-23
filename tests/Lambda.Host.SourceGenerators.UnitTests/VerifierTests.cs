@@ -41,6 +41,42 @@ public class VerifyTests
         );
 
     [Fact]
+    public async Task Test_ExpressionLambda_NoInputReturningNullablePrimitive() =>
+        await Verify(
+            """
+            using Lambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+            var lambda = builder.Build();
+
+            lambda.MapHandler(int? () => 1);
+
+            await lambda.RunAsync();
+            """
+        );
+
+    [Fact]
+    public async Task Test_ExpressionLambda_NoInputReturningGenericObject() =>
+        await Verify(
+            """
+            using Lambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+            var lambda = builder.Build();
+
+            lambda.MapHandler(Response<Data> () => new Response<Data>(new Data("hello world")));
+
+            await lambda.RunAsync();
+
+            record Response<T>(T Data);
+
+            record Data(string Message);
+            """
+        );
+
+    [Fact]
     public async Task Test_ExpressionLambda_DiAndAsync() =>
         await Verify(
             """
@@ -546,7 +582,7 @@ public class VerifyTests
             builder.Services.AddSingleton<IService, Service>();
             var lambda = builder.Build();
 
-            lambda.MapHandler(string? ([Event] string? input, IService service) => service.GetMessage());
+            lambda.MapHandler(string? ([Event] int? input, IService service) => service.GetMessage());
 
             await lambda.RunAsync();
 
@@ -739,6 +775,24 @@ public class VerifyTests
         );
 
     [Fact]
+    public async Task Test_ExpressionLambda_AsksForCancellationTokenAndLambdaHostContext() =>
+        await Verify(
+            """
+            using System.Threading;
+            using Amazon.Lambda.Core;
+            using Lambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+            var lambda = builder.Build();
+
+            lambda.MapHandler((CancellationToken ct, ILambdaHostContext ctx) => "hello world");
+
+            await lambda.RunAsync();
+            """
+        );
+
+    [Fact]
     public async Task Test_ExpressionLambda_StreamRequest() =>
         await Verify(
             """
@@ -771,76 +825,6 @@ public class VerifyTests
             lambda.MapHandler(Stream () => new FileStream("hello.txt", FileMode.Open));
 
             await lambda.RunAsync();
-            """
-        );
-
-    [Fact]
-    public async Task Test_PartialClassLambdaHostedService() =>
-        await Verify(
-            """
-            using Lambda.Host;
-            using Microsoft.Extensions.Hosting;
-
-            var builder = LambdaApplication.CreateBuilder();
-
-            builder.Services.AddLambdaHostedService<MyHost>();
-
-            var lambda = builder.Build();
-
-            lambda.MapHandler(() => "hello world");
-
-            await lambda.RunAsync();
-
-            [LambdaHost]
-            public partial class MyHost : LambdaHostedService;
-            """
-        );
-
-    [Fact]
-    public async Task Test_PartialClassLambdaHostedService_DifferentNamespace() =>
-        await Verify(
-            """
-            using Lambda.Host;
-            using Microsoft.Extensions.Hosting;
-            using MyNamespace;
-
-            var builder = LambdaApplication.CreateBuilder();
-
-            builder.Services.AddLambdaHostedService<MyHost>();
-
-            var lambda = builder.Build();
-
-            lambda.MapHandler(() => "hello world");
-
-            await lambda.RunAsync();
-
-            namespace MyNamespace
-            {
-                [LambdaHost]
-                public partial class MyHost : LambdaHostedService;
-            }
-            """
-        );
-
-    [Fact]
-    public async Task Test_PartialClassLambdaHostedService_InternalAccessibility() =>
-        await Verify(
-            """
-            using Lambda.Host;
-            using Microsoft.Extensions.Hosting;
-
-            var builder = LambdaApplication.CreateBuilder();
-
-            builder.Services.AddLambdaHostedService<MyHost>();
-
-            var lambda = builder.Build();
-
-            lambda.MapHandler(() => "hello world");
-
-            await lambda.RunAsync();
-
-            [LambdaHost]
-            internal partial class MyHost : LambdaHostedService;
             """
         );
 

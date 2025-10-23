@@ -44,7 +44,7 @@ namespace Lambda.Host
 
             async Task InvocationDelegate(ILambdaHostContext context)
             {
-                var arg0 = context.GetEvent<global::MyNamespace.Event>() ?? throw new InvalidOperationException($"Lambda event of type '{typeof(global::MyNamespace.Event).FullName}' is not available in the context.");
+                var arg0 = context.GetEventT<global::MyNamespace.Event>();
                 var arg1 = context.ServiceProvider.GetRequiredService<global::IService>();
                 context.Response = await castHandler.Invoke(arg0, arg1);
             }
@@ -56,8 +56,7 @@ namespace Lambda.Host
             
             Stream Serializer(ILambdaHostContext context)
             {
-                // Creating a new stream and serializing the response to it.
-                var response = context.GetResponse<global::MyNamespace.Response>() ?? throw new InvalidOperationException($"Lambda response of type '{typeof(global::MyNamespace.Response).FullName}' is not available in the context.");
+                var response = context.GetResponseT<global::MyNamespace.Response>();
                 var outputStream = new MemoryStream();
                 outputStream.SetLength(0L);
                 context.LambdaSerializer.Serialize<global::MyNamespace.Response>(response, outputStream);
@@ -66,6 +65,29 @@ namespace Lambda.Host
             }
 
             return application.MapHandler(InvocationDelegate, Deserializer, Serializer);
+        }
+    }
+    
+    file static class HelperExtensions
+    {
+        public static T GetEventT<T>(this ILambdaHostContext context)
+        {
+            if (!context.TryGetEvent<T>(out var eventT))
+            {
+                throw new InvalidOperationException($"Lambda event of type '{typeof(T).FullName}' is not available in the context.");
+            }
+            
+            return eventT!;
+        }
+
+        public static T GetResponseT<T>(this ILambdaHostContext context)
+        {
+            if (!context.TryGetResponse<T>(out var responseT))
+            {
+                throw new InvalidOperationException($"Lambda response of type '{typeof(T).FullName}' is not available in the context.");
+            }
+            
+            return responseT!;
         }
     }
 }

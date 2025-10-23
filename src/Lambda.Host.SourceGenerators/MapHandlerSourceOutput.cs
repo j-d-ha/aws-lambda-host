@@ -94,8 +94,7 @@ internal static class MapHandlerSourceOutput
         var hasReturnValue = delegateInfo switch
         {
             { DelegateType: TypeConstants.Action } => false,
-            { DelegateType: TypeConstants.Func, IsAsync: true, ResponseType: TypeConstants.Task } =>
-                false,
+            { DelegateType: TypeConstants.Func, ResponseType: TypeConstants.Task } => false,
             _ => true,
         };
 
