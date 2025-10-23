@@ -1,0 +1,24 @@
+version: '3'
+
+tasks:
+  clean:
+    desc: Clean NuGet packages from Release folder
+    dir: src/AwsLambda.Host
+    cmds:
+      - rm -f bin/Release/*.nupkg
+
+  pack:
+    desc: Build the NuGet package
+    dir: src/AwsLambda.Host
+    deps: [clean]
+    cmds:
+      - dotnet restore
+      - dotnet build --configuration Release --no-restore
+      - dotnet pack --configuration Release --no-build
+
+  publish:
+    desc: Publish the NuGet package to NuGet.org
+    dir: src/AwsLambda.Host
+    deps: [pack]
+    cmds:
+      - dotnet nuget push bin/Release/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY
