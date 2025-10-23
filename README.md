@@ -1,2 +1,2 @@
-# dotnet-lambda-host
+# aws-lambda-host
 .Net Host for AWS Lambda
