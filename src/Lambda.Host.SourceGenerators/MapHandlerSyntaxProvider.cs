@@ -193,26 +193,9 @@ internal static class MapHandlerSyntaxProvider
 
             return new DelegateInfo(
                 ResponseType: invokeMethod.ReturnType.GetAsGlobal(),
-                Namespace: delegateInfo.Namespace,
-                IsAsync: invokeMethod.IsAsync,
                 Parameters: updatedParameters
             );
         };
-
-    private static string GetFileNamespace(SyntaxNode node, SemanticModel semanticModel)
-    {
-        // First try to find explicit namespace declaration
-        var namespaceDeclaration = node.Ancestors()
-            .OfType<BaseNamespaceDeclarationSyntax>()
-            .FirstOrDefault();
-
-        if (namespaceDeclaration != null)
-            return namespaceDeclaration.Name.ToString();
-
-        // For top-level statements, get the default namespace from compilation
-        var compilation = semanticModel.Compilation;
-        return compilation.Assembly.Name; // This will be "Lambda.Host.Example.HelloWorld"
-    }
 
     private static DelegateInfo? ExtractInfoFromDelegate(
         GeneratorSyntaxContext context,
@@ -230,7 +213,6 @@ internal static class MapHandlerSyntaxProvider
         var parameters = methodSymbol
             .Parameters.AsEnumerable()
             .Select(p => new ParameterInfo(
-                p!.Name,
                 p.Type.GetAsGlobal(),
                 LocationInfo.CreateFrom(p),
                 p.GetAttributes()
@@ -246,8 +228,6 @@ internal static class MapHandlerSyntaxProvider
 
         return new DelegateInfo(
             ResponseType: methodSymbol.ReturnType.GetAsGlobal(),
-            Namespace: GetFileNamespace(context.Node, context.SemanticModel),
-            IsAsync: methodSymbol.IsAsync,
             Parameters: parameters
         );
     }
@@ -274,7 +254,6 @@ internal static class MapHandlerSyntaxProvider
             .Select(p => sematicModel.GetDeclaredSymbol(p))
             .Where(p => p is not null)
             .Select(p => new ParameterInfo(
-                p!.Name,
                 p.Type.GetAsGlobal(),
                 LocationInfo.CreateFrom(p),
                 p.GetAttributes()
@@ -338,12 +317,7 @@ internal static class MapHandlerSyntaxProvider
             var (type, _) => type,
         };
 
-        return new DelegateInfo(
-            GetFileNamespace(context.Node, context.SemanticModel),
-            isAsync,
-            returnTypeName,
-            parameters
-        );
+        return new DelegateInfo(returnTypeName, parameters);
     }
 
     private delegate DelegateInfo Updater(DelegateInfo delegateInfo);
