@@ -51,8 +51,7 @@ internal class LambdaHostedService : IHostedService
                 await using var lambdaHostContext = new LambdaHostContext(
                     lambdaContext,
                     _scopeFactory,
-                    cancellationTokenSource.Token,
-                    _settings.LambdaSerializer
+                    cancellationTokenSource.Token
                 );
 
                 if (_delegateHolder.Deserializer is not null)
