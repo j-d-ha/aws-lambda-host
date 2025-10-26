@@ -32,10 +32,16 @@ public static class LambdaOpenTelemetryServiceProviderExtensions
     /// The context must contain an event of type <typeparamref name="TEvent"/> and the handler
     /// must set a response of type <typeparamref name="TResponse"/>.
     /// </para>
+    /// <para>
+    /// <b>TracerProvider Registration Required:</b> A <see cref="TracerProvider"/> instance must be registered
+    /// in the dependency injection container before calling these methods. Failure to register a <see cref="TracerProvider"/>
+    /// will result in an <see cref="InvalidOperationException"/> being thrown at startup.
+    /// </para>
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// Thrown if the context event is not of type <typeparamref name="TEvent"/> or
-    /// if the context response is not of type <typeparamref name="TResponse"/>.
+    /// if the context response is not of type <typeparamref name="TResponse"/>, or
+    /// if a <see cref="TracerProvider"/> instance is not registered in the dependency injection container.
     /// </exception>
     public static Func<LambdaInvocationDelegate, LambdaInvocationDelegate> GetTracer<
         TEvent,
