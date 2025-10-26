@@ -20,7 +20,6 @@ lambda.MapHandler(([Event] Request request) => new Response($"Hello {request.Nam
 
 await lambda.RunAsync();
 
-// {"Name":"john"}
 record Request(string Name);
 
 record Response(string Message);
