@@ -27,12 +27,8 @@ public static class LambdaOpenTelemetryExtensions
     /// If this method is called at runtime without being intercepted by the source generator,
     /// it will throw an <see cref="InvalidOperationException"/> as a safety measure.
     /// </para>
-    /// <para>
-    /// See the source generator implementation in <c>AwsLambda.Host.SourceGenerators</c> for details
-    /// on how the tracing interceptor is assembled and injected at compile time.
-    /// </para>
     /// </remarks>
-    /// <param name="application">The Lambda application builder instance.</param>
+    /// <param name="application">The Lambda application instance.</param>
     /// <returns>The same <see cref="ILambdaApplication"/> instance for method chaining.</returns>
     /// <example>
     /// <para>
