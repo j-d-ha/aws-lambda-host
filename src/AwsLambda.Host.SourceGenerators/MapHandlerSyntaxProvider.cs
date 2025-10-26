@@ -104,11 +104,7 @@ internal static class MapHandlerSyntaxProvider
         return new MapHandlerInvocationInfo(
             LocationInfo: LocationInfo.CreateFrom(context.Node),
             DelegateInfo: updaters.Aggregate(result.Value, (current, updater) => updater(current)),
-            InterceptableLocationInfo: new InterceptableLocationInfo(
-                interceptableLocation.Version,
-                interceptableLocation.Data,
-                interceptableLocation.GetDisplayLocation()
-            )
+            InterceptableLocationInfo: InterceptableLocationInfo.CreateFrom(interceptableLocation)
         );
     }
 

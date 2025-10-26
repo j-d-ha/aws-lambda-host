@@ -37,5 +37,7 @@ internal static class GeneratorConstants
 {
     internal const string MapHandlerMethodName = "MapHandler";
 
+    internal const string UseOpenTelemetryTracingMethodName = "UseOpenTelemetryTracing";
+
     internal const string LambdaHandlerTemplateFile = "Templates/LambdaHandler.scriban";
 }

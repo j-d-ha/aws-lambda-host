@@ -104,20 +104,25 @@ namespace AwsLambda.Host
         }
     }
 }
-{{~ if otel_enabled ~}}
+{{~ if is_otel_enabled ~}}
 
 namespace AwsLambda.Host
 {
     file static class LambdaHostUseOpenTelemetryTracingExtensions
     {
+        {{~ for location in use_otel_calls ~}}
+        [InterceptsLocation({{ location.version }}, "{{ location.data }}")] // Location: {{ location.display_location }}
+        {{~ end ~}}
         internal static ILambdaApplication UseOpenTelemetryTracingInterceptor(
             this ILambdaApplication application
         )
         {
-            {{~ if  ~}}
-            return application.Use(application.Services.GetTracer<object, object>());
-            {{~ else if  ~}}
-            return application.Use(application.Services.GetTracer<object, object>());
+            {{~ if output_response != null && input_event != null ~}}
+            return application.Use(application.Services.GetTracer<{{ output_response.response_type }}, {{ input_event.type }}>());
+            {{~ else if output_response != null ~}}
+            return application.Use(application.Services.GetTracerNoEvent<{{ output_response.response_type }}>());
+            {{~ else if input_event != null ~}}
+            return application.Use(application.Services.GetTracerNoResponse<{{ input_event.type }}>());
             {{~ else ~}}
             return application.Use(application.Services.GetTracerNoEventNoResponse());
             {{~ end ~}}

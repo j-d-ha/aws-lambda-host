@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\AwsLambda.Host.OpenTelemetry\AwsLambda.Host.OpenTelemetry.csproj"/>
     <ProjectReference Include="..\..\src\AwsLambda.Host\AwsLambda.Host.csproj"/>
     <ProjectReference Include="..\..\src\AwsLambda.Host.SourceGenerators\AwsLambda.Host.SourceGenerators.csproj"/>
   </ItemGroup>

@@ -3,5 +3,6 @@ using AwsLambda.Host.SourceGenerators.Types;
 namespace AwsLambda.Host.SourceGenerators.Models;
 
 internal readonly record struct CompilationInfo(
-    EquatableArray<MapHandlerInvocationInfo> MapHandlerInvocationInfos
+    EquatableArray<MapHandlerInvocationInfo> MapHandlerInvocationInfos,
+    EquatableArray<UseOpenTelemetryTracingInfo> UseOpenTelemetryTracingInfos
 );
