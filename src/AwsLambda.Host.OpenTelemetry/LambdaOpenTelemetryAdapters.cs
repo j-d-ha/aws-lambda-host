@@ -7,6 +7,36 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class LambdaOpenTelemetryServiceProviderExtensions
 {
+    /// <summary>
+    /// Creates a middleware function that traces Lambda invocations with both event and response types.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the Lambda event expected in the context.</typeparam>
+    /// <typeparam name="TResponse">The type of the Lambda response expected in the context.</typeparam>
+    /// <param name="services">The service provider containing the configured <see cref="TracerProvider"/>.</param>
+    /// <returns>
+    /// A middleware function that wraps the Lambda invocation with OpenTelemetry tracing.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// <b>Important:</b> These methods are primarily intended to be used by source generators and interceptors. Direct usage is not recommended.
+    /// Source generation and interception are the primary use cases for automatic tracing integration.
+    /// </para>
+    /// <para>
+    /// Uses the registered <see cref="TracerProvider"/> to wrap Lambda invocations with distributed
+    /// tracing capabilities through AWS Lambda instrumentation. This method is a wrapper around
+    /// <see cref="OpenTelemetry.Instrumentation.AWSLambda.AWSLambdaWrapper.TraceAsync"/> from the
+    /// <see href="https://www.nuget.org/packages/OpenTelemetry.Instrumentation.AWSLambda">OpenTelemetry.Instrumentation.AWSLambda</see>
+    /// NuGet package.
+    /// </para>
+    /// <para>
+    /// The context must contain an event of type <typeparamref name="TEvent"/> and the handler
+    /// must set a response of type <typeparamref name="TResponse"/>.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the context event is not of type <typeparamref name="TEvent"/> or
+    /// if the context response is not of type <typeparamref name="TResponse"/>.
+    /// </exception>
     public static Func<LambdaInvocationDelegate, LambdaInvocationDelegate> GetTracer<
         TEvent,
         TResponse
@@ -43,6 +73,19 @@ public static class LambdaOpenTelemetryServiceProviderExtensions
         };
     }
 
+    /// <summary>
+    /// Creates a middleware function that traces Lambda invocations with only a response type.
+    /// </summary>
+    /// <typeparam name="TResponse">The type of the Lambda response expected in the context.</typeparam>
+    /// <param name="services"><inheritdoc cref="GetTracer{TEvent, TResponse}(IServiceProvider)" path="/param[@name='services']"/></param>
+    /// <returns><inheritdoc cref="GetTracer{TEvent, TResponse}(IServiceProvider)" path="/returns"/></returns>
+    /// <remarks>
+    /// <inheritdoc cref="GetTracer{TEvent, TResponse}(IServiceProvider)" path="/remarks"/>
+    /// The event type is not relevant or known when using this overload.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the context response is not of type <typeparamref name="TResponse"/>.
+    /// </exception>
     public static Func<
         LambdaInvocationDelegate,
         LambdaInvocationDelegate
@@ -74,6 +117,19 @@ public static class LambdaOpenTelemetryServiceProviderExtensions
         };
     }
 
+    /// <summary>
+    /// Creates a middleware function that traces Lambda invocations with only an event type.
+    /// </summary>
+    /// <typeparam name="TEvent">The type of the Lambda event expected in the context.</typeparam>
+    /// <param name="services"><inheritdoc cref="GetTracer{TEvent, TResponse}(IServiceProvider)" path="/param[@name='services']"/></param>
+    /// <returns><inheritdoc cref="GetTracer{TEvent, TResponse}(IServiceProvider)" path="/returns"/></returns>
+    /// <remarks>
+    /// <inheritdoc cref="GetTracer{TEvent, TResponse}(IServiceProvider)" path="/remarks"/>
+    /// The response type is not relevant or known when using this overload.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the context event is not of type <typeparamref name="TEvent"/>.
+    /// </exception>
     public static Func<
         LambdaInvocationDelegate,
         LambdaInvocationDelegate
@@ -100,6 +156,15 @@ public static class LambdaOpenTelemetryServiceProviderExtensions
         };
     }
 
+    /// <summary>
+    /// Creates a middleware function that traces Lambda invocations without specific event or response types.
+    /// </summary>
+    /// <param name="services"><inheritdoc cref="GetTracer{TEvent, TResponse}(IServiceProvider)" path="/param[@name='services']"/></param>
+    /// <returns><inheritdoc cref="GetTracer{TEvent, TResponse}(IServiceProvider)" path="/returns"/></returns>
+    /// <remarks>
+    /// <inheritdoc cref="GetTracer{TEvent, TResponse}(IServiceProvider)" path="/remarks"/>
+    /// Neither event nor response types are relevant or known when using this overload.
+    /// </remarks>
     public static Func<
         LambdaInvocationDelegate,
         LambdaInvocationDelegate
