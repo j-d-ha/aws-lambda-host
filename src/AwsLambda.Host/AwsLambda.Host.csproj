@@ -12,15 +12,8 @@
 
     <!-- Package Metadata -->
     <PackageId>AwsLambda.Host</PackageId>
-    <Version>0.0.1-alpha.5</Version>
-    <Authors>Jonas Ha</Authors>
     <Description>.NET Host for AWS Lambda</Description>
-    <PackageTags>csharp;library;utility;aws;lambda</PackageTags>
-    <RepositoryUrl>https://github.com/j-d-ha/aws-lambda-host</RepositoryUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Copyright>Copyright © 2025 Jonas Ha</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageProjectUrl>https://www.nuget.org/packages/AwsLambda.Host</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    <None Include="README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <ItemGroup>
