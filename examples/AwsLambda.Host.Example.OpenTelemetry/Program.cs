@@ -32,8 +32,6 @@ builder
 
 var lambda = builder.Build();
 
-lambda.UseClearLambdaOutputFormatting();
-
 lambda.UseOpenTelemetryTracing();
 
 lambda.MapHandler(
@@ -44,8 +42,9 @@ lambda.MapHandler(
         CancellationToken cancellationToken
     ) =>
     {
+        // Name need to be passed to StartActivity or the span name will be `<Main>$`.
+        // This is because the handler is a lambda expression.
         using var activity = instrumentation.ActivitySource.StartActivity("Handler");
-
         var message = await service.GetMessage(request.Name, cancellationToken);
 
         return new Response(message, DateTime.UtcNow);
