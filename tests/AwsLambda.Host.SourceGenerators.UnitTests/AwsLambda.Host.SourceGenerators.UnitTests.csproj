@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -13,7 +13,7 @@
     <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4"/>
     <PackageReference Include="AwesomeAssertions" Version="9.2.0"/>
     <PackageReference Include="Basic.Reference.Assemblies.Net472" Version="1.8.3"/>
-    <PackageReference Include="Basic.Reference.Assemblies.Net80" Version="1.8.3"/>
+    <PackageReference Include="Basic.Reference.Assemblies.Net90" Version="1.8.3"/>
     <PackageReference Include="coverlet.collector" Version="6.0.4"/>
     <PackageReference Include="Microsoft.CodeAnalysis" Version="4.14.0"/>
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.14.0"/>
@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\AwsLambda.Host.OpenTelemetry\AwsLambda.Host.OpenTelemetry.csproj"/>
     <ProjectReference Include="..\..\src\AwsLambda.Host\AwsLambda.Host.csproj"/>
     <ProjectReference Include="..\..\src\AwsLambda.Host.SourceGenerators\AwsLambda.Host.SourceGenerators.csproj"/>
   </ItemGroup>

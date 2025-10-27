@@ -107,6 +107,21 @@ internal static class MapHandlerSourceOutput
             }
             : null;
 
+        // OTEL related values
+
+        // is UseOpenTelemetryTracing called
+        var isOtelEnabled = compilationInfo.UseOpenTelemetryTracingInfos.Count >= 1;
+
+        // UseOpenTelemetryTracing location invocations
+        var useOtelCalls = compilationInfo
+            .UseOpenTelemetryTracingInfos.Select(u => new
+            {
+                Version = u.InterceptableLocationInfo.Version,
+                Data = u.InterceptableLocationInfo.Data,
+                DisplayLocation = u.InterceptableLocationInfo.DisplayLocation,
+            })
+            .ToList();
+
         var model = new
         {
             Location = mapHandlerInvocationInfo.InterceptableLocationInfo,
@@ -116,6 +131,9 @@ internal static class MapHandlerSourceOutput
             ShouldAwait = shouldAwait,
             InputEvent = inputEvent,
             OutputResponse = outputResponse,
+            // OTEL related values
+            IsOtelEnabled = isOtelEnabled,
+            UseOtelCalls = useOtelCalls,
         };
 
         var template = TemplateHelper.LoadTemplate(GeneratorConstants.LambdaHandlerTemplateFile);

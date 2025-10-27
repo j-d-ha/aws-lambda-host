@@ -27,7 +27,7 @@ internal static class GeneratorTestHelpers
 
         List<MetadataReference> references =
         [
-            .. Net80.References.All.ToList(),
+            .. Net90.References.All.ToList(),
             MetadataReference.CreateFromFile(typeof(LambdaApplication).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(FromKeyedServicesAttribute).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ILambdaContext).Assembly.Location),
@@ -36,6 +36,10 @@ internal static class GeneratorTestHelpers
             MetadataReference.CreateFromFile(typeof(DefaultLambdaJsonSerializer).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(LambdaBootstrapBuilder).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(IOptions<>).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ILambdaApplication).Assembly.Location),
+            MetadataReference.CreateFromFile(
+                typeof(LambdaOpenTelemetryServiceProviderExtensions).Assembly.Location
+            ),
         ];
 
         var compilationOptions = new CSharpCompilationOptions(

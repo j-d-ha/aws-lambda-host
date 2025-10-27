@@ -18,10 +18,22 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
             .Where(static m => m is not null)
             .Select(static (m, _) => m!.Value);
 
+        // find any calls to `UseOpenTelemetryTracing` and extract the location
+        var openTelemetryTracingCalls = context
+            .SyntaxProvider.CreateSyntaxProvider(
+                predicate: UseOpenTelemetryTracingSyntaxProvider.Predicate,
+                transform: UseOpenTelemetryTracingSyntaxProvider.Transformer
+            )
+            .Where(static m => m is not null)
+            .Select(static (m, _) => m!.Value);
+
         // combine the compilation and map handler calls
         var combined = mapHandlerCalls
             .Collect()
-            .Select((t, _) => new CompilationInfo(t.ToEquatableArray()));
+            .Combine(openTelemetryTracingCalls.Collect())
+            .Select(
+                (t, _) => new CompilationInfo(t.Left.ToEquatableArray(), t.Right.ToEquatableArray())
+            );
 
         // Generate source when calls are found
         context.RegisterSourceOutput(combined, MapHandlerSourceOutput.Generate);

@@ -828,6 +828,90 @@ public class VerifyTests
             """
         );
 
+    [Fact]
+    public async Task Test_OtelEnabled_EventAndResponse() =>
+        await Verify(
+            """
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.UseOpenTelemetryTracing();
+
+            lambda.MapHandler(([Event] Request request) => new Response($"Hello {request.Name}!"));
+
+            await lambda.RunAsync();
+
+            record Request(string Name);
+
+            record Response(string Message);
+            """
+        );
+
+    [Fact]
+    public async Task Test_OtelEnabled_OnlyResponse() =>
+        await Verify(
+            """
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.UseOpenTelemetryTracing();
+
+            lambda.MapHandler(() => new Response("Hello world!"));
+
+            await lambda.RunAsync();
+
+            record Response(string Message);
+            """
+        );
+
+    [Fact]
+    public async Task Test_OtelEnabled_OnlyEvent() =>
+        await Verify(
+            """
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.UseOpenTelemetryTracing();
+
+            lambda.MapHandler(([Event] Request request) => { });
+
+            await lambda.RunAsync();
+
+            record Request(string Name);
+            """
+        );
+
+    [Fact]
+    public async Task Test_OtelEnabled_NoEventNoResponse() =>
+        await Verify(
+            """
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.UseOpenTelemetryTracing();
+
+            lambda.MapHandler(() => { });
+
+            await lambda.RunAsync();
+            """
+        );
+
     private static Task Verify(string source)
     {
         var (driver, originalCompilation) = GeneratorTestHelpers.GenerateFromSource(source);
