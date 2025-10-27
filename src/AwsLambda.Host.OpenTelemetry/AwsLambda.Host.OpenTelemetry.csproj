@@ -5,6 +5,14 @@
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeBuildOutput>true</IncludeBuildOutput>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <!-- Package Metadata -->
+    <PackageId>AwsLambda.Host.OpenTelemetry</PackageId>
+    <Description>OpenTelemetry for .NET Host for AWS Lambda</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +21,10 @@
 
   <ItemGroup>
     <PackageReference Include="OpenTelemetry.Instrumentation.AWSLambda" Version="1.12.1"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>
