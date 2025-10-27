@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Trace;
 
 namespace AwsLambda.Host;
 
@@ -12,7 +14,7 @@ public static class LambdaOpenTelemetryExtensions
     /// This method serves as a no-op placeholder that is intercepted and replaced at compile time
     /// by the AwsLambda.Host source generator. It uses the OpenTelemetry instrumentation provided
     /// by the <see href="https://www.nuget.org/packages/OpenTelemetry.Instrumentation.AWSLambda">OpenTelemetry.Instrumentation.AWSLambda</see>
-    /// package to automatically instrument Lambda handler invocations with distributed tracing.
+    /// package to instrument the Lambda handler invocations with distributed tracing.
     /// </para>
     /// <para>
     /// When this method is called, the source generator creates an interceptor that:
@@ -27,8 +29,18 @@ public static class LambdaOpenTelemetryExtensions
     /// If this method is called at runtime without being intercepted by the source generator,
     /// it will throw an <see cref="InvalidOperationException"/> as a safety measure.
     /// </para>
+    /// <para>
+    /// <b>Middleware Placement:</b> For the most accurate trace data, this method should be called
+    /// at the top of the middleware pipeline, before other middleware where possible. This ensures that tracing
+    /// captures as much of the invocation as possible, including the execution time of subsequent middleware components.
+    /// </para>
+    /// <para>
+    /// <b>TracerProvider Registration Required:</b> A <see cref="TracerProvider"/> instance must be registered in the
+    /// dependency injection container before calling this method.
+    /// If no instance is registered, an <see cref="InvalidOperationException"/> will be thrown at startup.
+    /// </para>
     /// </remarks>
-    /// <param name="application">The Lambda application instance.</param>
+    /// <param name="application">The <see cref="ILambdaApplication"/> instance.</param>
     /// <returns>The same <see cref="ILambdaApplication"/> instance for method chaining.</returns>
     /// <example>
     /// <para>
