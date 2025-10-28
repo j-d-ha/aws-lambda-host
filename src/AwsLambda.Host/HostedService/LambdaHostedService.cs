@@ -10,6 +10,9 @@ internal sealed class LambdaHostedService : BackgroundService
 {
     private readonly ILambdaCancellationTokenSourceFactory _cancellationTokenSourceFactory;
     private readonly DelegateHolder _delegateHolder;
+
+    private readonly List<Exception> _exceptions = [];
+    private readonly IHostApplicationLifetime _lifetime;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly LambdaHostSettings _settings;
 
@@ -34,11 +37,7 @@ internal sealed class LambdaHostedService : BackgroundService
         _delegateHolder = delegateHolder;
         _cancellationTokenSourceFactory = lambdaCancellationTokenSourceFactory;
         _scopeFactory = serviceScopeFactory;
-
-        lifetime.ApplicationStopped.Register(
-            state => RunShutdownHandlers((IServiceScopeFactory)state!),
-            _scopeFactory
-        );
+        _lifetime = lifetime;
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -49,6 +48,8 @@ internal sealed class LambdaHostedService : BackgroundService
             _delegateHolder.Handler!
         );
 
+        // wrap the handler with HandlerWrapper. We do this is because there is no public
+        // constructor for LambdaBootstrap that accepts settings, initializer, and http client.
         var wrappedHandler = HandlerWrapper.GetHandlerWrapper(GetHandler(handler, stoppingToken));
 
         var bootstrap = _settings.BootstrapHttpClient is null
@@ -60,13 +61,32 @@ internal sealed class LambdaHostedService : BackgroundService
                 null
             );
 
-        return bootstrap.RunAsync(stoppingToken);
+        try
+        {
+            return bootstrap.RunAsync(stoppingToken);
+        }
+        catch
+        {
+            _lifetime.StopApplication();
+            throw;
+        }
     }
 
-    private void RunShutdownHandlers(IServiceScopeFactory scopeFactory)
+    public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        using var scope = scopeFactory.CreateScope();
-        var services = scope.ServiceProvider;
+        // await the background service stop and capture any exceptions that occur.
+        try
+        {
+            await base.StopAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _exceptions.Add(ex);
+        }
+
+        // if any exceptions were captured, rethrow them.
+        if (_exceptions.Count > 0)
+            throw new AggregateException(_exceptions);
     }
 
     private Func<Stream, ILambdaContext, Task<Stream>> GetHandler(
@@ -87,12 +107,15 @@ internal sealed class LambdaHostedService : BackgroundService
                 cancellationTokenSource.Token
             );
 
+            // create a new lambda host context. This will also create a new service scope the first
+            // time that the service container is accessed.
             await using var lambdaHostContext = new LambdaHostContext(
                 lambdaContext,
                 _scopeFactory,
                 linkedTokenSource.Token
             );
 
+            // deserialize the request if a deserializer is provided.
             if (_delegateHolder.Deserializer is not null)
                 await _delegateHolder.Deserializer(
                     lambdaHostContext,
@@ -100,14 +123,17 @@ internal sealed class LambdaHostedService : BackgroundService
                     inputStream
                 );
 
+            // invoke the handler wrapped in the middleware pipeline.
             await handler(lambdaHostContext);
 
+            // serialize the response if a serializer is provided.
             if (_delegateHolder.Serializer is not null)
                 return await _delegateHolder.Serializer(
                     lambdaHostContext,
                     _settings.LambdaSerializer
                 );
 
+            // if no serializer is provided, return an empty stream.
             return new MemoryStream(0);
         };
 
