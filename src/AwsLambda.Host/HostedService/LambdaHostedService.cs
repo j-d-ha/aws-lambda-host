@@ -7,10 +7,11 @@ using Microsoft.Extensions.Options;
 
 namespace AwsLambda.Host;
 
-internal class LambdaHostedService : IHostedService
+internal sealed class LambdaHostedService : BackgroundService
 {
     private readonly ILambdaCancellationTokenSourceFactory _cancellationTokenSourceFactory;
     private readonly DelegateHolder _delegateHolder;
+    private readonly IHostApplicationLifetime _lifetime;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly LambdaHostSettings _settings;
 
@@ -18,23 +19,27 @@ internal class LambdaHostedService : IHostedService
         IOptions<LambdaHostSettings> lambdaHostSettings,
         DelegateHolder delegateHolder,
         ILambdaCancellationTokenSourceFactory lambdaCancellationTokenSourceFactory,
-        IServiceScopeFactory serviceScopeFactory
+        IServiceScopeFactory serviceScopeFactory,
+        IHostApplicationLifetime lifetime
     )
     {
-        _settings =
-            lambdaHostSettings.Value ?? throw new ArgumentNullException(nameof(lambdaHostSettings));
-        _delegateHolder = delegateHolder ?? throw new ArgumentNullException(nameof(delegateHolder));
-        _cancellationTokenSourceFactory =
-            lambdaCancellationTokenSourceFactory
-            ?? throw new ArgumentNullException(nameof(lambdaCancellationTokenSourceFactory));
-        _scopeFactory =
-            serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
+        ArgumentNullException.ThrowIfNull(lambdaHostSettings);
+        ArgumentNullException.ThrowIfNull(delegateHolder);
+        ArgumentNullException.ThrowIfNull(lambdaCancellationTokenSourceFactory);
+        ArgumentNullException.ThrowIfNull(serviceScopeFactory);
+        ArgumentNullException.ThrowIfNull(lifetime);
 
-        if (!_delegateHolder.IsHandlerSet)
-            throw new InvalidOperationException("Handler is not set");
+        if (!delegateHolder.IsHandlerSet)
+            throw new InvalidOperationException("Lambda Handler is not set");
+
+        _settings = lambdaHostSettings.Value;
+        _delegateHolder = delegateHolder;
+        _cancellationTokenSourceFactory = lambdaCancellationTokenSourceFactory;
+        _scopeFactory = serviceScopeFactory;
+        _lifetime = lifetime;
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // Build the middleware pipeline and wrap the handler.
         var handler = BuildMiddlewarePipeline(
@@ -42,36 +47,7 @@ internal class LambdaHostedService : IHostedService
             _delegateHolder.Handler!
         );
 
-        var wrappedHandler = HandlerWrapper.GetHandlerWrapper(
-            async Task<Stream> (Stream inputStream, ILambdaContext lambdaContext) =>
-            {
-                using var cancellationTokenSource =
-                    _cancellationTokenSourceFactory.NewCancellationTokenSource(lambdaContext);
-
-                await using var lambdaHostContext = new LambdaHostContext(
-                    lambdaContext,
-                    _scopeFactory,
-                    cancellationTokenSource.Token
-                );
-
-                if (_delegateHolder.Deserializer is not null)
-                    await _delegateHolder.Deserializer(
-                        lambdaHostContext,
-                        _settings.LambdaSerializer,
-                        inputStream
-                    );
-
-                await handler(lambdaHostContext);
-
-                if (_delegateHolder.Serializer is not null)
-                    return await _delegateHolder.Serializer(
-                        lambdaHostContext,
-                        _settings.LambdaSerializer
-                    );
-
-                return new MemoryStream(0);
-            }
-        );
+        var wrappedHandler = HandlerWrapper.GetHandlerWrapper(GetHandler(handler, stoppingToken));
 
         var bootstrap = _settings.BootstrapHttpClient is null
             ? new LambdaBootstrap(wrappedHandler, _settings.BootstrapOptions, null)
@@ -82,12 +58,50 @@ internal class LambdaHostedService : IHostedService
                 null
             );
 
-        bootstrap.RunAsync(cancellationToken);
-
-        return Task.CompletedTask;
+        return bootstrap.RunAsync(stoppingToken);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    private Func<Stream, ILambdaContext, Task<Stream>> GetHandler(
+        LambdaInvocationDelegate handler,
+        CancellationToken stoppingToken
+    ) =>
+        async Task<Stream> (inputStream, lambdaContext) =>
+        {
+            // create a base cancellation token source using the provided token source factory
+            using var cancellationTokenSource =
+                _cancellationTokenSourceFactory.NewCancellationTokenSource(lambdaContext);
+
+            // combine a base cancellation token source with the stoppingToken. This will allow for
+            // cancellation when either the maximum lifetime of the lambda has been reached or the
+            // lambda runtime has started to shut down.
+            using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                stoppingToken,
+                cancellationTokenSource.Token
+            );
+
+            await using var lambdaHostContext = new LambdaHostContext(
+                lambdaContext,
+                _scopeFactory,
+                linkedTokenSource.Token
+            );
+
+            if (_delegateHolder.Deserializer is not null)
+                await _delegateHolder.Deserializer(
+                    lambdaHostContext,
+                    _settings.LambdaSerializer,
+                    inputStream
+                );
+
+            await handler(lambdaHostContext);
+
+            if (_delegateHolder.Serializer is not null)
+                return await _delegateHolder.Serializer(
+                    lambdaHostContext,
+                    _settings.LambdaSerializer
+                );
+
+            return new MemoryStream(0);
+        };
 
     private static LambdaInvocationDelegate BuildMiddlewarePipeline(
         List<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>> middlewares,
