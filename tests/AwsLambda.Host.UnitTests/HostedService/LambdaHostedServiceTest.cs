@@ -121,9 +121,8 @@ public class LambdaHostedServiceTest
         startTask.Should().Be(Task.CompletedTask);
 
         executeTcs.SetResult();
-        var timeoutTcs = new TaskCompletionSource();
-        var completedFirst = await Task.WhenAny(stopApplicationCalled.Task, timeoutTcs.Task);
-        completedFirst.Should().Be(stopApplicationCalled.Task);
+        await stopApplicationCalled.Task;
+        stopApplicationCalled.Task.IsCompleted.Should().BeTrue();
     }
 
     [Fact]
