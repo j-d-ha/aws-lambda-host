@@ -69,7 +69,7 @@ public class LambdaHostedServiceTest
     // ============================================================================
 
     [Fact]
-    public async Task StartAsync_WithRunningTask_ReturnsCompletedTask()
+    public void StartAsync_WithRunningTask_ReturnsCompletedTask()
     {
         // Arrange
         SetupHandlerFactory();
