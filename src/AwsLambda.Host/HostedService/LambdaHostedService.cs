@@ -3,26 +3,25 @@ using Microsoft.Extensions.Hosting;
 namespace AwsLambda.Host;
 
 /// <summary>
-/// Orchestrates the Lambda hosting environment lifecycle.
-/// Delegates specific concerns to specialized components.
+///     Orchestrates the Lambda hosting environment lifecycle.
+///     Delegates specific concerns to specialized components.
 /// </summary>
 internal sealed class LambdaHostedService : BackgroundService
 {
     private readonly ILambdaBootstrapOrchestrator _bootstrap;
-
     private readonly List<Exception> _exceptions = [];
     private readonly ILambdaHandlerFactory _handlerFactory;
 
     public LambdaHostedService(
-        ILambdaHandlerFactory handlerFactory,
-        ILambdaBootstrapOrchestrator bootstrap
+        ILambdaBootstrapOrchestrator bootstrap,
+        ILambdaHandlerFactory handlerFactory
     )
     {
-        ArgumentNullException.ThrowIfNull(handlerFactory);
         ArgumentNullException.ThrowIfNull(bootstrap);
+        ArgumentNullException.ThrowIfNull(handlerFactory);
 
-        _handlerFactory = handlerFactory;
         _bootstrap = bootstrap;
+        _handlerFactory = handlerFactory;
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
