@@ -11,9 +11,15 @@ internal interface ILambdaBootstrapOrchestrator
     /// <summary>
     /// Runs the Lambda bootstrap with the provided handler.
     /// </summary>
-    /// <param name="handler">The processed handler function.</param>
-    /// <param name="stoppingToken">Cancellation token for service shutdown.</param>
-    /// <returns>A task representing the bootstrap execution.</returns>
+    /// <remarks>
+    /// This method starts and manages the AWS Lambda bootstrap loop, which continuously
+    /// polls the Lambda runtime API for invocation events. The handler processes each
+    /// invocation and returns the response. The bootstrap continues until the service
+    /// is stopped or a fatal error occurs.
+    /// </remarks>
+    /// <param name="handler">The processed handler function that accepts input stream and Lambda context.</param>
+    /// <param name="stoppingToken">Cancellation token triggered when the service is shutting down.</param>
+    /// <returns>A task representing the asynchronous bootstrap execution.</returns>
     Task RunAsync(
         Func<Stream, ILambdaContext, Task<Stream>> handler,
         CancellationToken stoppingToken

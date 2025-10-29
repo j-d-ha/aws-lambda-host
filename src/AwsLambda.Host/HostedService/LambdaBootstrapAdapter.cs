@@ -12,9 +12,15 @@ internal sealed class LambdaBootstrapAdapter : ILambdaBootstrapOrchestrator
 {
     private readonly LambdaHostSettings _settings;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LambdaBootstrapAdapter"/> class.
+    /// </summary>
+    /// <param name="lambdaHostSettings">The options containing Lambda host bootstrap configuration.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="lambdaHostSettings"/> is null.</exception>
     public LambdaBootstrapAdapter(IOptions<LambdaHostSettings> lambdaHostSettings)
     {
         ArgumentNullException.ThrowIfNull(lambdaHostSettings);
+
         _settings = lambdaHostSettings.Value;
     }
 
@@ -26,6 +32,9 @@ internal sealed class LambdaBootstrapAdapter : ILambdaBootstrapOrchestrator
     /// because there is no public constructor that accepts both. This adapter works around
     /// that limitation by conditionally creating the bootstrap based on configuration.
     /// </remarks>
+    /// <param name="handler">The processed handler function that accepts input stream and Lambda context.</param>
+    /// <param name="stoppingToken">Cancellation token triggered when the service is shutting down.</param>
+    /// <returns>A task representing the asynchronous bootstrap execution.</returns>
     public async Task RunAsync(
         Func<Stream, ILambdaContext, Task<Stream>> handler,
         CancellationToken stoppingToken
