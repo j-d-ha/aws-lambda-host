@@ -9,6 +9,7 @@
     <File Path=".editorconfig" />
     <File Path="LICENSE" />
     <File Path=".gitignore"/>
+    <File Path="Directory.Build.props"/>
   </Folder>
   <Folder Name="/src/">
     <Project Path="src\AwsLambda.Host.Abstractions\AwsLambda.Host.Abstractions.csproj"
