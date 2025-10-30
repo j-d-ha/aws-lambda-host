@@ -17,6 +17,9 @@ public class LambdaHostedServiceTest
     private readonly ILambdaHandlerFactory _handlerFactory =
         Substitute.For<ILambdaHandlerFactory>();
 
+    private readonly ILambdaLifecycleOrchestrator _lifecycle =
+        Substitute.For<ILambdaLifecycleOrchestrator>();
+
     private readonly IHostApplicationLifetime _lifetime =
         Substitute.For<IHostApplicationLifetime>();
 
@@ -28,7 +31,7 @@ public class LambdaHostedServiceTest
     public void Constructor_WithNullBootstrap_ThrowsArgumentNullException()
     {
         // Act
-        var action = () => new LambdaHostedService(null!, _handlerFactory, _lifetime);
+        var action = () => new LambdaHostedService(null!, _handlerFactory, _lifetime, _lifecycle);
 
         // Assert
         action.Should().ThrowExactly<ArgumentNullException>().WithParameterName("bootstrap");
@@ -38,7 +41,7 @@ public class LambdaHostedServiceTest
     public void Constructor_WithNullHandlerFactory_ThrowsArgumentNullException()
     {
         // Act
-        var action = () => new LambdaHostedService(_bootstrap, null!, _lifetime);
+        var action = () => new LambdaHostedService(_bootstrap, null!, _lifetime, _lifecycle);
 
         // Assert
         action.Should().ThrowExactly<ArgumentNullException>().WithParameterName("handlerFactory");
@@ -48,7 +51,7 @@ public class LambdaHostedServiceTest
     public void Constructor_WithNullLifetime_ThrowsArgumentNullException()
     {
         // Act
-        var action = () => new LambdaHostedService(_bootstrap, _handlerFactory, null!);
+        var action = () => new LambdaHostedService(_bootstrap, _handlerFactory, null!, _lifecycle);
 
         // Assert
         action.Should().ThrowExactly<ArgumentNullException>().WithParameterName("lifetime");
@@ -58,7 +61,7 @@ public class LambdaHostedServiceTest
     public void Constructor_WithValidDependencies_CreatesInstanceSuccessfully()
     {
         // Act
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         // Assert
         service.Should().NotBeNull();
@@ -73,8 +76,9 @@ public class LambdaHostedServiceTest
     {
         // Arrange
         SetupHandlerFactory();
+        SetupLifecycle();
         var bootstrapTcs = SetupBootstrapRunAsync();
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         // Act
         var result = service.StartAsync(CancellationToken.None);
@@ -91,7 +95,7 @@ public class LambdaHostedServiceTest
         var testException = new InvalidOperationException("Test error");
         _handlerFactory.CreateHandler(Arg.Any<CancellationToken>()).Throws(testException);
 
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         // Act
         var result = service.StartAsync(CancellationToken.None);
@@ -109,7 +113,7 @@ public class LambdaHostedServiceTest
         var executeTcs = SetupBootstrapRunAsync();
         var stopApplicationCalled = TrackStopApplicationCall();
 
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         // Act
         var startTask = service.StartAsync(CancellationToken.None);
@@ -127,8 +131,9 @@ public class LambdaHostedServiceTest
     {
         // Arrange
         SetupHandlerFactory();
+        SetupLifecycle();
         var bootstrapTcs = SetupBootstrapRunAsync();
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         // Act
         await service.StartAsync(CancellationToken.None);
@@ -146,7 +151,8 @@ public class LambdaHostedServiceTest
     public async Task StopAsync_WithoutStart_ReturnsSuccessfully()
     {
         // Arrange
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        SetupLifecycle();
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         // Act & Assert
         var action = async () => await service.StopAsync(CancellationToken.None);
@@ -158,8 +164,9 @@ public class LambdaHostedServiceTest
     {
         // Arrange
         SetupHandlerFactory();
+        SetupLifecycle();
         var bootstrapTcs = SetupBootstrapRunAsync();
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         await service.StartAsync(CancellationToken.None);
 
@@ -178,8 +185,9 @@ public class LambdaHostedServiceTest
     {
         // Arrange
         SetupHandlerFactory();
+        SetupLifecycle();
         var bootstrapTcs = SetupBootstrapRunAsync();
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         await service.StartAsync(CancellationToken.None);
 
@@ -198,7 +206,7 @@ public class LambdaHostedServiceTest
         SetupHandlerFactory();
         var testException = new InvalidOperationException("Bootstrap error");
         var bootstrapTcs = SetupBootstrapRunAsync();
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         await service.StartAsync(CancellationToken.None);
 
@@ -218,8 +226,9 @@ public class LambdaHostedServiceTest
     {
         // Arrange
         SetupHandlerFactory();
+        SetupLifecycle();
         var bootstrapTcs = SetupBootstrapRunAsync();
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         await service.StartAsync(CancellationToken.None);
 
@@ -238,8 +247,9 @@ public class LambdaHostedServiceTest
     {
         // Arrange
         SetupHandlerFactory();
+        SetupLifecycle();
         var bootstrapTcs = SetupBootstrapRunAsync();
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         await service.StartAsync(CancellationToken.None);
         service.Dispose();
@@ -260,8 +270,9 @@ public class LambdaHostedServiceTest
     {
         // Arrange
         SetupHandlerFactory();
+        SetupLifecycle();
         var bootstrapTcs = SetupBootstrapRunAsync();
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         await service.StartAsync(CancellationToken.None);
 
@@ -278,7 +289,8 @@ public class LambdaHostedServiceTest
     public void Dispose_WithoutStartAsync_DoesNotThrow()
     {
         // Arrange
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        SetupLifecycle();
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         // Act & Assert
         var action = () => service.Dispose();
@@ -294,8 +306,9 @@ public class LambdaHostedServiceTest
     {
         // Arrange
         SetupHandlerFactory();
+        SetupLifecycle();
         var bootstrapTcs = SetupBootstrapRunAsync();
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         // Act
         await service.StartAsync(CancellationToken.None);
@@ -315,8 +328,9 @@ public class LambdaHostedServiceTest
     {
         // Arrange
         SetupHandlerFactory();
+        SetupLifecycle();
         var bootstrapTcs = SetupBootstrapRunAsync();
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         // Act
         await service.StartAsync(CancellationToken.None);
@@ -333,7 +347,7 @@ public class LambdaHostedServiceTest
         SetupHandlerFactory();
         var exceptionToThrow = new InvalidOperationException("Test error");
         var bootstrapTcs = SetupBootstrapRunAsync();
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         // Act
         await service.StartAsync(CancellationToken.None);
@@ -350,8 +364,9 @@ public class LambdaHostedServiceTest
     {
         // Arrange
         SetupHandlerFactory();
+        SetupLifecycle();
         var bootstrapTcs = SetupBootstrapRunAsync();
-        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime);
+        var service = new LambdaHostedService(_bootstrap, _handlerFactory, _lifetime, _lifecycle);
 
         await service.StartAsync(CancellationToken.None);
 
@@ -380,6 +395,16 @@ public class LambdaHostedServiceTest
     {
         var handler = CreateMockHandler();
         _handlerFactory.CreateHandler(Arg.Any<CancellationToken>()).Returns(handler);
+    }
+
+    /// <summary>
+    /// Sets up the lifecycle orchestrator to return an empty exception list on shutdown.
+    /// </summary>
+    private void SetupLifecycle()
+    {
+        _lifecycle
+            .OnShutdown(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IEnumerable<Exception>>([]));
     }
 
     /// <summary>
