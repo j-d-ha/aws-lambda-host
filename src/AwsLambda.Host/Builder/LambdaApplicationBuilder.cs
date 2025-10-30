@@ -28,6 +28,7 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
         // Register Lambda execution components
         Services.AddSingleton<ILambdaHandlerFactory, LambdaHandlerComposer>();
         Services.AddSingleton<ILambdaBootstrapOrchestrator, LambdaBootstrapAdapter>();
+        Services.AddSingleton<ILambdaLifecycleOrchestrator, LambdaLifecycleOrchestrator>();
 
         // Register LambdaHostedService as IHostedService
         Services.AddHostedService<LambdaHostedService>();

@@ -11,6 +11,7 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
     private readonly ILambdaBootstrapOrchestrator _bootstrap;
     private readonly List<Exception> _exceptions = [];
     private readonly ILambdaHandlerFactory _handlerFactory;
+    private readonly ILambdaLifecycleOrchestrator _lifecycle;
     private readonly IHostApplicationLifetime _lifetime;
 
     private Task? _executeTask;
@@ -28,16 +29,19 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
     public LambdaHostedService(
         ILambdaBootstrapOrchestrator bootstrap,
         ILambdaHandlerFactory handlerFactory,
-        IHostApplicationLifetime lifetime
+        IHostApplicationLifetime lifetime,
+        ILambdaLifecycleOrchestrator lifecycle
     )
     {
         ArgumentNullException.ThrowIfNull(bootstrap);
         ArgumentNullException.ThrowIfNull(handlerFactory);
         ArgumentNullException.ThrowIfNull(lifetime);
+        ArgumentNullException.ThrowIfNull(lifecycle);
 
         _bootstrap = bootstrap;
         _handlerFactory = handlerFactory;
         _lifetime = lifetime;
+        _lifecycle = lifecycle;
     }
 
     /// <inheritdoc />
@@ -104,6 +108,9 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
         {
             _exceptions.Add(ex);
         }
+
+        // Run shutdown tasks
+        await _lifecycle.OnShutdown(_exceptions, cancellationToken);
 
         if (_exceptions.Count > 0)
             throw new AggregateException(
