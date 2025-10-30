@@ -73,6 +73,21 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
             return new LambdaCancellationTokenSourceFactory(settings.InvocationCancellationBuffer);
         });
 
+        // Set the shutdown timeout to the configured value minus the buffer.
+        var lambdaHostOptions = Services
+            .BuildServiceProvider()
+            .GetRequiredService<IOptions<LambdaHostOptions>>()
+            .Value;
+
+        var shutdownTimeout =
+            lambdaHostOptions.RuntimeShutdownDuration
+            - lambdaHostOptions.RuntimeShutdownDurationBuffer;
+
+        Services.PostConfigure<HostOptions>(options =>
+            options.ShutdownTimeout =
+                shutdownTimeout >= TimeSpan.Zero ? shutdownTimeout : TimeSpan.Zero
+        );
+
         var host = _hostBuilder.Build();
 
         return new LambdaApplication(host);

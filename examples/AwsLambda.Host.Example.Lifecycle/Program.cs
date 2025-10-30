@@ -5,9 +5,10 @@ using Microsoft.Extensions.Logging;
 
 var builder = LambdaApplication.CreateBuilder();
 
-builder.Services.Configure<HostOptions>(options =>
+builder.Services.ConfigureLambdaHost(options =>
 {
-    options.ShutdownTimeout = TimeSpan.FromSeconds(2);
+    options.RuntimeShutdownDuration = TimeSpan.FromSeconds(3);
+    options.RuntimeShutdownDurationBuffer = TimeSpan.FromSeconds(1);
 });
 
 var lambda = builder.Build();
@@ -42,7 +43,12 @@ lambda.OnShutdown(
         while (!token.IsCancellationRequested)
         {
             logger.LogInformation("Loop {counter}", counter++);
-            await Task.Delay(TimeSpan.FromMilliseconds(100));
+
+            try
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(100), token);
+            }
+            catch (TaskCanceledException) { }
         }
     }
 );
