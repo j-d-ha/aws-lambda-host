@@ -1,3 +1,4 @@
+using LanguageExt;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AwsLambda.Host;
@@ -21,21 +22,16 @@ internal class LambdaLifecycleOrchestrator : ILambdaLifecycleOrchestrator
 
     public async Task OnShutdown(List<Exception> exceptions, CancellationToken cancellationToken)
     {
-        var tasks = new Task<(bool Success, Exception? Error)>[
-            _delegateHolder.ShutdownHandlers.Count
-        ];
-
-        for (var i = 0; i < _delegateHolder.ShutdownHandlers.Count; i++)
-            tasks[i] = RunShutdownHandler(_delegateHolder.ShutdownHandlers[i], cancellationToken);
+        var tasks = _delegateHolder.ShutdownHandlers.Select(h =>
+            RunShutdownHandler(h, cancellationToken)
+        );
 
         var output = await Task.WhenAll(tasks);
 
-        foreach (var (success, error) in output)
-            if (!success)
-                exceptions.Add(error!);
+        exceptions.AddRange(output.Somes());
     }
 
-    private async Task<(bool Success, Exception? Error)> RunShutdownHandler(
+    private async Task<Option<Exception>> RunShutdownHandler(
         LambdaShutdownDelegate handler,
         CancellationToken cancellationToken
     )
@@ -44,11 +40,11 @@ internal class LambdaLifecycleOrchestrator : ILambdaLifecycleOrchestrator
         {
             using var scope = _scopeFactory.CreateScope();
             await handler(scope.ServiceProvider, cancellationToken);
-            return (true, null);
+            return Option<Exception>.None;
         }
         catch (Exception ex)
         {
-            return (false, ex);
+            return Option<Exception>.Some(ex);
         }
     }
 }

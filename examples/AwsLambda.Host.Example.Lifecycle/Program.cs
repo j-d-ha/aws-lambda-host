@@ -21,7 +21,6 @@ lambda.OnShutdown(
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogInformation("1 Shutting down...");
-        // throw new Exception("test1");
         await Task.Delay(TimeSpan.FromSeconds(1), token);
     }
 );
@@ -31,8 +30,20 @@ lambda.OnShutdown(
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogInformation("2 Shutting down...");
-        // throw new Exception("test2");
         await Task.Delay(TimeSpan.FromSeconds(1), token);
+    }
+);
+
+lambda.OnShutdown(
+    async (services, token) =>
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        var counter = 0;
+        while (!token.IsCancellationRequested)
+        {
+            logger.LogInformation("Loop {counter}", counter++);
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
+        }
     }
 );
 
