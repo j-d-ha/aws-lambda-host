@@ -41,10 +41,8 @@ internal static class UseOpenTelemetryTracingSyntaxProvider
             )!;
 
             return new UseOpenTelemetryTracingInfo(
-                LocationInfo: LocationInfo.CreateFrom(context.Node),
-                InterceptableLocationInfo: InterceptableLocationInfo.CreateFrom(
-                    interceptableLocation
-                )
+                LocationInfo.CreateFrom(context.Node),
+                InterceptableLocationInfo.CreateFrom(interceptableLocation)
             );
         }
 
