@@ -95,15 +95,6 @@ internal static class MapHandlerSourceOutput
 
         var shouldAwait = delegateInfo.ResponseType.StartsWith(TypeConstants.Task);
 
-        // Unwrap Task<T>
-        var responseType = delegateInfo.ResponseType;
-        if (responseType.StartsWith(TypeConstants.Task + "<"))
-        {
-            var startIndex = responseType.IndexOf('<') + 1;
-            var endIndex = responseType.LastIndexOf('>');
-            responseType = responseType.Substring(startIndex, endIndex - startIndex);
-        }
-
         var inputEvent = delegateInfo.EventParameter is { } p
             ? new { IsStream = p.Type == TypeConstants.Stream, Type = p.Type }
             : null;
@@ -123,8 +114,8 @@ internal static class MapHandlerSourceOutput
             ? new
             {
                 ResponseIsStream = delegateInfo.ResponseType == TypeConstants.Stream,
-                ResponseType = responseType,
-                ResponseTypeIsNullable = responseType.EndsWith("?"),
+                ResponseType = delegateInfo.UnwrappedResponseType,
+                ResponseTypeIsNullable = delegateInfo.UnwrappedResponseType.EndsWith("?"),
             }
             : null;
 
@@ -155,7 +146,7 @@ internal static class MapHandlerSourceOutput
         var eventType = delegateInfo.EventParameter is { } p ? p.Type : null;
 
         // get the handler output return type
-        var responseType = delegateInfo.HasResponse ? delegateInfo.ResponseType : null;
+        var responseType = delegateInfo.HasResponse ? delegateInfo.UnwrappedResponseType : null;
 
         // interceptable locations
         var locations = useOpenTelemetryTracingInfos.Select(u => u.InterceptableLocationInfo);

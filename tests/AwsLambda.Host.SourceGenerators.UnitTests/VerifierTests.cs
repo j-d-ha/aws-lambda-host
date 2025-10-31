@@ -912,6 +912,40 @@ public class VerifyTests
             """
         );
 
+    [Fact]
+    public async Task Test_OtelEnabled_ExpressionLambda_DiAndAsyncAndAwait() =>
+        await Verify(
+            """
+            using System.Threading.Tasks;
+            using AwsLambda.Host;
+            using Microsoft.Extensions.DependencyInjection;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+            builder.Services.AddSingleton<IService, Service>();
+
+            var lambda = builder.Build();
+
+            lambda.UseOpenTelemetryTracing();
+
+            lambda.MapHandler(
+                async ([Event] string input, IService service) => (await service.GetMessage()).ToUpper()
+            );
+
+            await lambda.RunAsync();
+
+            public interface IService
+            {
+                Task<string> GetMessage();
+            }
+
+            public class Service : IService
+            {
+                public Task<string> GetMessage() => Task.FromResult("hello world");
+            }
+            """
+        );
+
     private static Task Verify(string source)
     {
         var (driver, originalCompilation) = GeneratorTestHelpers.GenerateFromSource(source);
