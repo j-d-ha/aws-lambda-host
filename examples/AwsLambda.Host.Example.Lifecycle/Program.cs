@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using AwsLambda.Host;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 var builder = LambdaApplication.CreateBuilder();
 
@@ -20,24 +18,31 @@ var lambda = builder.Build();
 
 lambda.UseClearLambdaOutputFormatting();
 
-lambda.MapHandler(() => new Response("Hello world"));
+lambda.MapHandler(() =>
+{
+    Console.WriteLine("Hello world");
+    return new Response("Hello world");
+});
 
 lambda.OnShutdown(
     async (services, token) =>
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogInformation("1 Shutting down...");
-        await Task.Delay(TimeSpan.FromSeconds(1), token);
+        Console.WriteLine("Shutting down...");
     }
 );
 
 lambda.OnShutdown(
-    Task (IService service, CancellationToken token) =>
+    Task (IService service = null) =>
     {
-        Console.WriteLine(service.GetMessage());
+        Console.WriteLine(service?.GetMessage());
         return Task.CompletedTask;
     }
 );
+
+lambda.OnShutdown(Task () =>
+{
+    return Task.CompletedTask;
+});
 
 await lambda.RunAsync();
 
@@ -50,5 +55,5 @@ public interface IService
 
 public class Service : IService
 {
-    public string GetMessage() => "Hello world";
+    public string GetMessage() => $"Message from {nameof(Service)} derived from {nameof(IService)}";
 }
