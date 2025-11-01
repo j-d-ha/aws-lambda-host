@@ -1,5 +1,7 @@
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
+using AwsLambda.Host.SourceGenerators.Extensions;
 using AwsLambda.Host.SourceGenerators.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -50,6 +52,14 @@ internal static class OnShutdownSyntaxProvider
         if (delegateInfo.Value.IsBaseOnShutdownCall())
             return null;
 
+        // get generic type arguments
+        var typeArguments = targetOperation
+            .TargetMethod.TypeArguments.Zip(
+                targetOperation.TargetMethod.TypeParameters,
+                (argument, parameter) => new GenericInfo(argument.GetAsGlobal(), parameter.Name)
+            )
+            .ToImmutableArray();
+
         // get interceptable location
         var interceptableLocation = context.SemanticModel.GetInterceptableLocation(
             invocationExpr,
@@ -59,7 +69,8 @@ internal static class OnShutdownSyntaxProvider
         return new HigherOrderMethodInfo(
             LocationInfo: LocationInfo.CreateFrom(context.Node),
             DelegateInfo: delegateInfo.Value,
-            InterceptableLocationInfo: InterceptableLocationInfo.CreateFrom(interceptableLocation)
+            InterceptableLocationInfo: InterceptableLocationInfo.CreateFrom(interceptableLocation),
+            GenericTypeArguments: typeArguments
         );
     }
 
