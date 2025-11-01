@@ -46,4 +46,57 @@ public class OnShutdownVerifyTests
             """,
             0
         );
+
+    [Fact]
+    public async Task Test_OnShutdown_PrimitiveInput() =>
+        await GeneratorTestHelpers.Verify(
+            """
+            using System.Threading.Tasks;
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.OnShutdown(
+                Task (string x, int y) =>
+                {
+                    return Task.CompletedTask;
+                }
+            );
+
+            await lambda.RunAsync();
+            """,
+            0
+        );
+
+    [Fact]
+    public async Task Test_OnShutdown_NullableValueAndReferenceInputs() =>
+        await GeneratorTestHelpers.Verify(
+            """
+            using System.Threading.Tasks;
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.OnShutdown(
+                Task (string? x, IService? y) =>
+                {
+                    return Task.CompletedTask;
+                }
+            );
+
+            await lambda.RunAsync();
+
+            public interface IService
+            {
+                Task<string> GetMessage();
+            }
+            """,
+            0
+        );
 }

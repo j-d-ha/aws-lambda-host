@@ -1,8 +1,59 @@
+using System.Collections.Generic;
+using System.Linq;
+using AwsLambda.Host.SourceGenerators.Extensions;
+using Microsoft.CodeAnalysis;
+
 namespace AwsLambda.Host.SourceGenerators.Models;
 
 internal readonly record struct ParameterInfo(
     string Type,
+    string Name,
     LocationInfo? LocationInfo,
     ParameterSource Source,
-    string? KeyedServiceKey
-);
+    string? KeyedServiceKey,
+    bool IsNullable = false,
+    bool IsOptional = false
+)
+{
+    internal static ParameterInfo Create(IParameterSymbol p)
+    {
+        var type = p.Type.GetAsGlobal();
+        var name = p.Name;
+        var location = Models.LocationInfo.CreateFrom(p);
+        var (source, key) = GetSourceFromAttribute(p.GetAttributes(), type);
+        var isNullable = p.NullableAnnotation == NullableAnnotation.Annotated;
+        var isOptional = p.IsOptional;
+
+        return new ParameterInfo(type, name, location, source, key, isNullable, isOptional);
+    }
+
+    private static (ParameterSource Source, string? KeyedServiceKey) GetSourceFromAttribute(
+        IEnumerable<AttributeData> attributes,
+        string type
+    )
+    {
+        // try and extract source from attributes
+        foreach (var attribute in attributes)
+            switch (attribute.AttributeClass?.ToString())
+            {
+                case AttributeConstants.EventAttribute:
+                    return (ParameterSource.Event, null);
+
+                case AttributeConstants.FromKeyedService:
+                    var key = attribute
+                        .ConstructorArguments.Where(a => a.Value is not null)
+                        .Select(a => a.Value!.ToString())
+                        .SingleOrDefault();
+                    return (ParameterSource.KeyedService, key);
+            }
+
+        // fallback to get source from type
+        return type switch
+        {
+            TypeConstants.CancellationToken => (ParameterSource.ContextCancellation, null),
+            TypeConstants.ILambdaContext => (ParameterSource.Context, null),
+            TypeConstants.ILambdaHostContext => (ParameterSource.Context, null),
+            _ => (ParameterSource.Service, null),
+        };
+    }
+};
