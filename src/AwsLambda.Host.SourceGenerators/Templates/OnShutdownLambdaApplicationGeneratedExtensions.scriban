@@ -1,0 +1,44 @@
+namespace AwsLambda.Host
+{
+    using System;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.DependencyInjection;
+    
+    file static class OnShutdownLambdaApplicationGeneratedExtensions
+    {
+        {{~ for call in calls ~}}
+        // Location: {{ location.display_location }}
+        [InterceptsLocation({{ location.version }}, "{{ location.data }}")]
+        internal static ILambdaApplication OnShutdownInterceptor{{ for.index0 }}{{ generic_parameters }}(
+            this ILambdaApplication application,
+            {{ handler_signature }} handler
+        )
+        {
+            Task OnShutdown(IServiceProvider serviceCollection, CancellationToken cancellationToken)
+            {
+                {{~ if has_any_keyed_service_parameter ~}}
+                if (serviceProvider.GetService<IServiceProviderIsService>() is not IServiceProviderIsKeyedService)
+                {
+                    throw new InvalidOperationException($"Unable to resolve service referenced by {nameof(FromKeyedServicesAttribute)}. The service provider doesn't support keyed services.");
+                }
+                {{~ end ~}}
+#pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
+                {{~ for handler_arg in handler_args ~}}
+                var arg{{ for.index }} = {{ handler_arg }};
+                {{~ end ~}}
+#pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
+#pragma warning disable CS8604 // Possible null reference argument.
+                return handler({{ for arg in handler_args }}arg{{ for.index }}{{ if !for.last }}, {{ end }}{{ end }});
+#pragma warning restore CS8604 // Possible null reference argument.
+            }
+            
+            return application.OnShutdown(OnShutdown);
+        }
+        {{~ if !for.last ~}}
+        
+        {{~ end ~}}
+        {{~ end ~}}
+    }
+}
