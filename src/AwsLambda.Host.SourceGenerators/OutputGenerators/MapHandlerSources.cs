@@ -6,9 +6,9 @@ namespace AwsLambda.Host.SourceGenerators;
 
 internal static class MapHandlerSources
 {
-    internal static string Generate(MapHandlerInvocationInfo mapHandlerInvocationInfo)
+    internal static string Generate(HigherOrderMethodInfo higherOrderMethodInfo)
     {
-        var delegateInfo = mapHandlerInvocationInfo.DelegateInfo;
+        var delegateInfo = higherOrderMethodInfo.DelegateInfo;
 
         // build handler function signature
         var handlerSignature = delegateInfo.BuildHandlerSignature();
@@ -32,7 +32,7 @@ internal static class MapHandlerSources
 
         var model = new
         {
-            Location = mapHandlerInvocationInfo.InterceptableLocationInfo,
+            Location = higherOrderMethodInfo.InterceptableLocationInfo,
             HandlerSignature = handlerSignature,
             HandlerArgs = handlerArgs,
             ShouldAwait = delegateInfo.IsAwaitable,

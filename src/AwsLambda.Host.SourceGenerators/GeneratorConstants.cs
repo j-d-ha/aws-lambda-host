@@ -22,6 +22,8 @@ internal static class TypeConstants
     internal const string Func = "global::System.Func";
 
     internal const string Stream = "global::System.IO.Stream";
+
+    internal const string IServiceProvider = "global::System.IServiceProvider";
 }
 
 /// <summary>
@@ -38,6 +40,8 @@ internal static class AttributeConstants
 internal static class GeneratorConstants
 {
     internal const string MapHandlerMethodName = "MapHandler";
+
+    internal const string OnShutdownMethodName = "OnShutdown";
 
     internal const string UseOpenTelemetryTracingMethodName = "UseOpenTelemetryTracing";
 

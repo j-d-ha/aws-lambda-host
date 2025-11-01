@@ -8,11 +8,11 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace AwsLambda.Host.SourceGenerators;
 
-internal static class MapHandlerSyntaxProvider
+internal static class OnShutdownSyntaxProvider
 {
     internal static bool Predicate(SyntaxNode node, CancellationToken cancellationToken) =>
         node.TryGetMethodName(out var name)
-        && name == GeneratorConstants.MapHandlerMethodName
+        && name == GeneratorConstants.OnShutdownMethodName
         && !node.IsGeneratedFile();
 
     internal static HigherOrderMethodInfo? Transformer(
@@ -46,6 +46,10 @@ internal static class MapHandlerSyntaxProvider
         if (delegateInfo is null)
             return null;
 
+        // filter out non-generic shutdown method calls
+        if (delegateInfo.Value.IsBaseOnShutdownCall())
+            return null;
+
         // get interceptable location
         var interceptableLocation = context.SemanticModel.GetInterceptableLocation(
             invocationExpr,
@@ -58,4 +62,17 @@ internal static class MapHandlerSyntaxProvider
             InterceptableLocationInfo: InterceptableLocationInfo.CreateFrom(interceptableLocation)
         );
     }
+
+    // we want to filter out the non-generic shutdown method calls that use the method signature
+    // defined in ILambdaApplication. this is LambdaShutdownDelegate.
+    // Func<IServiceProvider, CancellationToken, Task>
+    private static bool IsBaseOnShutdownCall(this DelegateInfo delegateInfo) =>
+        delegateInfo
+            is {
+                FullResponseType: TypeConstants.Task,
+                Parameters: [
+                    { Type: TypeConstants.IServiceProvider },
+                    { Type: TypeConstants.CancellationToken },
+                ],
+            };
 }
