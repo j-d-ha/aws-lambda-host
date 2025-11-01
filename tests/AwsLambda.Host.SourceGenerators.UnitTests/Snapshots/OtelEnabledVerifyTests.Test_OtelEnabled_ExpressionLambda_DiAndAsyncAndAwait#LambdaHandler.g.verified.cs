@@ -34,8 +34,8 @@ namespace AwsLambda.Host
 
     file static class LambdaHostMapHandlerExtensions
     {
-        // Location: InputFile.cs(13,8)
-        [InterceptsLocation(1, "BEATQlVWiueL8i17Bn8U5zgBAABJbnB1dEZpbGUuY3M=")]
+        // Location: InputFile.cs(12,8)
+        [InterceptsLocation(1, "NO8BH5ccNgWMTtTeKT9P5QQBAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaApplication MapHandlerInterceptor(
             this ILambdaApplication application,
             Delegate handler
@@ -98,7 +98,7 @@ namespace AwsLambda.Host
     
     file static class LambdaHostUseOpenTelemetryTracingExtensions
     {
-        [InterceptsLocation(1, "BEATQlVWiueL8i17Bn8U5xUBAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(11,8)
+        [InterceptsLocation(1, "NO8BH5ccNgWMTtTeKT9P5eEAAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(10,8)
         internal static ILambdaApplication UseOpenTelemetryTracingInterceptor(
             this ILambdaApplication application
         )

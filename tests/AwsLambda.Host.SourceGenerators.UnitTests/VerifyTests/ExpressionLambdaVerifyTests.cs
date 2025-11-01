@@ -77,11 +77,9 @@ public class ExpressionLambdaVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using AwsLambda.Host;
-            using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
-            builder.Services.AddSingleton<IService, Service>();
 
             var lambda = builder.Build();
 
@@ -95,11 +93,6 @@ public class ExpressionLambdaVerifyTests
             {
                 string GetMessage();
             }
-
-            public class Service : IService
-            {
-                public string GetMessage() => "hello world";
-            }
             """
         );
 
@@ -109,11 +102,9 @@ public class ExpressionLambdaVerifyTests
             """
             using System.Threading.Tasks;
             using AwsLambda.Host;
-            using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
-            builder.Services.AddSingleton<IService, Service>();
 
             var lambda = builder.Build();
 
@@ -127,11 +118,6 @@ public class ExpressionLambdaVerifyTests
             {
                 Task<string> GetMessage();
             }
-
-            public class Service : IService
-            {
-                public Task<string> GetMessage() => Task.FromResult("hello world");
-            }
             """
         );
 
@@ -141,12 +127,10 @@ public class ExpressionLambdaVerifyTests
             """
             using System.Threading.Tasks;
             using AwsLambda.Host;
-            using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
             using MyNamespace;
 
             var builder = LambdaApplication.CreateBuilder();
-            builder.Services.AddSingleton<IService, Service>();
 
             var lambda = builder.Build();
 
@@ -160,11 +144,6 @@ public class ExpressionLambdaVerifyTests
             public interface IService
             {
                 Task<string> GetMessage();
-            }
-
-            public class Service : IService
-            {
-                public Task<string> GetMessage() => Task.FromResult("hello world");
             }
 
             namespace MyNamespace
@@ -216,11 +195,9 @@ public class ExpressionLambdaVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using AwsLambda.Host;
-            using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
-            builder.Services.AddSingleton<IService, Service>();
             var lambda = builder.Build();
 
             lambda.MapHandler(([Event] string? input, IService service) => service.GetMessage());
@@ -231,11 +208,6 @@ public class ExpressionLambdaVerifyTests
             {
                 string? GetMessage();
             }
-
-            public class Service : IService
-            {
-                public string? GetMessage() => "hello world";
-            }
             """
         );
 
@@ -244,11 +216,9 @@ public class ExpressionLambdaVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using AwsLambda.Host;
-            using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
-            builder.Services.AddSingleton<IService, Service>();
             var lambda = builder.Build();
 
             lambda.MapHandler(string? ([Event] int? input, IService service) => service.GetMessage());
@@ -258,11 +228,6 @@ public class ExpressionLambdaVerifyTests
             public interface IService
             {
                 string? GetMessage();
-            }
-
-            public class Service : IService
-            {
-                public string? GetMessage() => "hello world";
             }
             """
         );
@@ -275,11 +240,9 @@ public class ExpressionLambdaVerifyTests
             using System.Threading.Tasks;
             using Amazon.Lambda.Core;
             using AwsLambda.Host;
-            using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
-            builder.Services.AddSingleton<IService, Service>();
             var lambda = builder.Build();
 
             lambda.MapHandler(
@@ -305,12 +268,6 @@ public class ExpressionLambdaVerifyTests
             {
                 Task<string> GetMessage();
             }
-
-            public class Service : IService
-            {
-                public Task<string> GetMessage() => Task.FromResult("hello world");
-            }
-
             """
         );
 

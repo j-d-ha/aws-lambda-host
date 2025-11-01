@@ -34,8 +34,8 @@ namespace AwsLambda.Host
 
     file static class LambdaHostMapHandlerExtensions
     {
-        // Location: InputFile.cs(11,8)
-        [InterceptsLocation(1, "vV5aTA4MT8G9EvwHqF2RXnMBAABJbnB1dEZpbGUuY3M=")]
+        // Location: InputFile.cs(10,8)
+        [InterceptsLocation(1, "IqMG6GXKYzwtohgR+tzVZ90AAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaApplication MapHandlerInterceptor(
             this ILambdaApplication application,
             Delegate handler

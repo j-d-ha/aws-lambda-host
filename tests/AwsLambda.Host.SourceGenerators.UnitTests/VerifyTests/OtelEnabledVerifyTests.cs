@@ -96,7 +96,6 @@ public class OtelEnabledVerifyTests
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
-            builder.Services.AddSingleton<IService, Service>();
 
             var lambda = builder.Build();
 
@@ -111,11 +110,6 @@ public class OtelEnabledVerifyTests
             public interface IService
             {
                 Task<string> GetMessage();
-            }
-
-            public class Service : IService
-            {
-                public Task<string> GetMessage() => Task.FromResult("hello world");
             }
             """
         );

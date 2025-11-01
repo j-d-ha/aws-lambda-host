@@ -36,8 +36,7 @@ public class MethodHandlerVerifyTests
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
-            builder.Services.AddSingleton<IService, Service>();
-            builder.Services.AddKeyedSingleton<IService>("key", (sp, _) => sp.GetRequiredService<IService>());
+
             var lambda = builder.Build();
 
             lambda.MapHandler(HandlerFactory.Handler);
@@ -47,11 +46,6 @@ public class MethodHandlerVerifyTests
             public interface IService
             {
                 string GetMessage();
-            }
-
-            public class Service : IService
-            {
-                public string GetMessage() => "hello world";
             }
 
             public static class HandlerFactory

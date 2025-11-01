@@ -8,11 +8,9 @@ public class BlockLambdaVerifyTests
             """
             using System.Threading.Tasks;
             using AwsLambda.Host;
-            using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
-            builder.Services.AddSingleton<IService, Service>();
             var lambda = builder.Build();
 
             lambda.MapHandler(
@@ -78,8 +76,6 @@ public class BlockLambdaVerifyTests
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
-            builder.Services.AddSingleton<IService, Service>();
-            builder.Services.AddKeyedSingleton<IService>("key", (sp, _) => sp.GetRequiredService<IService>());
             var lambda = builder.Build();
 
             lambda.MapHandler(
@@ -97,11 +93,6 @@ public class BlockLambdaVerifyTests
             public interface IService
             {
                 Task<string> GetMessage();
-            }
-
-            public class Service : IService
-            {
-                public Task<string> GetMessage() => Task.FromResult("hello world");
             }
             """
         );
@@ -149,11 +140,9 @@ public class BlockLambdaVerifyTests
             """
             using System;
             using AwsLambda.Host;
-            using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
-            builder.Services.AddSingleton<IService, Service>();
             var lambda = builder.Build();
 
             lambda.MapHandler(
@@ -172,12 +161,6 @@ public class BlockLambdaVerifyTests
             {
                 string GetMessage();
             }
-
-            public class Service : IService
-            {
-                public string GetMessage() => "hello world";
-            }
-
             """
         );
 
@@ -187,11 +170,9 @@ public class BlockLambdaVerifyTests
             """
             using System;
             using AwsLambda.Host;
-            using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
-            builder.Services.AddSingleton<IService, Service>();
             var lambda = builder.Build();
 
             lambda.MapHandler(
@@ -210,11 +191,6 @@ public class BlockLambdaVerifyTests
             {
                 string GetMessage();
             }
-
-            public class Service : IService
-            {
-                public string GetMessage() => "hello world";
-            }
             """
         );
 
@@ -225,11 +201,9 @@ public class BlockLambdaVerifyTests
             using System;
             using System.Threading.Tasks;
             using AwsLambda.Host;
-            using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
-            builder.Services.AddSingleton<IService, Service>();
             var lambda = builder.Build();
 
             lambda.MapHandler(
@@ -247,11 +221,6 @@ public class BlockLambdaVerifyTests
             {
                 Task<string> GetMessage();
             }
-
-            public class Service : IService
-            {
-                public Task<string> GetMessage() => Task.FromResult("hello world");
-            }
             """
         );
 
@@ -260,11 +229,9 @@ public class BlockLambdaVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using AwsLambda.Host;
-            using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
-            builder.Services.AddSingleton<IService, Service>();
             var lambda = builder.Build();
 
             lambda.MapHandler(
@@ -279,11 +246,6 @@ public class BlockLambdaVerifyTests
             public interface IService
             {
                 string? GetMessage();
-            }
-
-            public class Service : IService
-            {
-                public string? GetMessage() => "hello world";
             }
             """
         );
