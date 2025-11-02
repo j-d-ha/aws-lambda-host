@@ -36,6 +36,9 @@ public static class OnShutdownLambdaApplicationExtensions
     ///     interceptors to replace the calls. Dependencies are scoped per handler. If a CancellationToken
     ///     is requested, it will be cancelled before the Lambda runtime forces shutdown.
     /// </remarks>
+    /// <note>
+    ///     Shutdown logic should execute quickly as time is minimal before forced termination.
+    /// </note>
     /// <param name="application">The Lambda application.</param>
     /// <param name="handler">An asynchronous handler function.</param>
     /// <returns>The current <see cref="ILambdaApplication" /> instance for method chaining.</returns>
@@ -60,6 +63,9 @@ public static class OnShutdownLambdaApplicationExtensions
     ///     interceptors to replace the calls. Dependencies are scoped per handler. If a CancellationToken
     ///     is requested, it will be cancelled before the Lambda runtime forces shutdown.
     /// </remarks>
+    /// <note>
+    ///     Shutdown logic should execute quickly as time is minimal before forced termination.
+    /// </note>
     /// <typeparam name="T1">The type of the first handler parameter.</typeparam>
     /// <param name="application">The Lambda application.</param>
     /// <param name="handler">An asynchronous handler function accepting one service parameter.</param>
@@ -85,6 +91,9 @@ public static class OnShutdownLambdaApplicationExtensions
     ///     interceptors to replace the calls. Dependencies are scoped per handler. If a CancellationToken
     ///     is requested, it will be cancelled before the Lambda runtime forces shutdown.
     /// </remarks>
+    /// <note>
+    ///     Shutdown logic should execute quickly as time is minimal before forced termination.
+    /// </note>
     /// <typeparam name="T1">The type of the first handler parameter.</typeparam>
     /// <typeparam name="T2">The type of the second handler parameter.</typeparam>
     /// <param name="application">The Lambda application.</param>
@@ -111,6 +120,9 @@ public static class OnShutdownLambdaApplicationExtensions
     ///     interceptors to replace the calls. Dependencies are scoped per handler. If a CancellationToken
     ///     is requested, it will be cancelled before the Lambda runtime forces shutdown.
     /// </remarks>
+    /// <note>
+    ///     Shutdown logic should execute quickly as time is minimal before forced termination.
+    /// </note>
     /// <typeparam name="T1">The type of the first handler parameter.</typeparam>
     /// <typeparam name="T2">The type of the second handler parameter.</typeparam>
     /// <typeparam name="T3">The type of the third handler parameter.</typeparam>
@@ -138,6 +150,9 @@ public static class OnShutdownLambdaApplicationExtensions
     ///     interceptors to replace the calls. Dependencies are scoped per handler. If a CancellationToken
     ///     is requested, it will be cancelled before the Lambda runtime forces shutdown.
     /// </remarks>
+    /// <note>
+    ///     Shutdown logic should execute quickly as time is minimal before forced termination.
+    /// </note>
     /// <typeparam name="T1">The type of the first handler parameter.</typeparam>
     /// <typeparam name="T2">The type of the second handler parameter.</typeparam>
     /// <typeparam name="T3">The type of the third handler parameter.</typeparam>
@@ -166,6 +181,9 @@ public static class OnShutdownLambdaApplicationExtensions
     ///     interceptors to replace the calls. Dependencies are scoped per handler. If a CancellationToken
     ///     is requested, it will be cancelled before the Lambda runtime forces shutdown.
     /// </remarks>
+    /// <note>
+    ///     Shutdown logic should execute quickly as time is minimal before forced termination.
+    /// </note>
     /// <typeparam name="T1">The type of the first handler parameter.</typeparam>
     /// <typeparam name="T2">The type of the second handler parameter.</typeparam>
     /// <typeparam name="T3">The type of the third handler parameter.</typeparam>
@@ -195,6 +213,9 @@ public static class OnShutdownLambdaApplicationExtensions
     ///     interceptors to replace the calls. Dependencies are scoped per handler. If a CancellationToken
     ///     is requested, it will be cancelled before the Lambda runtime forces shutdown.
     /// </remarks>
+    /// <note>
+    ///     Shutdown logic should execute quickly as time is minimal before forced termination.
+    /// </note>
     /// <typeparam name="T1">The type of the first handler parameter.</typeparam>
     /// <typeparam name="T2">The type of the second handler parameter.</typeparam>
     /// <typeparam name="T3">The type of the third handler parameter.</typeparam>
@@ -225,6 +246,9 @@ public static class OnShutdownLambdaApplicationExtensions
     ///     interceptors to replace the calls. Dependencies are scoped per handler. If a CancellationToken
     ///     is requested, it will be cancelled before the Lambda runtime forces shutdown.
     /// </remarks>
+    /// <note>
+    ///     Shutdown logic should execute quickly as time is minimal before forced termination.
+    /// </note>
     /// <typeparam name="T1">The type of the first handler parameter.</typeparam>
     /// <typeparam name="T2">The type of the second handler parameter.</typeparam>
     /// <typeparam name="T3">The type of the third handler parameter.</typeparam>
@@ -256,6 +280,9 @@ public static class OnShutdownLambdaApplicationExtensions
     ///     interceptors to replace the calls. Dependencies are scoped per handler. If a CancellationToken
     ///     is requested, it will be cancelled before the Lambda runtime forces shutdown.
     /// </remarks>
+    /// <note>
+    ///     Shutdown logic should execute quickly as time is minimal before forced termination.
+    /// </note>
     /// <typeparam name="T1">The type of the first handler parameter.</typeparam>
     /// <typeparam name="T2">The type of the second handler parameter.</typeparam>
     /// <typeparam name="T3">The type of the third handler parameter.</typeparam>
@@ -288,6 +315,9 @@ public static class OnShutdownLambdaApplicationExtensions
     ///     interceptors to replace the calls. Dependencies are scoped per handler. If a CancellationToken
     ///     is requested, it will be cancelled before the Lambda runtime forces shutdown.
     /// </remarks>
+    /// <note>
+    ///     Shutdown logic should execute quickly as time is minimal before forced termination.
+    /// </note>
     /// <typeparam name="T1">The type of the first handler parameter.</typeparam>
     /// <typeparam name="T2">The type of the second handler parameter.</typeparam>
     /// <typeparam name="T3">The type of the third handler parameter.</typeparam>
@@ -321,6 +351,9 @@ public static class OnShutdownLambdaApplicationExtensions
     ///     interceptors to replace the calls. Dependencies are scoped per handler. If a CancellationToken
     ///     is requested, it will be cancelled before the Lambda runtime forces shutdown.
     /// </remarks>
+    /// <note>
+    ///     Shutdown logic should execute quickly as time is minimal before forced termination.
+    /// </note>
     /// <typeparam name="T1">The type of the first handler parameter.</typeparam>
     /// <typeparam name="T2">The type of the second handler parameter.</typeparam>
     /// <typeparam name="T3">The type of the third handler parameter.</typeparam>
