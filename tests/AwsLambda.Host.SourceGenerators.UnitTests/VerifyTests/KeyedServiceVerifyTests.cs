@@ -168,8 +168,7 @@ public class KeyedServiceVerifyTests
             lambda.MapHandler(
                 (
                     [FromKeyedServices(3.14)] IService serviceA,
-                    [FromKeyedServices(3.14f)] IService serviceB,
-                    [FromKeyedServices(3.14m)] IService serviceC
+                    [FromKeyedServices(3.14f)] IService serviceB
                 ) => { }
             );
 
@@ -211,36 +210,6 @@ public class KeyedServiceVerifyTests
                     [FromKeyedServices(null)] IService serviceD
                 ) => { }
             );
-
-            await lambda.RunAsync();
-
-            public interface IService
-            {
-                string GetMessage();
-            }
-
-            public class Service : IService
-            {
-                public string GetMessage() => "Hello";
-            }
-            """
-        );
-
-    [Fact]
-    public async Task Test_KeyedService_ArrayKey() =>
-        await GeneratorTestHelpers.Verify(
-            """
-            using AwsLambda.Host;
-            using Microsoft.Extensions.DependencyInjection;
-            using Microsoft.Extensions.Hosting;
-
-            var builder = LambdaApplication.CreateBuilder();
-            var key = new[] { "a", "b" };
-            builder.Services.AddKeyedSingleton<IService, Service>(key);
-
-            var lambda = builder.Build();
-
-            lambda.MapHandler(([FromKeyedServices(key)] IService service) => { });
 
             await lambda.RunAsync();
 

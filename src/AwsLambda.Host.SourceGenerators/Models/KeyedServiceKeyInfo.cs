@@ -9,7 +9,7 @@ internal readonly record struct KeyedServiceKeyInfo(
     string? DisplayValue,
     string? Type,
     string? BaseType,
-    LocationInfo? Location
+    LocationInfo? LocationInfo
 )
 {
     internal static KeyedServiceKeyInfo Create(AttributeData attribute)
@@ -28,8 +28,8 @@ internal readonly record struct KeyedServiceKeyInfo(
         {
             var argument = argumentList.Arguments[0];
             var location = argument.Expression.GetLocation();
-            var locationInfo = LocationInfo.CreateFrom(location);
-            return keyedServiceKeyInfo with { Location = locationInfo };
+            var locationInfo = Models.LocationInfo.CreateFrom(location);
+            return keyedServiceKeyInfo with { LocationInfo = locationInfo };
         }
 
         return keyedServiceKeyInfo;
