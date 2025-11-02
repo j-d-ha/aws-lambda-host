@@ -12,6 +12,7 @@ public class KeyedServiceVerifyTests
 
             var builder = LambdaApplication.CreateBuilder();
             builder.Services.AddKeyedSingleton<IService, Service>("myKey");
+            builder.Services.AddKeyedSingleton<IService, Service>("my\nKey");
             builder.Services.AddKeyedSingleton<IService, Service>(ServiceType.Secondary);
 
             var lambda = builder.Build();
@@ -19,7 +20,8 @@ public class KeyedServiceVerifyTests
             lambda.MapHandler(
                 (
                     [FromKeyedServices("myKey")] IService serviceA,
-                    [FromKeyedServices(ServiceType.Secondary)] IService serviceB
+                    [FromKeyedServices("my\nKey")] IService serviceB,
+                    [FromKeyedServices(ServiceType.Secondary)] IService serviceC
                 ) => { }
             );
 
@@ -160,7 +162,6 @@ public class KeyedServiceVerifyTests
             var builder = LambdaApplication.CreateBuilder();
             builder.Services.AddKeyedSingleton<IService, Service>(3.14);
             builder.Services.AddKeyedSingleton<IService, Service>(3.14f);
-            builder.Services.AddKeyedSingleton<IService, Service>(3.14m);
 
             var lambda = builder.Build();
 
@@ -239,7 +240,7 @@ public class KeyedServiceVerifyTests
 
             var lambda = builder.Build();
 
-            lambda.MapHandler(([FromKeyedServices(new[] { "a", "b" })] IService service) => { });
+            lambda.MapHandler(([FromKeyedServices(key)] IService service) => { });
 
             await lambda.RunAsync();
 
