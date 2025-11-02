@@ -6,6 +6,8 @@ namespace AwsLambda.Host;
 /// </summary>
 internal interface ILambdaLifecycleOrchestrator
 {
+    Task<bool> OnInit();
+
     /// <summary>
     /// Executes the shutdown lifecycle, running all registered shutdown handlers concurrently
     /// and collecting any exceptions that occur.
