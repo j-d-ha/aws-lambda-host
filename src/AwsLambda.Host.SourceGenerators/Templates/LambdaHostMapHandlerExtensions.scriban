@@ -18,7 +18,7 @@ namespace AwsLambda.Host
         {
             var castHandler = ({{ handler_signature }})handler;
 
-            async Task InvocationDelegate(ILambdaHostContext context)
+            {{ if should_await ~}} async {{ end ~}}Task InvocationDelegate(ILambdaHostContext context)
             {
                 {{~ if has_any_keyed_service_parameter ~}}
                 if (context.ServiceProvider.GetService<IServiceProviderIsService>() is not IServiceProviderIsKeyedService)
@@ -27,9 +27,13 @@ namespace AwsLambda.Host
                 }
                 {{~ end ~}}
                 {{~ for handler_arg in handler_args ~}}
-                var arg{{ for.index }} = {{ handler_arg }};
+                // {{ handler_arg.string }}
+                var arg{{ for.index }} = {{ handler_arg.assignment }};
                 {{~ end ~}}
                 {{ if output_response != null; ~}} context.Response = {{ end }}{{ if should_await ~}} await {{ end ~}} castHandler.Invoke({{ for arg in handler_args }}arg{{ for.index }}{{ if !for.last }}, {{ end }}{{ end }});
+                {{~ if !should_await ~}}
+                return Task.CompletedTask; 
+                {{~ end ~}}
             }
             
             Task Deserializer(ILambdaHostContext context, ILambdaSerializer serializer, Stream eventStream)

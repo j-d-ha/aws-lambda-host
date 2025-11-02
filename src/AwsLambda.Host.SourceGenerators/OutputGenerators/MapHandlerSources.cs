@@ -84,11 +84,13 @@ internal static class MapHandlerSources
         return handlerSignature;
     }
 
-    private static string[] BuildHandlerParameterAssignment(this DelegateInfo delegateInfo)
+    private static HandlerArg[] BuildHandlerParameterAssignment(this DelegateInfo delegateInfo)
     {
         var handlerArgs = delegateInfo
-            .Parameters.Select(param =>
-                param.Source switch
+            .Parameters.Select(param => new HandlerArg
+            {
+                String = param.ToPublicString(),
+                Assignment = param.Source switch
                 {
                     // Event -> deserialize to type
                     ParameterSource.Event => $"context.GetEventT<{param.Type}>()",
@@ -105,10 +107,12 @@ internal static class MapHandlerSources
 
                     // default: inject service from the DI container
                     _ => $"context.ServiceProvider.GetRequiredService<{param.Type}>()",
-                }
-            )
+                },
+            })
             .ToArray();
 
         return handlerArgs;
     }
+
+    private readonly record struct HandlerArg(string String, string Assignment);
 }
