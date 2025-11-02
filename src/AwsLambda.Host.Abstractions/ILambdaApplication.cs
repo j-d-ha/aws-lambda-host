@@ -4,6 +4,9 @@ namespace AwsLambda.Host;
 
 public interface ILambdaApplication
 {
+    /// <summary>
+    ///     Gets the service provider for resolving dependencies.
+    /// </summary>
     IServiceProvider Services { get; }
 
     ILambdaApplication Map(
