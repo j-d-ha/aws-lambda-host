@@ -719,27 +719,26 @@ public class LambdaLifecycleOrchestratorTest
         var scopeFactory = Substitute.For<IServiceScopeFactory>();
         var scope1 = Substitute.For<IServiceScope>();
         var scope2 = Substitute.For<IServiceScope>();
-        var provider1 = Substitute.For<IServiceProvider>();
-        var provider2 = Substitute.For<IServiceProvider>();
 
-        scope1.ServiceProvider.Returns(provider1);
-        scope2.ServiceProvider.Returns(provider2);
-
+        scope1.ServiceProvider.Returns(Substitute.For<IServiceProvider>());
+        scope2.ServiceProvider.Returns(Substitute.For<IServiceProvider>());
         scopeFactory.CreateScope().Returns(scope1, scope2);
 
         var delegateHolder = new DelegateHolder();
         delegateHolder.InitHandlers.Add((_, _) => Task.FromResult(true));
         delegateHolder.InitHandlers.Add((_, _) => Task.FromResult(true));
 
-        var options = CreateMockLambdaHostOptions();
-        var orchestrator = new LambdaLifecycleOrchestrator(scopeFactory, delegateHolder, options);
+        var orchestrator = new LambdaLifecycleOrchestrator(
+            scopeFactory,
+            delegateHolder,
+            CreateMockLambdaHostOptions()
+        );
 
         // Act
         var initializer = orchestrator.OnInit(CancellationToken.None);
         await initializer.Invoke();
 
         // Assert
-        // Verify that Dispose was called on each scope (using statement worked)
         scope1.Received(1).Dispose();
         scope2.Received(1).Dispose();
     }
