@@ -3,25 +3,29 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace AwsLambda.Host;
 
-[ExcludeFromCodeCoverage]
 /// <summary>
-///     Source-generated overloads for <see cref="ILambdaApplication.OnShutdown(LambdaShutdownDelegate)"/> that support
-///     automatic dependency injection with zero to ten parameters.
+///     Overloads for <see cref="ILambdaApplication.OnShutdown(LambdaShutdownDelegate)" /> that support
+///     automatic dependency injection
+///     for shutdown handlers with zero to ten parameters.
 /// </summary>
 /// <remarks>
-///     These methods are generated at compile time. Instead of manually resolving from <see cref="IServiceProvider"/>,
-///     declare handler parameters to be automatically injected. The runtime implementations throw; they must be replaced
-///     by the source generator at compile time.
+///     Source generation creates the wiring code to resolve handler dependencies, using compile-time
+///     interceptors to replace the calls. Instead of using the base delegate, declare handler
+///     parameters to be automatically injected
+///     from the dependency injection container. A scope is created for each handler invocation, and
+///     the container is disposed of
+///     after the handler returns.
 /// </remarks>
 /// <example>
 ///     <code>
-///         application.OnShutdown(async (logger, database) =>
+///         lambda.OnShutdown(async (ILogger logger, DbContext database) =>
 ///         {
 ///             logger.LogInformation("Shutting down");
 ///             await database.FlushAsync();
 ///         });
 ///     </code>
 /// </example>
+[ExcludeFromCodeCoverage]
 public static class OnShutdownLambdaApplicationExtensions
 {
     /// <summary>
