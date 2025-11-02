@@ -42,6 +42,10 @@ namespace AwsLambda.Host
         {
             Task OnShutdown(IServiceProvider serviceProvider, CancellationToken cancellationToken)
             {
+                if (serviceProvider.GetService<IServiceProviderIsService>() is not IServiceProviderIsKeyedService)
+                {
+                    throw new InvalidOperationException($"Unable to resolve service referenced by {nameof(FromKeyedServicesAttribute)}. The service provider doesn't support keyed services.");
+                }
 #pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
                 // ParameterInfo { Type = global::System.Threading.CancellationToken, Name = token, Source = CancellationToken, KeyedServiceKey = , IsNullable = False, IsOptional = False }
                 var arg0 = Unsafe.As<CancellationToken, T1>(ref cancellationToken);
