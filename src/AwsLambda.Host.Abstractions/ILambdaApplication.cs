@@ -41,4 +41,6 @@ public interface ILambdaApplication
     /// </returns>
     /// <seealso cref="LambdaShutdownDelegate"/>
     ILambdaApplication OnShutdown(LambdaShutdownDelegate handler);
+
+    ILambdaApplication OnStartup(LambdaStartupDelegate handler);
 }
