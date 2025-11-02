@@ -18,6 +18,14 @@ var lambda = builder.Build();
 
 lambda.UseClearLambdaOutputFormatting();
 
+lambda.OnInit(
+    Task<bool> (services, token) =>
+    {
+        Console.WriteLine("Initializing...");
+        return Task.FromResult(true);
+    }
+);
+
 lambda.MapHandler(() =>
 {
     Console.WriteLine("Hello world");
@@ -25,9 +33,10 @@ lambda.MapHandler(() =>
 });
 
 lambda.OnShutdown(
-    async (services, token) =>
+    (services, token) =>
     {
         Console.WriteLine("Shutting down...");
+        return Task.CompletedTask;
     }
 );
 
@@ -39,10 +48,7 @@ lambda.OnShutdown(
     }
 );
 
-lambda.OnShutdown(Task () =>
-{
-    return Task.CompletedTask;
-});
+lambda.OnShutdown(Task () => Task.CompletedTask);
 
 await lambda.RunAsync();
 
