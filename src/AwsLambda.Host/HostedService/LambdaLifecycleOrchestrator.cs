@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Amazon.Lambda.RuntimeSupport;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -62,25 +61,18 @@ internal class LambdaLifecycleOrchestrator : ILambdaLifecycleOrchestrator
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
             cts.CancelAfter(_settings.InitTimeout);
 
-            var tasks = _delegateHolder.InitHandlers.Select(h =>
-            {
-                // ReSharper disable once AccessToDisposedClosure
-                Debug.Assert(cts != null, nameof(cts) + " != null");
-                // ReSharper disable once AccessToDisposedClosure
-                return RunInitHandler(h, cts.Token);
-            });
+            var tasks = _delegateHolder.InitHandlers.Select(h => RunInitHandler(h, cts.Token));
 
-            var results = await Task.WhenAll(tasks);
+            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
             var (errors, shouldContinue) = results.Aggregate(
                 (errors: new List<Exception>(), shouldContinue: true),
                 (acc, result) =>
                 {
                     if (result.Error is not null)
-                    {
                         acc.errors.Add(result.Error);
+                    else if (!result.ShouldContinue)
                         acc.shouldContinue = false;
-                    }
 
                     return acc;
                 }
@@ -112,7 +104,7 @@ internal class LambdaLifecycleOrchestrator : ILambdaLifecycleOrchestrator
             RunShutdownHandler(h, cancellationToken)
         );
 
-        var output = await Task.WhenAll(tasks);
+        var output = await Task.WhenAll(tasks).ConfigureAwait(false);
 
         return output.Where(x => x is not null).Select(x => x!);
     }
@@ -125,7 +117,7 @@ internal class LambdaLifecycleOrchestrator : ILambdaLifecycleOrchestrator
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            await handler(scope.ServiceProvider, cancellationToken);
+            await handler(scope.ServiceProvider, cancellationToken).ConfigureAwait(false);
             return null;
         }
         catch (Exception ex)
@@ -142,7 +134,8 @@ internal class LambdaLifecycleOrchestrator : ILambdaLifecycleOrchestrator
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            var result = await handler(scope.ServiceProvider, cancellationToken);
+            var result = await handler(scope.ServiceProvider, cancellationToken)
+                .ConfigureAwait(false);
             return (null, result);
         }
         catch (Exception ex)

@@ -847,9 +847,11 @@ public class LambdaLifecycleOrchestratorTest
     public async Task OnInit_WhenHandlerThrowsOperationCanceledException_IncludesInAggregateException()
     {
         // Arrange
-        var canceledException = new OperationCanceledException();
+        var canceledException1 = new OperationCanceledException();
+        var canceledException2 = new OperationCanceledException();
         var delegateHolder = new DelegateHolder();
-        delegateHolder.InitHandlers.Add((_, _) => throw canceledException);
+        delegateHolder.InitHandlers.Add((_, _) => throw canceledException1);
+        delegateHolder.InitHandlers.Add((_, _) => throw canceledException2);
 
         var orchestrator = CreateOrchestrator(delegateHolder);
 
@@ -858,9 +860,11 @@ public class LambdaLifecycleOrchestratorTest
 
         // Assert
         var ex = await Assert.ThrowsAsync<AggregateException>(() => initializer.Invoke());
-        ex.InnerExceptions.Should().HaveCount(1);
+        ex.InnerExceptions.Should().HaveCount(2);
         ex.InnerExceptions[0].Should().BeOfType<OperationCanceledException>();
-        ex.InnerExceptions[0].Should().Be(canceledException);
+        ex.InnerExceptions[0].Should().Be(canceledException1);
+        ex.InnerExceptions[1].Should().BeOfType<OperationCanceledException>();
+        ex.InnerExceptions[1].Should().Be(canceledException2);
     }
 
     [Fact]
