@@ -14,12 +14,10 @@ public class LambdaHostOptions
     /// <remarks>Default is 3 seconds.</remarks>
     public TimeSpan InvocationCancellationBuffer { get; set; } = TimeSpan.FromSeconds(3);
 
-    /// <summary>Gets or sets the timeout duration for <see cref="ILambdaApplication.OnInit" /> callbacks.</summary>
+    /// <summary>Gets or sets the timeout duration for <see cref="ILambdaApplication.OnInit" /> handlers.</summary>
     /// <remarks>
-    ///     The cancellation token passed to initialization callbacks will be cancelled after this
-    ///     duration expires, ensuring that all initialization tasks complete within the allocated time.
-    ///     For optimal performance, initialization logic should be kept minimal to reduce cold start time.
-    ///     Default is 5 seconds.
+    ///     This value is used as the duration of the <see cref="CancellationTokenSource" /> that is
+    ///     passed to <see cref="ILambdaApplication.OnInit" /> handlers. Default is 5 seconds.
     /// </remarks>
     public TimeSpan InitTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
