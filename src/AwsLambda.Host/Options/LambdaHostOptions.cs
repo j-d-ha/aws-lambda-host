@@ -64,12 +64,19 @@ public class LambdaHostOptions
     /// </remarks>
     public TimeSpan ShutdownDurationBuffer { get; set; } = TimeSpan.FromMilliseconds(50);
 
-    /// <summary>Gets or sets the Lambda bootstrap options used to configure the AWS Lambda runtime.</summary>
+    /// <summary>
+    ///     Gets or sets whether to clear Lambda runtime output formatting on application
+    ///     initialization.
+    /// </summary>
     /// <remarks>
-    ///     Defaults to a new instance of <see cref="LambdaBootstrapOptions" /> with default settings.
-    ///     These options control how the Lambda runtime bootstrap behaves and processes incoming
-    ///     invocations.
+    ///     When set to <c>true</c>, the
+    ///     <see cref="OnInitLambdaApplicationExtensions.OnInitClearLambdaOutputFormatting" /> extension
+    ///     method is automatically registered to run during application startup. This clears the custom
+    ///     formatting applied by the Lambda runtime, allowing structured logging frameworks like Serilog
+    ///     to output JSON without corruption. Default is <c>false</c>.
     /// </remarks>
+    public bool ClearLambdaOutputFormatting { get; set; } = false;
+
     public LambdaBootstrapOptions BootstrapOptions { get; set; } = new();
 
     /// <summary>

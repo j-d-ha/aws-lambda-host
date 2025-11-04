@@ -6,7 +6,7 @@
 - GitHub Project Name: Lambda.Host Development
 - All code in this project is designed to run on AWS Lambda or generate code that will then be run
   on AWS Lambda.
-- When writing PRs, use `.github/pull_request_template.md` as the template for the PR.
+- When writing PRs, ALWAYS use `./.github/pull_request_template.md` as the template for the PR.
 -
 
 ## Code Style
