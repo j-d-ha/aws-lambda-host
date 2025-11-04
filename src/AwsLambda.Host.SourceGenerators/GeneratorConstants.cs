@@ -13,6 +13,8 @@ internal static class TypeConstants
 
     internal const string ValueTask = "global::System.Threading.Tasks.ValueTask";
 
+    internal const string TaskBool = "global::System.Threading.Tasks.Task<bool>";
+
     internal const string Void = "void";
 
     internal const string Action = "global::System.Action";
@@ -39,6 +41,8 @@ internal static class GeneratorConstants
 
     internal const string OnShutdownMethodName = "OnShutdown";
 
+    internal const string OnInitMethodName = "OnInit";
+
     internal const string UseOpenTelemetryTracingMethodName = "UseOpenTelemetryTracing";
 
     internal const string InterceptsLocationAttributeTemplateFile =
@@ -49,6 +53,9 @@ internal static class GeneratorConstants
 
     internal const string LambdaHostOnShutdownExtensionsTemplateFile =
         "Templates/LambdaHostOnShutdownExtensions.scriban";
+
+    internal const string LambdaHostOnInitExtensionsTemplateFile =
+        "Templates/LambdaHostOnInitExtensions.scriban";
 
     internal const string LambdaHostUseOpenTelemetryTracingExtensionsTemplateFile =
         "Templates/LambdaHostUseOpenTelemetryTracingExtensions.scriban";
