@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using AwsLambda.Host;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 var builder = LambdaApplication.CreateBuilder();
@@ -12,9 +11,8 @@ builder.Services.ConfigureLambdaHost(options =>
     options.InitTimeout = TimeSpan.FromSeconds(5);
     options.ShutdownDuration = TimeSpan.FromSeconds(3);
     options.ShutdownDurationBuffer = TimeSpan.FromSeconds(1);
+    options.ClearLambdaOutputFormatting = true;
 });
-
-builder.Services.AddSingleton<IService, Service>();
 
 var lambda = builder.Build();
 
