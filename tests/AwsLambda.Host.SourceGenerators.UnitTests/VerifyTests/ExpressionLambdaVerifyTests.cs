@@ -3,6 +3,50 @@ namespace AwsLambda.Host.SourceGenerators.UnitTests;
 public class ExpressionLambdaVerifyTests
 {
     [Fact]
+    public async Task Test_ExpressionLambda_MainOverload_NoOp() =>
+        await GeneratorTestHelpers.Verify(
+            """
+            using System.Threading.Tasks;
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.MapHandler(Task (ILambdaHostContext context) => Task.CompletedTask, null, null);
+
+            await lambda.RunAsync();
+            """,
+            0
+        );
+
+    [Fact]
+    public async Task Test_ExpressionLambda_MainOverload_DeserializerSerializer_NoOp() =>
+        await GeneratorTestHelpers.Verify(
+            """
+            using System.IO;
+            using System.Threading.Tasks;
+            using Amazon.Lambda.Core;
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.MapHandler(
+                Task (ILambdaHostContext context) => Task.CompletedTask,
+                Task (ILambdaHostContext context, ILambdaSerializer serializer, Stream stream) =>  Task.CompletedTask,
+                Task<Stream> (ILambdaHostContext context, ILambdaSerializer serializer) => Task.FromResult<Stream>(new MemoryStream(0))
+            );
+
+            await lambda.RunAsync();
+            """,
+            0
+        );
+
+    [Fact]
     public async Task Test_ExpressionLambda_NoInput_NoOutput() =>
         await GeneratorTestHelpers.Verify(
             """

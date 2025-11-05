@@ -13,7 +13,7 @@ public static class MapHandlerLambdaApplicationExtensions
                 nameof(handler)
             );
 
-        application.Map(lambdaInvocationDelegate, null, null);
+        application.MapHandler(lambdaInvocationDelegate, null, null);
 
         return application;
     }
