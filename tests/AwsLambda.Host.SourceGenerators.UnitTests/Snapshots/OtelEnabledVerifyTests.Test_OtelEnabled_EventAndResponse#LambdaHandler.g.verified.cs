@@ -32,7 +32,7 @@ namespace AwsLambda.Host
     using Amazon.Lambda.Core;
     using Microsoft.Extensions.DependencyInjection;
 
-    file static class LambdaHostMapHandlerExtensions
+    file static class MapHandlerLambdaApplicationExtensions
     {
         // Location: InputFile.cs(10,8)
         [InterceptsLocation(1, "q1KMot9xF/TLkbkTHVhD3rYAAABJbnB1dEZpbGUuY3M=")]
@@ -97,14 +97,14 @@ namespace AwsLambda.Host
     using System.Runtime.CompilerServices;
     using Microsoft.Extensions.DependencyInjection;
     
-    file static class LambdaHostUseOpenTelemetryTracingExtensions
+    file static class OpenTelemetryLambdaApplicationExtensions
     {
         [InterceptsLocation(1, "q1KMot9xF/TLkbkTHVhD3pMAAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(8,8)
         internal static ILambdaApplication UseOpenTelemetryTracingInterceptor(
             this ILambdaApplication application
         )
         {
-            return application.Use(application.Services.GetTracer<global::Request, global::Response>());
+            return application.Use(application.Services.GetOpenTelemetryTracer<global::Request, global::Response>());
         }
     }
 }

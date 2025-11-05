@@ -34,28 +34,18 @@ namespace AwsLambda.Host
 
     file static class MapHandlerLambdaApplicationExtensions
     {
-        // Location: InputFile.cs(12,8)
-        [InterceptsLocation(1, "VqZuWTxJP61FLnsULaqiRpMBAABJbnB1dEZpbGUuY3M=")]
+        // Location: InputFile.cs(10,8)
+        [InterceptsLocation(1, "tXNbU+d9V7wxFwwK9BXlr70AAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaApplication MapHandlerInterceptor(
             this ILambdaApplication application,
             Delegate handler
         )
         {
-            var castHandler = (global::System.Action<global::IService, global::IService, global::IService>)handler;
+            var castHandler = (global::System.Action)handler;
 
             Task InvocationDelegate(ILambdaHostContext context)
             {
-                if (context.ServiceProvider.GetService<IServiceProviderIsService>() is not IServiceProviderIsKeyedService)
-                {
-                    throw new InvalidOperationException($"Unable to resolve service referenced by {nameof(FromKeyedServicesAttribute)}. The service provider doesn't support keyed services.");
-                }
-                // ParameterInfo { Type = global::IService, Name = serviceA, Source = KeyedService, IsNullable = False, IsOptional = False, KeyedServiceKeyInfo { DisplayValue = "myKey", Type = string, BaseType = object } }
-                var arg0 = context.ServiceProvider.GetRequiredKeyedService<global::IService>("myKey");
-                // ParameterInfo { Type = global::IService, Name = serviceB, Source = KeyedService, IsNullable = False, IsOptional = False, KeyedServiceKeyInfo { DisplayValue = "my\nKey", Type = string, BaseType = object } }
-                var arg1 = context.ServiceProvider.GetRequiredKeyedService<global::IService>("my\nKey");
-                // ParameterInfo { Type = global::IService, Name = serviceC, Source = KeyedService, IsNullable = False, IsOptional = False, KeyedServiceKeyInfo { DisplayValue = (global::ServiceType)1, Type = global::ServiceType, BaseType = global::System.Enum } }
-                var arg2 = context.ServiceProvider.GetRequiredKeyedService<global::IService>((global::ServiceType)1);
-                castHandler.Invoke(arg0, arg1, arg2);
+                castHandler.Invoke();
                 return Task.CompletedTask; 
             }
             

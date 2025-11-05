@@ -7,7 +7,7 @@ namespace AwsLambda.Host
     using Amazon.Lambda.Core;
     using Microsoft.Extensions.DependencyInjection;
 
-    file static class LambdaHostMapHandlerExtensions
+    file static class MapHandlerLambdaApplicationExtensions
     {
         // Location: {{ location.display_location }}
         [InterceptsLocation({{ location.version }}, "{{ location.data }}")]
