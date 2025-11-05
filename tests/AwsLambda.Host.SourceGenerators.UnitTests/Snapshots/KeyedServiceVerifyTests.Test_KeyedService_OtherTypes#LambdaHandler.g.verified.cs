@@ -71,7 +71,7 @@ namespace AwsLambda.Host
                 return Task.FromResult<Stream>(new MemoryStream(0));
             }
 
-            return application.Map(InvocationDelegate, Deserializer, Serializer);
+            return application.MapHandler(InvocationDelegate, Deserializer, Serializer);
         }
 
         private static T GetEventT<T>(this ILambdaHostContext context)

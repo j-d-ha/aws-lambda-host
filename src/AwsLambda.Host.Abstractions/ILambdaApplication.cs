@@ -7,7 +7,7 @@ public interface ILambdaApplication
     /// <summary>Gets the service provider for resolving dependencies.</summary>
     IServiceProvider Services { get; }
 
-    ILambdaApplication Map(
+    ILambdaApplication MapHandler(
         LambdaInvocationDelegate handler,
         Func<ILambdaHostContext, ILambdaSerializer, Stream, Task>? deserializer,
         Func<ILambdaHostContext, ILambdaSerializer, Task<Stream>>? serializer

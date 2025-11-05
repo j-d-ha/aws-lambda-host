@@ -44,7 +44,7 @@ public sealed class LambdaApplication : IHost, ILambdaApplication, IAsyncDisposa
     public IServiceProvider Services => _host.Services;
 
     /// <inheritdoc />
-    public ILambdaApplication Map(
+    public ILambdaApplication MapHandler(
         LambdaInvocationDelegate handler,
         Func<ILambdaHostContext, ILambdaSerializer, Stream, Task>? deserializer,
         Func<ILambdaHostContext, ILambdaSerializer, Task<Stream>>? serializer
