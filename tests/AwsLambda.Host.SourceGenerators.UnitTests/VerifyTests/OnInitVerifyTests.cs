@@ -26,7 +26,7 @@ public class OnInitVerifyTests
         );
 
     [Fact]
-    public async Task Test_OnInit_NoInput() =>
+    public async Task Test_OnInit_NoInput_NoOutput() =>
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
@@ -37,10 +37,115 @@ public class OnInitVerifyTests
 
             var lambda = builder.Build();
 
-            lambda.OnInit(Task<bool> () =>
-            {
-                return Task.FromResult(true);
-            });
+            lambda.OnInit(() => { });
+
+            await lambda.RunAsync();
+            """
+        );
+
+    [Fact]
+    public async Task Test_OnInit_NoInput_ReturnBool() =>
+        await GeneratorTestHelpers.Verify(
+            """
+            using System.Threading.Tasks;
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.OnInit(() => true);
+
+            await lambda.RunAsync();
+            """
+        );
+
+    [Fact]
+    public async Task Test_OnInit_NoInput_ReturnTaskBool() =>
+        await GeneratorTestHelpers.Verify(
+            """
+            using System.Threading.Tasks;
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.OnInit(() => Task.FromResult(true));
+
+            await lambda.RunAsync();
+            """
+        );
+
+    [Fact]
+    public async Task Test_OnInit_NoInput_ReturnAsyncBool() =>
+        await GeneratorTestHelpers.Verify(
+            """
+            using System.Threading.Tasks;
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.OnInit(async () => true);
+
+            await lambda.RunAsync();
+            """
+        );
+
+    [Fact]
+    public async Task Test_OnInit_NoInput_ReturnNotExpectedType() =>
+        await GeneratorTestHelpers.Verify(
+            """
+            using System.Threading.Tasks;
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.OnInit(() => "string");
+
+            await lambda.RunAsync();
+            """
+        );
+
+    [Fact]
+    public async Task Test_OnInit_NoInput_ReturnNotExpectedTypeTask() =>
+        await GeneratorTestHelpers.Verify(
+            """
+            using System.Threading.Tasks;
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.OnInit(() => Task.FromResult("string"));
+
+            await lambda.RunAsync();
+            """
+        );
+
+    [Fact]
+    public async Task Test_OnInit_NoInput_ReturnNotExpectedTypeAsync() =>
+        await GeneratorTestHelpers.Verify(
+            """
+            using System.Threading.Tasks;
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.OnInit(async () => "string");
 
             await lambda.RunAsync();
             """
@@ -226,6 +331,37 @@ public class OnInitVerifyTests
             public interface IService
             {
                 Task<bool> ShouldContinue();
+            }
+            """
+        );
+
+    [Fact]
+    public async Task Test_OnInit_MethodHandler_AsyncAndDiAndReturnUnexpectedType() =>
+        await GeneratorTestHelpers.Verify(
+            """
+            using System.Threading.Tasks;
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.OnInit(Function.OnInitHandler);
+
+            await lambda.RunAsync();
+
+            public static class Function
+            {
+                public static async Task<string> OnInitHandler(IService service)
+                {
+                    return await service.ShouldContinue();
+                }
+            }
+
+            public interface IService
+            {
+                Task<string> ShouldContinue();
             }
             """
         );
