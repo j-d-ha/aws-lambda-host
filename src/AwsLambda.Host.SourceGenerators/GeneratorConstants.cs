@@ -49,10 +49,10 @@ internal static class GeneratorConstants
         "Templates/InterceptsLocationAttribute.scriban";
 
     internal const string LambdaHostMapHandlerExtensionsTemplateFile =
-        "Templates/LambdaHostMapHandlerExtensions.scriban";
+        "Templates/MapHandler.scriban";
 
     internal const string GenericHandlerTemplateFile = "Templates/GenericHandler.scriban";
 
     internal const string LambdaHostUseOpenTelemetryTracingExtensionsTemplateFile =
-        "Templates/LambdaHostUseOpenTelemetryTracingExtensions.scriban";
+        "Templates/OpenTelemetry.scriban";
 }
