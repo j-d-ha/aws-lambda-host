@@ -26,6 +26,27 @@ public class OnInitVerifyTests
         );
 
     [Fact]
+    public async Task Test_OnInit_ExplicitReturnTypeAsync() =>
+        await GeneratorTestHelpers.Verify(
+            """
+            using System.Threading.Tasks;
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.OnInit(async Task<bool> () =>
+            {
+                return true;
+            });
+
+            await lambda.RunAsync();
+            """
+        );
+
+    [Fact]
     public async Task Test_OnInit_NoInput_NoOutput() =>
         await GeneratorTestHelpers.Verify(
             """
