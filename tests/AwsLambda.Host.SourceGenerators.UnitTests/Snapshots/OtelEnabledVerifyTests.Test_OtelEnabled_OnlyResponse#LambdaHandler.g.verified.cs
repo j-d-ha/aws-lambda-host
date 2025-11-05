@@ -32,7 +32,7 @@ namespace AwsLambda.Host
     using Amazon.Lambda.Core;
     using Microsoft.Extensions.DependencyInjection;
 
-    file static class LambdaHostMapHandlerExtensions
+    file static class MapHandlerLambdaApplicationExtensions
     {
         // Location: InputFile.cs(10,8)
         [InterceptsLocation(1, "c7Jk1yFccxP66+slMK4E67YAAABJbnB1dEZpbGUuY3M=")]
