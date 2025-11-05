@@ -5,7 +5,7 @@ namespace AwsLambda.Host;
 
 /// <summary>
 ///     Overloads for <see cref="ILambdaApplication.OnShutdown(LambdaShutdownDelegate)" /> that
-///     support automatic dependency injection for shutdown handlers with zero to sixteen parameters.
+///     support automatic dependency injection for shutdown handlers.
 /// </summary>
 /// <remarks>
 ///     Source generation creates the wiring code to resolve handler dependencies, using
@@ -16,11 +16,11 @@ namespace AwsLambda.Host;
 /// </remarks>
 /// <example>
 ///     <code>
-///         lambda.OnShutdown(async (ILogger logger, DbContext database) =>
-///         {
-///             logger.LogInformation("Shutting down");
-///             await database.FlushAsync();
-///         });
+///     lambda.OnShutdown(async (ILogger logger, DbContext database) =>
+///     {
+///         logger.LogInformation("Shutting down");
+///         await database.FlushAsync();
+///     });
 ///     </code>
 /// </example>
 [ExcludeFromCodeCoverage]
@@ -42,6 +42,8 @@ public static class OnShutdownLambdaApplicationExtensions
     ///     Thrown if called at runtime; this exception is
     ///     unreachable as this method is intercepted by the source generator code at compile time.
     /// </exception>
+    /// <seealso cref="LambdaShutdownDelegate" />
+    /// <seealso cref="ILambdaApplication.OnShutdown(LambdaShutdownDelegate)" />
     public static ILambdaApplication OnShutdown(
         this ILambdaApplication application,
         Delegate handler
