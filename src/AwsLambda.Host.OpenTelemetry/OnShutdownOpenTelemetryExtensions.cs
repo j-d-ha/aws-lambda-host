@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
@@ -74,36 +75,20 @@ public static class OnShutdownOpenTelemetryExtensions
     {
         ArgumentNullException.ThrowIfNull(application);
 
+        var tracerProvider = application.Services.GetRequiredService<TracerProvider>();
+        var logger =
+            application.Services.GetService<ILoggerFactory>()?.CreateLogger(LogCategory)
+            ?? NullLogger.Instance;
+
         application.OnShutdown(
-            async Task (services, cancellationToken) =>
-            {
-                var tracerProvider = services.GetService<TracerProvider>();
-                if (tracerProvider is null)
-                    return;
-
-                var logger = services.GetService<ILoggerFactory>()?.CreateLogger(LogCategory);
-
-                var flusher = Task.Run(
-                    () => tracerProvider.ForceFlush(timeoutMilliseconds),
+            (_, cancellationToken) =>
+                RunForceFlush(
+                    "tracer",
+                    tracerProvider.ForceFlush,
+                    timeoutMilliseconds,
+                    logger,
                     cancellationToken
-                );
-
-                await Task.WhenAny(flusher, Task.Delay(Timeout.Infinite, cancellationToken));
-
-                if (flusher.Status != TaskStatus.RanToCompletion)
-                {
-                    logger?.LogWarning(
-                        "OpenTelemetry tracer provider force flush failed to complete within allocated time"
-                    );
-
-                    return;
-                }
-
-                logger?.LogInformation(
-                    "OpenTelemetry tracer provider force flush {status}",
-                    flusher.Result ? "succeeded" : "failed"
-                );
-            }
+                )
         );
 
         return application;
@@ -136,38 +121,52 @@ public static class OnShutdownOpenTelemetryExtensions
     {
         ArgumentNullException.ThrowIfNull(application);
 
+        var meterProvider = application.Services.GetRequiredService<MeterProvider>();
+        var logger =
+            application.Services.GetService<ILoggerFactory>()?.CreateLogger(LogCategory)
+            ?? NullLogger.Instance;
+
         application.OnShutdown(
-            async Task (services, cancellationToken) =>
-            {
-                var meterProvider = services.GetService<MeterProvider>();
-                if (meterProvider is null)
-                    return;
-
-                var logger = services.GetService<ILoggerFactory>()?.CreateLogger(LogCategory);
-
-                var flusher = Task.Run(
-                    () => meterProvider.ForceFlush(timeoutMilliseconds),
+            (_, cancellationToken) =>
+                RunForceFlush(
+                    "meter",
+                    meterProvider.ForceFlush,
+                    timeoutMilliseconds,
+                    logger,
                     cancellationToken
-                );
-
-                await Task.WhenAny(flusher, Task.Delay(Timeout.Infinite, cancellationToken));
-
-                if (flusher.Status != TaskStatus.RanToCompletion)
-                {
-                    logger?.LogWarning(
-                        "OpenTelemetry meter provider force flush failed to complete within allocated time"
-                    );
-
-                    return;
-                }
-
-                logger?.LogInformation(
-                    "OpenTelemetry meter provider force flush {status}",
-                    flusher.Result ? "succeeded" : "failed"
-                );
-            }
+                )
         );
 
         return application;
+    }
+
+    /// <summary>Executes a force flush operation with timeout handling and logging.</summary>
+    private static async Task RunForceFlush(
+        string providerName,
+        Func<int, bool> flusher,
+        int timeoutMilliseconds,
+        ILogger logger,
+        CancellationToken cancellationToken
+    )
+    {
+        var flusherTask = Task.Run(() => flusher(timeoutMilliseconds), cancellationToken);
+
+        await Task.WhenAny(flusherTask, Task.Delay(Timeout.Infinite, cancellationToken));
+
+        if (flusherTask.Status != TaskStatus.RanToCompletion)
+        {
+            logger.LogWarning(
+                "OpenTelemetry {providerName} provider force flush failed to complete within allocated time",
+                providerName
+            );
+
+            return;
+        }
+
+        logger.LogInformation(
+            "OpenTelemetry {providerName} provider force flush {status}",
+            providerName,
+            flusherTask.Result ? "succeeded" : "failed"
+        );
     }
 }
