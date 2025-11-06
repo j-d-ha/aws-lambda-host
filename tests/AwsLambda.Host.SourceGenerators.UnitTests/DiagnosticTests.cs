@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using AwesomeAssertions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace AwsLambda.Host.SourceGenerators.UnitTests;
 
@@ -123,9 +124,42 @@ public class MapHandlerIncrementalGeneratorDiagnosticTests
         }
     }
 
-    private static ImmutableArray<Diagnostic> GenerateDiagnostics(string source)
+    [Fact]
+    public void Test_CSharpVersionTooLow()
     {
-        var (driver, _) = GeneratorTestHelpers.GenerateFromSource(source);
+        var diagnostics = GenerateDiagnostics(
+            """
+            using AwsLambda.Host;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            var lambda = builder.Build();
+
+            lambda.MapHandler(() => "hello world");
+
+            await lambda.RunAsync();
+            """,
+            LanguageVersion.CSharp10
+        );
+
+        diagnostics.Length.Should().Be(1);
+        foreach (var diagnostic in diagnostics)
+        {
+            diagnostic.Id.Should().Be("LH0004");
+            diagnostic.Severity.Should().Be(DiagnosticSeverity.Error);
+        }
+    }
+
+    private static ImmutableArray<Diagnostic> GenerateDiagnostics(
+        string source,
+        LanguageVersion languageVersion = LanguageVersion.CSharp11
+    )
+    {
+        var (driver, _) = GeneratorTestHelpers.GenerateFromSource(
+            source,
+            languageVersion: languageVersion
+        );
 
         driver.Should().NotBeNull();
 
