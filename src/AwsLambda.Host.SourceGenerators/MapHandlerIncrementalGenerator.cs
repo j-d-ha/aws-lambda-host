@@ -1,6 +1,7 @@
 using AwsLambda.Host.SourceGenerators.Models;
 using AwsLambda.Host.SourceGenerators.Types;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace AwsLambda.Host.SourceGenerators;
 
@@ -9,6 +10,27 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+        // Language version gate - only generate source if C# 11 or later is used
+        var csharpSufficient = context.CompilationProvider.Select(
+            static (compilation, _) =>
+                compilation
+                    is CSharpCompilation
+                    {
+                        LanguageVersion: LanguageVersion.Default or >= LanguageVersion.CSharp11,
+                    }
+        );
+
+        context.RegisterSourceOutput(
+            csharpSufficient,
+            static (spc, ok) =>
+            {
+                if (!ok)
+                    spc.ReportDiagnostic(
+                        Diagnostic.Create(Diagnostics.CSharpVersionTooLow, Location.None)
+                    );
+            }
+        );
+
         // Find all MapHandler method calls with lambda analysis
         var mapHandlerCalls = context
             .SyntaxProvider.CreateSyntaxProvider(

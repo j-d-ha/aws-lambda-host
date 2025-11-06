@@ -57,11 +57,12 @@ internal static class GeneratorTestHelpers
 
     internal static (GeneratorDriver driver, Compilation compilation) GenerateFromSource(
         string source,
-        Dictionary<string, ReportDiagnostic>? diagnosticsToSuppress = null
+        Dictionary<string, ReportDiagnostic>? diagnosticsToSuppress = null,
+        LanguageVersion languageVersion = LanguageVersion.CSharp11
     )
     {
         var parseOptions = CSharpParseOptions
-            .Default.WithLanguageVersion(LanguageVersion.CSharp11)
+            .Default.WithLanguageVersion(languageVersion)
             .WithFeatures(
                 [new KeyValuePair<string, string>("InterceptorsNamespaces", "AwsLambda.Host")]
             );
