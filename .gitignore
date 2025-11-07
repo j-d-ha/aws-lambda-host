@@ -71,4 +71,3 @@ nunit-*.xml
 **/Temp*.cs
 
 **/*.env
-/coverage/
