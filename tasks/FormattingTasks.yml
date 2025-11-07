@@ -1,0 +1,33 @@
+version: '3'
+
+tasks:
+  all:
+    desc: Format solution
+    silent: true
+    cmds:
+      - echo "📝 Formatting C# code and applying style conventions..."
+      - task format:cleanupcode
+      - task format:csharpier
+      - echo "✅ All formatting complete!"
+
+  cleanupcode:
+    desc: Formats solution with CleanupCode
+    silent: true
+    cmds:
+      - echo "🔧 Running CleanupCode for code cleanup and style enforcement..."
+      - |
+        dotnet jb cleanupcode  \
+          AwsLambda.Host.sln \
+          --settings="AwsLambda.Host.sln.DotSettings" \
+          --profile="Built-in: Reformat & Apply Syntax Style" \
+          --verbosity=WARN \
+          --no-build
+      - echo "✅ CleanupCode completed successfully!"
+
+  csharpier:
+    desc: Formats solution with CSharpier
+    silent: true
+    cmds:
+      - echo "🎨 Running CSharpier for opinionated C# code formatting..."
+      - dotnet csharpier format .
+      - echo "✅ CSharpier completed successfully!"

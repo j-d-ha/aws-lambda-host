@@ -3,23 +3,10 @@ version: '3'
 vars:
   NUGET_API: https://api.nuget.org/v3-flatcontainer
 
+includes:
+  format: ./tasks/FormattingTasks.yml
+
 tasks:
-  format:
-    desc: Format solution
-    silent: true
-    cmds:
-      - echo "🧹2 Running CleanupCode on all projects..."
-      - |
-        jb cleanupcode  \
-          AwsLambda.Host.sln \
-          --settings="AwsLambda.Host.sln.DotSettings" \
-          --profile="Built-in: Reformat & Apply Syntax Style" \
-          --verbosity=WARN \
-          --no-build
-      - echo "✨ Running CSharpier..."
-      - csharpier format .
-      - echo "✅ Done!"
-  
   validate_version:
     desc: Check that package version does not already exist on NuGet
     silent: true
