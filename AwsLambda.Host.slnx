@@ -16,7 +16,6 @@
   <Folder Name="/Solution Items/">
     <File Path="README.md" />
     <File Path="Taskfile.yml" />
-    <File Path=".editorconfig" />
     <File Path="LICENSE" />
     <File Path=".gitignore" />
     <File Path="Directory.Build.props" />
