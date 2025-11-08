@@ -1,0 +1,14 @@
+name: Dependabot Auto-Merge
+
+on:
+  pull_request_target
+
+jobs:
+  auto-merge:
+    uses: j-d-ha/.github/.github/workflows/dependabot-auto-merge.yml@main
+    with:
+      merge-method: squash
+      auto-merge-patch: true
+      auto-merge-minor: true
+      auto-merge-major: false
+      delete-branch: true
