@@ -5,6 +5,7 @@ vars:
 
 includes:
   format: ./tasks/FormattingTasks.yml
+  local: ./tasks/LocalDevTasks.yml
 
 tasks:
   validate_version:
@@ -40,12 +41,6 @@ tasks:
       - echo "🚀 Publishing {{.DIR}}"
       - dotnet nuget push bin/Release/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
       - echo "✨ Published {{.DIR}}"
-
-  lambda-test:
-    desc: Start the AWS Lambda test tool
-    silent: true
-    cmds:
-      - dotnet lambda-test-tool start --lambda-emulator-port 5050
 
   publish-all:
     desc: Pack, validate versions, and publish all packages (Host, Abstractions, OpenTelemetry)

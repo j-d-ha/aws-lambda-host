@@ -1,0 +1,8 @@
+version: '3'
+
+tasks:
+  lambda-test:
+    desc: Start the AWS Lambda test tool
+    silent: true
+    cmds:
+      - dotnet lambda-test-tool start --lambda-emulator-port 5050
