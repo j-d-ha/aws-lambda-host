@@ -5,6 +5,22 @@ using OpenTelemetry.Trace;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
+/// <summary>
+///     Provides extension methods for integrating OpenTelemetry tracing with AWS Lambda
+///     invocations.
+/// </summary>
+/// <remarks>
+///     <para>
+///         The <see cref="LambdaOpenTelemetryServiceProviderExtensions" /> class provides methods to
+///         create middleware functions that wrap Lambda invocations with distributed tracing
+///         capabilities using OpenTelemetry and AWS Lambda instrumentation.
+///     </para>
+///     <para>
+///         These extension methods are primarily designed to be used by source generators and
+///         interceptors for automatic tracing integration. Direct usage is supported but not the
+///         primary use case.
+///     </para>
+/// </remarks>
 public static class LambdaOpenTelemetryServiceProviderExtensions
 {
     /// <summary>
