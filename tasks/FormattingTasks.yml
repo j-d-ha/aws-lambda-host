@@ -6,7 +6,7 @@ tasks:
     silent: true
     cmds:
       - echo "📝 Formatting C# code and applying style conventions..."
-      - task format:cleanupcode
+      #      - task format:cleanupcode
       - task format:csharpier
       - echo "✅ All formatting complete!"
 
@@ -20,7 +20,7 @@ tasks:
           AwsLambda.Host.sln \
           --settings="AwsLambda.Host.sln.DotSettings" \
           --profile="Built-in: Full Cleanup" \
-          --verbosity=WARN \
+          --verbosity=INFO \
           --no-build
       - echo "✅ CleanupCode completed successfully!"
 
