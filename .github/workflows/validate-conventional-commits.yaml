@@ -1,0 +1,42 @@
+name: Validate Conventional Commits
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+    branches:
+      - main
+
+jobs:
+  validate-commits:
+    runs-on: ubuntu-latest
+    name: Validate commit messages
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate conventional commits
+        uses: amannn/action-semantic-pull-request@v5.4.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          validateSingleCommitInPullRequest: false
+          types: |
+            feat
+            fix
+            docs
+            refactor
+            test
+            chore
+            ci
+          scopes: |
+            host
+            abstractions
+            opentelemetry
+            deps
+            build
+            ci
+            github
+          requireScope: false
+          subjectPattern: ^[a-z].*
+          subjectPatternError: Subject must start with lowercase letter
