@@ -54,6 +54,8 @@ lambda.MapHandler(
     }
 );
 
+lambda.OnShutdownFlushOpenTelemetry();
+
 await lambda.RunAsync();
 
 internal record Request(string Name);
