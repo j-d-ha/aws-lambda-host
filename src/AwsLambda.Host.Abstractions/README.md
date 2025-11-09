@@ -35,7 +35,6 @@ Each package has detailed documentation in its own README file.
   - [ILambdaHostContext](#ilambdahostcontext)
   - [Handler Delegates](#handler-delegates)
 - [Lambda Lifecycle](#lambda-lifecycle)
-- [Common Patterns](#common-patterns)
 - [Installation](#installation)
 
 ## Core Abstractions
@@ -141,58 +140,6 @@ execution model and examples, see [AwsLambda.Host](../AwsLambda.Host/README.md).
 **For more details on the AWS Lambda runtime environment, see
 the [AWS Lambda Runtime Environment](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html)
 documentation.**
-
-## Common Patterns
-
-**Using Dependency Injection in Handlers:**
-
-```csharp
-lambda.MapHandler(
-    ([Event] MyEventType input, IMyService service) =>
-    {
-        return service.Process(input);
-    }
-);
-```
-
-The framework automatically injects dependencies registered in `builder.Services`.
-
-**Middleware Pipeline:**
-
-```csharp
-lambda.Use(async (context, next) =>
-{
-    // Before invocation
-    try
-    {
-        await next();
-    }
-    finally
-    {
-        // After invocation (cleanup)
-    }
-});
-```
-
-Middleware wraps the invocation handler, enabling cross-cutting concerns like logging, error
-handling, and telemetry.
-
-**Initialization & Cleanup:**
-
-```csharp
-lambda.OnInit(async (services, ct) =>
-{
-    var db = services.GetRequiredService<IDatabase>();
-    await db.ConnectAsync(ct);
-    return true; // success
-});
-
-lambda.OnShutdown(async (services, ct) =>
-{
-    var db = services.GetRequiredService<IDatabase>();
-    await db.DisconnectAsync(ct);
-});
-```
 
 ## Installation
 
