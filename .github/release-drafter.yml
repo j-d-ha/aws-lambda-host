@@ -80,6 +80,7 @@ version-resolver:
       - 'type: chore'
       - 'type: ci'
       - 'bug'
+  default: patch
 
 template: |
   ## Changes in this Release
