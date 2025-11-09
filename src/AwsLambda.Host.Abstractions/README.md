@@ -4,16 +4,9 @@
 > production-ready. Breaking changes may occur in future versions. Use at your own discretion in
 > production environments.
 
-## Overview
-
-**AwsLambda.Host.Abstractions** provides the core interfaces and delegates that define the contract
-for the aws-lambda-host framework. This package contains the essential abstractions you'll work with
-when building Lambda functions, including the handler builder pattern, invocation context, and
-lifecycle delegates.
-
-**Most developers using aws-lambda-host won't directly reference this package** — it's implicitly
-used by [AwsLambda.Host](../AwsLambda.Host/README.md). However, it's useful if you're building
-custom integrations, middleware, or extensions for the framework.
+Core interfaces and delegates that define the aws-lambda-host framework contract. This package is
+typically used implicitly by [AwsLambda.Host](../AwsLambda.Host/README.md), but useful if you're
+building custom integrations, middleware, or extensions.
 
 ## Packages
 
@@ -27,71 +20,30 @@ The framework is divided into focused packages:
 
 Each package has detailed documentation in its own README file.
 
-## Table of Contents
-
-- [Packages](#packages)
-- [Core Abstractions](#core-abstractions)
-  - [ILambdaApplication](#ilambdaapplication)
-  - [ILambdaHostContext](#ilambdahostcontext)
-  - [Handler Delegates](#handler-delegates)
-- [Lambda Lifecycle](#lambda-lifecycle)
-- [Installation](#installation)
-
 ## Core Abstractions
 
 ### ILambdaApplication
 
-The main builder interface for configuring a Lambda application. It follows the fluent builder
-pattern similar to ASP.NET Core Minimal APIs.
+The main builder interface for configuring a Lambda application using a fluent pattern:
 
-**Key Methods:**
+- `MapHandler()` – Register the Lambda invocation handler
+- `Use()` – Add middleware to the pipeline
+- `OnInit()` – Register initialization handlers
+- `OnShutdown()` – Register shutdown handlers
 
-- `MapHandler()` – Register the main Lambda invocation handler
-- `Use()` – Add middleware to the invocation pipeline
-- `OnInit()` – Register startup handlers during the Lambda init phase
-- `OnShutdown()` – Register shutdown handlers during the Lambda shutdown phase
-
-**Example Pattern:**
-
-```csharp
-var builder = LambdaApplication.CreateBuilder();
-builder.Services.AddScoped<IMyService, MyService>();
-
-var lambda = builder.Build();
-lambda.MapHandler(async (context) => { /* handle invocation */ });
-lambda.OnInit(InitializationHandler);
-
-await lambda.RunAsync();
-```
-
-This builder pattern enables you to register handlers, add middleware, configure dependency
-injection, and manage the Lambda lifecycle declaratively.
+See [AwsLambda.Host](../AwsLambda.Host/README.md) for usage examples.
 
 ### ILambdaHostContext
 
-Encapsulates all information about a single Lambda invocation. It extends AWS's standard
-`ILambdaContext` and provides:
+Encapsulates a single Lambda invocation:
 
 - `Event` – The deserialized Lambda event
-- `Response` – The handler's response (to be serialized back)
-- `ServiceProvider` – Access to the scoped dependency injection container
-- `Items` – Key/value collection for invocation-scoped data sharing
-- `CancellationToken` – Signals cancellation when Lambda timeout approaches
-
-You'll receive this context in your handler, middleware, and throughout the invocation pipeline:
-
-```csharp
-lambda.MapHandler(async (ILambdaHostContext context) =>
-{
-    var input = context.Event as MyEventType;
-    var service = context.ServiceProvider.GetRequiredService<IMyService>();
-    context.Response = await service.ProcessAsync(input);
-});
-```
+- `Response` – The handler's response to return
+- `ServiceProvider` – Access to the scoped DI container
+- `Items` – Key/value collection for invocation-scoped data
+- `CancellationToken` – Cancellation signal from Lambda timeout
 
 ### Handler Delegates
-
-Three delegate types manage the Lambda lifecycle:
 
 **LambdaInvocationDelegate**
 
@@ -99,18 +51,15 @@ Three delegate types manage the Lambda lifecycle:
 Task LambdaInvocationDelegate(ILambdaHostContext context)
 ```
 
-The core handler that processes Lambda invocations. Receives the invocation context and is
-responsible for setting the response.
+Processes a Lambda invocation.
 
-**LambdaStartupDelegate** (also called `LambdaInitDelegate`)
+**LambdaInitDelegate**
 
 ```csharp
 Task<bool> LambdaInitDelegate(IServiceProvider services, CancellationToken cancellationToken)
 ```
 
-Invoked during Lambda's init phase (before any handler invocation). Returns `true` to continue
-initialization or `false` to abort. Useful for pre-initialization
-during [Snap Start](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html).
+Runs once during initialization. Return `true` to continue, `false` to abort.
 
 **LambdaShutdownDelegate**
 
@@ -118,28 +67,17 @@ during [Snap Start](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html)
 Task LambdaShutdownDelegate(IServiceProvider services, CancellationToken cancellationToken)
 ```
 
-Invoked during Lambda's shutdown phase. Use this for cleanup (closing connections, flushing metrics,
-etc.). Multiple handlers can be registered.
+Runs once during shutdown for cleanup.
 
 ## Lambda Lifecycle
 
-Lambda executes in three distinct phases:
+The abstractions represent three Lambda execution phases:
 
-1. **Init Phase** – Runs once when the Lambda runtime initializes the function (or resumes from Snap
-   Start). Initialization code (like opening database connections) runs here and is reused across
-   invocations. Register handlers with `OnInit()`.
-2. **Invocation Phase** – Runs for each incoming event. Your `MapHandler()` executes here,
-   potentially multiple times for a single container. Each invocation is isolated with its own
-   scoped dependency injection container.
-3. **Shutdown Phase** – Runs once before the runtime shuts down the container. Use this for
-   cleanup (closing connections, flushing metrics, etc.). Register handlers with `OnShutdown()`.
+- **Init** – `LambdaInitDelegate` runs once during function initialization
+- **Invocation** – `LambdaInvocationDelegate` runs for each event
+- **Shutdown** – `LambdaShutdownDelegate` runs once before termination
 
-The abstractions in this package align with these phases. For detailed information about the
-execution model and examples, see [AwsLambda.Host](../AwsLambda.Host/README.md).
-
-**For more details on the AWS Lambda runtime environment, see
-the [AWS Lambda Runtime Environment](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html)
-documentation.**
+For implementation details and examples, see [AwsLambda.Host](../AwsLambda.Host/README.md).
 
 ## Installation
 
