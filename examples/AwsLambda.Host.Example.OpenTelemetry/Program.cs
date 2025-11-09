@@ -38,26 +38,8 @@ var lambda = builder.Build();
 
 lambda.UseOpenTelemetryTracing();
 
-lambda.MapHandler(
-    async (
-        [Event] Request request,
-        IService service,
-        Instrumentation instrumentation,
-        CancellationToken cancellationToken
-    ) =>
-    {
-        using var activity = instrumentation.ActivitySource.StartActivity("Handler");
-
-        var message = await service.GetMessage(request.Name, cancellationToken);
-
-        return new Response(message, DateTime.UtcNow);
-    }
-);
+lambda.MapHandler(Function.Handler);
 
 lambda.OnShutdownFlushOpenTelemetry();
 
 await lambda.RunAsync();
-
-internal record Request(string Name);
-
-internal record Response(string Message, DateTime Timestamp);
