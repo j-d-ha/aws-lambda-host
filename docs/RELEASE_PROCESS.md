@@ -203,9 +203,8 @@ Conventional commits allow:
 ### Validation
 
 Conventional commits are validated at:
-1. **Pre-commit hook** (local) - Validates before committing
-2. **PR validation** (GitHub) - Validates all commits in PR
-3. **PR title validation** (GitHub) - Validates PR title format
+1. **Pre-commit hook** (local) - Validates before committing (via commitlint)
+2. **PR title validation** (GitHub) - Validates PR title follows conventional commits format
 
 ### Example Commits
 
