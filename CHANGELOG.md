@@ -3,7 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [Unreleased](https://github.com/j-d-ha/aws-lambda-host/compare/v0.1.2...HEAD)
+## [Unreleased](https://github.com/j-d-ha/aws-lambda-host/compare/v0.1.3...HEAD)
+
+## [v0.1.3](https://github.com/j-d-ha/aws-lambda-host/compare/v0.1.2...v0.1.3) - 2025-11-10
+
+### 🐛 Bug Fixes
+
+* fix: prevent example projects from being packed during release (#115) @j-d-ha
 
 ## [v0.1.2](https://github.com/j-d-ha/aws-lambda-host/compare/v0.1.1...v0.1.2) - 2025-11-10
 
