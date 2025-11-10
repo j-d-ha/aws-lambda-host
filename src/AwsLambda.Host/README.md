@@ -1,12 +1,30 @@
 # AwsLambda.Host
 
+Core framework for building AWS Lambda functions with dependency injection, middleware, and source
+generation.
+
+[![Main Build](https://github.com/j-d-ha/aws-lambda-host/actions/workflows/main-build.yaml/badge.svg)](https://github.com/j-d-ha/aws-lambda-host/actions/workflows/main-build.yaml)
+[![codecov](https://codecov.io/gh/j-d-ha/aws-lambda-host/graph/badge.svg?token=BWORPTQ0UK)](https://codecov.io/gh/j-d-ha/aws-lambda-host)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=j-d-ha_aws-lambda-host&metric=alert_status&token=9fb519975d91379dcfbc6c13a4bd4207131af6e3)](https://sonarcloud.io/summary/new_code?id=j-d-ha_aws-lambda-host)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 > ⚠️ **Development Status**: This project is actively under development and not yet
 > production-ready. Breaking changes may occur in future versions. Use at your own discretion in
 > production environments.
 
-A modern .NET framework for building AWS Lambda functions using familiar ASP.NET Core patterns.
-Provides dependency injection, middleware support, compile-time code generation, and AOT support—all
-optimized for Lambda's execution model.
+## Overview
+
+A modern .NET framework for building AWS Lambda functions using familiar ASP.NET Core patterns. The
+core runtime provides:
+
+- **Dependency Injection**: Built-in service container for managing application dependencies
+- **Middleware Pipeline**: Request/response processing similar to ASP.NET Core middleware
+- **Compile-time Code Generation**: Source generators reduce reflection overhead and improve startup
+  performance
+- **Native AOT Support**: Full compatibility with ahead-of-time compilation for minimal cold starts
+  and reduced package size
+- **Lambda-Optimized Design**: Event handling, cold start reduction, and efficient resource
+  utilization tailored to AWS Lambda constraints
 
 ## Packages
 
