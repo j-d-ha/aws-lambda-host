@@ -49,7 +49,7 @@
     
     [optional footer(s)]
     ```  
-  - Types: feat, fix, docs, refactor, test, chore
+  - Types: feat, fix, docs, refactor, test, chore, ci
 
 #### 4. Plan Template
 
@@ -84,8 +84,10 @@ When Claude makes commits, ALWAYS follow conventional commits format:
 
 **Types:** `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`
 
-**Scope (optional but recommended):** `host`, `abstractions`, `opentelemetry`, or omit for general
-changes
+**Scope (optional but recommended):** Must be one of: `host`, `abstractions`, `opentelemetry`,
+`deps`, `build`, `ci`, `github`
+
+- Omit scope for general changes
 
 **Examples:**
 
