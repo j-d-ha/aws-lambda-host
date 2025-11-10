@@ -83,7 +83,11 @@ version-resolver:
   default: patch
 
 template: |
-  ## Changes in this Release
+  ## Summary
+  
+  SUMMARY_GOES_HERE
+  
+  ## Changes
 
   $CHANGES
 
