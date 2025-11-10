@@ -1,12 +1,30 @@
 # AwsLambda.Host.Abstractions
 
+Core interfaces and abstractions for the aws-lambda-host framework.
+
+[![Main Build](https://github.com/j-d-ha/aws-lambda-host/actions/workflows/main-build.yaml/badge.svg)](https://github.com/j-d-ha/aws-lambda-host/actions/workflows/main-build.yaml)
+[![codecov](https://codecov.io/gh/j-d-ha/aws-lambda-host/graph/badge.svg?token=BWORPTQ0UK)](https://codecov.io/gh/j-d-ha/aws-lambda-host)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=j-d-ha_aws-lambda-host&metric=alert_status&token=9fb519975d91379dcfbc6c13a4bd4207131af6e3)](https://sonarcloud.io/summary/new_code?id=j-d-ha_aws-lambda-host)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 > ⚠️ **Development Status**: This project is actively under development and not yet
 > production-ready. Breaking changes may occur in future versions. Use at your own discretion in
 > production environments.
 
-Core interfaces and delegates that define the aws-lambda-host framework contract. This package is
-typically used implicitly by [AwsLambda.Host](../AwsLambda.Host/README.md), but useful if you're
-building custom integrations, middleware, or extensions.
+## Overview
+
+Core interfaces and delegates that define the AwsLambda.Host framework contract. This package
+provides:
+
+- **Handler Abstractions**: Interfaces for Lambda request and response handling across different
+  event types
+- **Middleware Contracts**: Abstractions for building and composing middleware components
+- **Dependency Injection**: Service container and lifetime management interfaces
+- **Extension Points**: Contracts for custom integrations and framework extensions
+
+This package is typically used implicitly by [AwsLambda.Host](../AwsLambda.Host/README.md), but is
+essential if you're building custom integrations, middleware components, or extensions to the
+framework.
 
 ## Packages
 
@@ -104,34 +122,6 @@ The abstractions represent three Lambda execution phases:
 - **Shutdown** – `LambdaShutdownDelegate` runs once before termination
 
 For implementation details and examples, see [AwsLambda.Host](../AwsLambda.Host/README.md).
-
-## Installation
-
-Install via NuGet:
-
-```bash
-dotnet add package AwsLambda.Host.Abstractions
-```
-
-Or specify a version:
-
-```bash
-dotnet add package AwsLambda.Host.Abstractions --version <version>
-```
-
-Ensure your project uses C# 11 or later:
-
-```xml
-
-<PropertyGroup>
-  <LangVersion>11</LangVersion>
-  <!-- or <LangVersion>latest</LangVersion> -->
-</PropertyGroup>
-```
-
-> **Note:** This package is typically included automatically when you use
-> [AwsLambda.Host](../AwsLambda.Host/README.md). Direct installation is only necessary when
-> building custom integrations or extensions.
 
 ## Related Packages
 
