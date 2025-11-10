@@ -1,8 +1,9 @@
 # Changelog
 
-## v0.1.1 - 2025-11-09
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-### Changes in this Release
+## v0.1.1 - 2025-11-09
 
 ### 🔧 Maintenance
 
