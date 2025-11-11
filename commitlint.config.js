@@ -7,5 +7,7 @@ module.exports = {
     'subject-full-stop': [2, 'never', '.'],
     'type-case': [2, 'always', 'lowercase'],
     'type-empty': [2, 'never'],
+    'header-max-length': [0],
+    'body-max-line-length': [0],
   },
 };
