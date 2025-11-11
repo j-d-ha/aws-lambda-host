@@ -4,10 +4,12 @@ using Amazon.Lambda.Core;
 
 namespace AwsLambda.Host.APIGatewayEvents;
 
+/// <inheritdoc cref="Amazon.Lambda.APIGatewayEvents.APIGatewayProxyResponse" />
 public class APIGatewayProxyResponse<T>
     : APIGatewayProxyResponse,
         ILambdaResponse<APIGatewayProxyResponse<T>>
 {
+    /// <summary>The response body</summary>
     public new required T Body { get; set; }
 
     public void Serialize(
