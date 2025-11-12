@@ -23,7 +23,7 @@ internal static class MapHandlerSyntaxProvider
     private static bool IsBaseMapHandlerCall(this DelegateInfo delegateInfo) =>
         delegateInfo
             is {
-                FullResponseType: TypeConstants.Task,
+                ReturnTypeInfo.FullyQualifiedType: TypeConstants.Task,
                 Parameters: [{ Type: TypeConstants.ILambdaHostContext }],
             };
 }

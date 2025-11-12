@@ -163,8 +163,8 @@ internal static class DelegateInfoExtractorExtensions
             var responseTypeInfo = TypeInfo.Create(invokeMethod.ReturnType);
 
             return new DelegateInfo(
-                fullResponseType,
-                unwrappedResponseType,
+                // fullResponseType,
+                // unwrappedResponseType,
                 updatedParameters,
                 isAwaitable,
                 delegateInfo.IsAsync,
@@ -215,8 +215,8 @@ internal static class DelegateInfoExtractorExtensions
         var responseTypeInfo = TypeInfo.Create(methodSymbol.ReturnType);
 
         return new DelegateInfo(
-            fullResponseType,
-            unwrappedResponseType,
+            // fullResponseType,
+            // unwrappedResponseType,
             parameters,
             isAwaitable,
             methodSymbol.IsAsync,
@@ -305,14 +305,19 @@ internal static class DelegateInfoExtractorExtensions
             _ => (null, null),
         };
 
-        var unwrappedResponseType = returnType?.UnwrapTypeFromTask(returnTypeSyntax);
-        var responseType = returnType?.GetAsGlobal(returnTypeSyntax);
+        // get response type TypeInfo
+        TypeInfo? responseTypeInfo = returnType is not null
+            ? TypeInfo.Create(returnType, returnTypeSyntax)
+            : null;
 
         // determine if the lambda is async by checking kind
         var isAsync = lambdaExpression.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword);
 
         // the full return type for use in function signatures.
-        var fullResponseType = (ReturnType: responseType, IsAsync: isAsync) switch
+        string fullResponseType = (
+            ReturnType: responseTypeInfo?.FullyQualifiedType,
+            IsAsync: isAsync
+        ) switch
         {
             (null, true) => TypeConstants.Task,
             (null, false) => TypeConstants.Void,
@@ -322,8 +327,15 @@ internal static class DelegateInfoExtractorExtensions
             var (type, _) when type.StartsWith(TypeConstants.Task) => type,
             var (type, _) when type.StartsWith(TypeConstants.ValueTask) => type,
             (var type, true) => $"{TypeConstants.Task}<{type}>",
-            (_, _) => responseType,
+            (_, _) => responseTypeInfo.Value.FullyQualifiedType,
         };
+
+        var updatedResponseType = responseTypeInfo is { } r
+            ? r with
+            {
+                FullyQualifiedType = fullResponseType,
+            }
+            : TypeInfo.CreateFullyQualifiedType(fullResponseType);
 
         // determine if the delegate is returning awaitable value
         var isAwaitable =
@@ -332,19 +344,12 @@ internal static class DelegateInfoExtractorExtensions
 
         var isResponseILambdaResponse = returnType.IsILambdaResponse();
 
-        // get response type TypeInfo
-        TypeInfo? responseTypeInfo = returnType is not null
-            ? TypeInfo.Create(returnType, returnTypeSyntax)
-            : null;
-
         return new DelegateInfo(
-            fullResponseType,
-            unwrappedResponseType,
             parameters,
             isAwaitable,
             isAsync,
             isResponseILambdaResponse,
-            responseTypeInfo
+            updatedResponseType
         );
     }
 

@@ -15,7 +15,9 @@ internal static class OpenTelemetrySources
         var eventType = delegateInfo.EventParameter is { } p ? p.Type : null;
 
         // get the handler output return type
-        var responseType = delegateInfo.HasResponse ? delegateInfo.UnwrappedResponseType : null;
+        var responseType = delegateInfo.HasResponse
+            ? delegateInfo.ReturnTypeInfo.UnwrappedFullyQualifiedType
+            : null;
 
         // interceptable locations
         var locations = useOpenTelemetryTracingInfos.Select(u => u.InterceptableLocationInfo);

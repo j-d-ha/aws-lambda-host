@@ -15,7 +15,7 @@ internal static class DelegateInfoExtensions
         // angle brackets needed for any parameters or a response type
         if (
             delegateInfo.Parameters.Count > 0
-            || delegateInfo.FullResponseType != TypeConstants.Void
+            || delegateInfo.ReturnTypeInfo.FullyQualifiedType != TypeConstants.Void
         )
         {
             signatureBuilder.Append("<");
@@ -26,12 +26,12 @@ internal static class DelegateInfoExtensions
                     string.Join(", ", delegateInfo.Parameters.Select(p => p.Type))
                 );
 
-            if (delegateInfo.FullResponseType != TypeConstants.Void)
+            if (delegateInfo.ReturnTypeInfo.FullyQualifiedType != TypeConstants.Void)
             {
                 // add comma if there are parameters, i.e. this is the last in the list
                 if (delegateInfo.Parameters.Count > 0)
                     signatureBuilder.Append(", ");
-                signatureBuilder.Append(delegateInfo.FullResponseType);
+                signatureBuilder.Append(delegateInfo.ReturnTypeInfo.FullyQualifiedType);
             }
 
             signatureBuilder.Append(">");

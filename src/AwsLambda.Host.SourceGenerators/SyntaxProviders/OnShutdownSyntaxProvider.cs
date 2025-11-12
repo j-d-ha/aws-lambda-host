@@ -26,7 +26,7 @@ internal static class OnShutdownSyntaxProvider
     private static bool IsBaseOnShutdownCall(this DelegateInfo delegateInfo) =>
         delegateInfo
             is {
-                FullResponseType: TypeConstants.Task,
+                ReturnTypeInfo.FullyQualifiedType: TypeConstants.Task,
                 Parameters: [
                     { Type: TypeConstants.IServiceProvider },
                     { Type: TypeConstants.CancellationToken },

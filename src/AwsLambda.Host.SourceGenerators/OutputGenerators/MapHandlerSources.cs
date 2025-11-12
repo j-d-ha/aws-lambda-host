@@ -25,8 +25,9 @@ internal static class MapHandlerSources
         var outputResponse = delegateInfo.HasResponse
             ? new
             {
-                ResponseType = delegateInfo.UnwrappedResponseType,
-                ResponseIsStream = delegateInfo.UnwrappedResponseType == TypeConstants.Stream,
+                ResponseType = delegateInfo.ReturnTypeInfo.UnwrappedFullyQualifiedType,
+                ResponseIsStream = delegateInfo.ReturnTypeInfo.UnwrappedFullyQualifiedType
+                    == TypeConstants.Stream,
             }
             : null;
 

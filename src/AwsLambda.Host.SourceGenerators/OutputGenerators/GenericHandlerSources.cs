@@ -59,17 +59,22 @@ internal static class GenericHandlerSources
                 // delegate
                 // return type matches the wrapper return type 1:1
                 var shouldAwait =
-                    fullWrapperReturnType != higherOrderMethodInfo.DelegateInfo.FullResponseType
+                    fullWrapperReturnType
+                        != higherOrderMethodInfo.DelegateInfo.ReturnTypeInfo.FullyQualifiedType
                     && higherOrderMethodInfo.DelegateInfo.IsAwaitable;
 
                 // should return response
                 var shouldReturnResponse =
-                    higherOrderMethodInfo.DelegateInfo.FullResponseType != TypeConstants.Void
+                    higherOrderMethodInfo.DelegateInfo.ReturnTypeInfo.FullyQualifiedType
+                        != TypeConstants.Void
                     && (
                         wrapperReturnType
-                            == higherOrderMethodInfo.DelegateInfo.UnwrappedResponseType
+                            == higherOrderMethodInfo
+                                .DelegateInfo
+                                .ReturnTypeInfo
+                                .UnwrappedFullyQualifiedType
                         || fullWrapperReturnType
-                            == higherOrderMethodInfo.DelegateInfo.FullResponseType
+                            == higherOrderMethodInfo.DelegateInfo.ReturnTypeInfo.FullyQualifiedType
                     );
 
                 // should wrap the response in a Task

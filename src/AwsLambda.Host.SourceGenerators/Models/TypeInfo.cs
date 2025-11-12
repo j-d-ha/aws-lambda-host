@@ -16,6 +16,20 @@ internal readonly record struct TypeInfo(
 
 internal static class TypeInfoExtensions
 {
+    private static string? GetFullResponseType(string? responseType, bool isAsync) =>
+        (ReturnType: responseType, IsAsync: isAsync) switch
+        {
+            (null, true) => TypeConstants.Task,
+            (null, false) => TypeConstants.Void,
+            (TypeConstants.Void, _) => TypeConstants.Void,
+            (TypeConstants.Task, _) => TypeConstants.Task,
+            (TypeConstants.ValueTask, _) => TypeConstants.ValueTask,
+            var (type, _) when type.StartsWith(TypeConstants.Task) => type,
+            var (type, _) when type.StartsWith(TypeConstants.ValueTask) => type,
+            (var type, true) => $"{TypeConstants.Task}<{type}>",
+            (_, _) => responseType,
+        };
+
     extension(TypeInfo typeInfo)
     {
         internal static TypeInfo Create(ITypeSymbol typeSymbol, TypeSyntax? syntax = null)
@@ -34,6 +48,15 @@ internal static class TypeInfoExtensions
                 implementedInterfaces
             );
         }
+
+        internal static TypeInfo CreateFullyQualifiedType(string fullyQualifiedType) =>
+            new(fullyQualifiedType, null, false, ImmutableArray<string>.Empty);
+
+        internal static TypeInfo CreateVoid() =>
+            new(TypeConstants.Void, null, false, ImmutableArray<string>.Empty);
+
+        internal static TypeInfo CreateTask() =>
+            new(TypeConstants.Task, null, false, ImmutableArray<string>.Empty);
     }
 
     extension(ITypeSymbol typeSymbol)
