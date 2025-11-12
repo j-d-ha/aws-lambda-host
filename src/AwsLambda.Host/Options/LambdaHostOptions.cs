@@ -101,18 +101,19 @@ public class LambdaHostOptions
     ///     </para>
     ///     <para>
     ///         When these options are used with the <see cref="DefaultLambdaHostJsonSerializer" />, the
-    ///         <see cref="JsonSerializerOptions.PropertyNamingPolicy" /> is wrapped with an instance of
-    ///         <see cref="AwsNamingPolicy" /> if it is not already an instance of that type.
+    ///         <see cref="System.Text.Json.JsonSerializerOptions.PropertyNamingPolicy" /> is wrapped with
+    ///         an instance of <see cref="AwsNamingPolicy" /> if it is not already an instance of that
+    ///         type.
     ///     </para>
     /// </remarks>
-    public JsonSerializerOptions LambdaJsonSerializerOptions { get; set; } =
+    public JsonSerializerOptions JsonSerializerOptions { get; set; } =
         DefaultJsonSerializerOptions();
 
     /// <summary>
     ///     Gets or sets the JSON writer options used for serializing and deserializing Lambda
     ///     requests and responses.
     /// </summary>
-    public JsonWriterOptions LambdaJsonWriterOptions { get; set; } = DefaultJsonWriterOptions();
+    public JsonWriterOptions JsonWriterOptions { get; set; } = DefaultJsonWriterOptions();
 
     /// <summary>Gets or sets an optional custom HTTP client for the Lambda bootstrap.</summary>
     /// <remarks>
@@ -123,7 +124,10 @@ public class LambdaHostOptions
     public HttpClient? BootstrapHttpClient { get; set; } = null;
 
     /// <summary>Creates default JSON serializer options for Lambda serialization.</summary>
-    /// <returns>A configured <see cref="JsonSerializerOptions" /> instance with AWS conventions.</returns>
+    /// <returns>
+    ///     A configured <see cref="System.Text.Json.JsonSerializerOptions" /> instance with AWS
+    ///     conventions.
+    /// </returns>
     private static JsonSerializerOptions DefaultJsonSerializerOptions()
     {
         var serializationOptions = new JsonSerializerOptions
@@ -142,7 +146,10 @@ public class LambdaHostOptions
     }
 
     /// <summary>Creates default JSON writer options for Lambda serialization.</summary>
-    /// <returns>A configured <see cref="JsonWriterOptions" /> instance with relaxed JSON escaping.</returns>
+    /// <returns>
+    ///     A configured <see cref="System.Text.Json.JsonWriterOptions" /> instance with relaxed JSON
+    ///     escaping.
+    /// </returns>
     private static JsonWriterOptions DefaultJsonWriterOptions() =>
         new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 }

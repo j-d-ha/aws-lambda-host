@@ -16,8 +16,8 @@ public class DefaultLambdaHostJsonSerializer : ILambdaSerializer
 
         var settings = lambdaHostSettings.Value;
 
-        _serializerOptions = settings.LambdaJsonSerializerOptions;
-        _writerOptions = settings.LambdaJsonWriterOptions;
+        _serializerOptions = settings.JsonSerializerOptions;
+        _writerOptions = settings.JsonWriterOptions;
     }
 
     public T? Deserialize<T>(Stream requestStream)

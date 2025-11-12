@@ -148,14 +148,10 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
             .Value;
 
         // Ensure that the property naming policy is set to AwsNamingPolicy or is wrapped in it.
-        if (
-            lambdaHostOptions.LambdaJsonSerializerOptions.PropertyNamingPolicy
-            is not AwsNamingPolicy
-        )
-            lambdaHostOptions.LambdaJsonSerializerOptions.PropertyNamingPolicy =
-                new AwsNamingPolicy(
-                    lambdaHostOptions.LambdaJsonSerializerOptions.PropertyNamingPolicy
-                );
+        if (lambdaHostOptions.JsonSerializerOptions.PropertyNamingPolicy is not AwsNamingPolicy)
+            lambdaHostOptions.JsonSerializerOptions.PropertyNamingPolicy = new AwsNamingPolicy(
+                lambdaHostOptions.JsonSerializerOptions.PropertyNamingPolicy
+            );
 
         // Set the shutdown timeout to the configured value minus the buffer.
         var shutdownTimeout =
