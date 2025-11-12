@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Amazon.Lambda.SQSEvents;
 
-namespace AwsLambda.Host.SQSEnvelopes;
+namespace AwsLambda.Host.Envelopes.SQS;
 
 public class SqsEnvelopeJsonConverter<T> : JsonConverter<SqsEnvelope<T>>
 {
@@ -48,7 +48,7 @@ public class SqsEnvelopeJsonConverter<T> : JsonConverter<SqsEnvelope<T>>
             records.Add(outRecord);
         }
 
-        var outSqsEvent = new SQSEvent { Records = records };
-        JsonSerializer.Serialize(writer, outSqsEvent, options);
+        var outEvent = new SQSEvent { Records = records };
+        JsonSerializer.Serialize(writer, outEvent, options);
     }
 }

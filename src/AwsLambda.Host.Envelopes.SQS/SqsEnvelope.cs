@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using Amazon.Lambda.SQSEvents;
 
-namespace AwsLambda.Host.SQSEnvelopes;
+namespace AwsLambda.Host.Envelopes.SQS;
 
 /// <inheritdoc cref="SQSEvent" />
 public class SqsEnvelope<T> : SQSEvent, IJsonSerializable
