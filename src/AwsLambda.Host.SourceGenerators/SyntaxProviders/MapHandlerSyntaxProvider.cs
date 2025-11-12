@@ -15,7 +15,7 @@ internal static class MapHandlerSyntaxProvider
     ) =>
         GenericHandlerInfoExtractor.Transformer(
             context,
-            "MapHandler",
+            GeneratorConstants.MapHandlerMethodName,
             IsBaseMapHandlerCall,
             cancellationToken
         );
@@ -23,7 +23,7 @@ internal static class MapHandlerSyntaxProvider
     private static bool IsBaseMapHandlerCall(this DelegateInfo delegateInfo) =>
         delegateInfo
             is {
-                FullResponseType: TypeConstants.Task,
-                Parameters: [{ Type: TypeConstants.ILambdaHostContext }],
+                ReturnTypeInfo.FullyQualifiedType: TypeConstants.Task,
+                Parameters: [{ TypeInfo.FullyQualifiedType: TypeConstants.ILambdaHostContext }],
             };
 }

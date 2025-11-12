@@ -1,52 +1,46 @@
 using System.Collections.Generic;
-using System.Linq;
-using AwsLambda.Host.SourceGenerators.Extensions;
 using Microsoft.CodeAnalysis;
 
 namespace AwsLambda.Host.SourceGenerators.Models;
 
 internal readonly record struct ParameterInfo(
-    string Type,
     string Name,
+    TypeInfo TypeInfo,
     LocationInfo? LocationInfo,
     ParameterSource Source,
     KeyedServiceKeyInfo? KeyedServiceKey,
     bool IsNullable,
-    bool IsOptional,
-    bool IsILambdaRequest
+    bool IsOptional
 )
 {
     internal bool IsRequired => !IsOptional && !IsNullable;
 
     internal static ParameterInfo Create(IParameterSymbol parameter)
     {
-        var type = parameter.Type.GetAsGlobal();
+        var typeInfo = TypeInfo.Create(parameter.Type);
         var name = parameter.Name;
         var location = Models.LocationInfo.CreateFrom(parameter);
-        var (source, keyedService) = GetSourceFromAttribute(parameter.GetAttributes(), type);
+        var (source, keyedService) = GetSourceFromAttribute(
+            parameter.GetAttributes(),
+            typeInfo.FullyQualifiedType
+        );
         var isNullable = parameter.NullableAnnotation == NullableAnnotation.Annotated;
         var isOptional = parameter.IsOptional;
-        var isILambdaRequest =
-            source == ParameterSource.Event
-            && parameter.Type.AllInterfaces.Any(i =>
-                i.OriginalDefinition.GetAsGlobal() == "global::AwsLambda.Host.ILambdaRequest<TSelf>"
-            );
 
         return new ParameterInfo(
-            type,
             name,
+            typeInfo,
             location,
             source,
             keyedService,
             isNullable,
-            isOptional,
-            isILambdaRequest
+            isOptional
         );
     }
 
     internal string ToPublicString() =>
         $"{nameof(ParameterInfo)} {{ "
-        + $"{nameof(Type)} = {Type}, "
+        + $"Type = {TypeInfo.FullyQualifiedType}, "
         + $"{nameof(Name)} = {Name}, "
         + $"{nameof(Source)} = {Source}, "
         + $"{nameof(IsNullable)} = {IsNullable}, "

@@ -8,6 +8,7 @@ using AwsLambda.Host.SourceGenerators.Types;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TypeInfo = AwsLambda.Host.SourceGenerators.Models.TypeInfo;
 
 namespace AwsLambda.Host.SourceGenerators;
 
@@ -137,7 +138,7 @@ internal static class DelegateInfoExtractorExtensions
                     (castParam, originalParam) =>
                         originalParam with
                         {
-                            Type = castParam.Type.GetAsGlobal(),
+                            TypeInfo = TypeInfo.Create(castParam.Type),
                             LocationInfo = LocationInfo.CreateFrom(castParam),
                         }
                 )
@@ -146,25 +147,19 @@ internal static class DelegateInfoExtractorExtensions
             // get the fully qualified type that may be wrapped in Task or ValueTask.
             var fullResponseType = invokeMethod.ReturnType.GetAsGlobal();
 
-            // get the unwrapped type if it is wrapped in Task or ValueTask.
-            var unwrappedResponseType = (
-                (INamedTypeSymbol)invokeMethod.ReturnType
-            ).UnwrapTypeFromTask();
-
             // determine if the delegate is returning awaitable value
             var isAwaitable =
                 fullResponseType != TypeConstants.Void
                 && (invokeMethod.IsAsync || invokeMethod.ReturnType.IsTypeAwaitable());
 
-            var isResponseILambdaResponse = invokeMethod.ReturnType.IsILambdaResponse();
+            // get response type TypeInfo
+            var responseTypeInfo = TypeInfo.Create(invokeMethod.ReturnType);
 
             return new DelegateInfo(
-                fullResponseType,
-                unwrappedResponseType,
                 updatedParameters,
                 isAwaitable,
                 delegateInfo.IsAsync,
-                isResponseILambdaResponse
+                responseTypeInfo
             );
         };
 
@@ -194,44 +189,15 @@ internal static class DelegateInfoExtractorExtensions
         // get the fully qualified type that may be wrapped in Task or ValueTask.
         var fullResponseType = methodSymbol.ReturnType.GetAsGlobal();
 
-        // get the unwrapped type if it is wrapped in Task or ValueTask.
-        var unwrappedResponseType = (
-            (INamedTypeSymbol)methodSymbol.ReturnType
-        ).UnwrapTypeFromTask();
-
         // determine if the delegate is returning awaitable value
         var isAwaitable =
             fullResponseType != TypeConstants.Void
             && (methodSymbol.IsAsync || methodSymbol.ReturnType.IsTypeAwaitable());
 
-        var isResponseILambdaResponse = methodSymbol.ReturnType.IsILambdaResponse();
+        // get response type TypeInfo
+        var responseTypeInfo = TypeInfo.Create(methodSymbol.ReturnType);
 
-        return new DelegateInfo(
-            fullResponseType,
-            unwrappedResponseType,
-            parameters,
-            isAwaitable,
-            methodSymbol.IsAsync,
-            isResponseILambdaResponse
-        );
-    }
-
-    private static string? UnwrapTypeFromTask(
-        this ITypeSymbol typeSymbol,
-        TypeSyntax? syntax = null
-    )
-    {
-        if (typeSymbol is not INamedTypeSymbol namedTypeSymbol)
-            return typeSymbol.GetAsGlobal(syntax);
-
-        if (!namedTypeSymbol.IsTask() && !namedTypeSymbol.IsValueTask())
-            return typeSymbol.GetAsGlobal(syntax);
-
-        // if not generic Task or ValueTask, return null as no wrapped return value
-        if (!namedTypeSymbol.IsGenericType || namedTypeSymbol.TypeArguments.Length == 0)
-            return null;
-
-        return namedTypeSymbol.TypeArguments.First().GetAsGlobal(syntax);
+        return new DelegateInfo(parameters, isAwaitable, methodSymbol.IsAsync, responseTypeInfo);
     }
 
     private static DelegateInfo ExtractInfoFromLambda(
@@ -266,44 +232,49 @@ internal static class DelegateInfoExtractorExtensions
         // 3. implicit return type in expression body
         // 4. implicit return type in block body
         // 5. default void (or Task if async)
-        var (returnType, unwrappedResponseType, responseType) = lambdaExpression switch
+        var (returnType, returnTypeSyntax) = lambdaExpression switch
         {
             // check for explicit return type
             ParenthesizedLambdaExpressionSyntax { ReturnType: { } syntax } => ModelExtensions
                 .GetTypeInfo(sematicModel, syntax, cancellationToken)
-                .Type?.Transform(t => (t, t.UnwrapTypeFromTask(syntax), t.GetAsGlobal(syntax)))
-            ?? (null, null, null)!,
+                .Type
+                is { } type
+                ? (type, syntax)
+                : (null, null),
 
             // Handle implicit return type for expression lambda
-            { Body: var expression and ExpressionSyntax } => sematicModel
-                .GetTypeInfo(expression, cancellationToken)
-                .Type?.Transform(t => (t, t.UnwrapTypeFromTask(), t.GetAsGlobal()))
-            ?? (null, null, null)!,
+            { Body: var expression and ExpressionSyntax } => (
+                sematicModel.GetTypeInfo(expression, cancellationToken).Type,
+                null
+            ),
 
             // Handle implicit return type for block lambda
             { Body: var block and BlockSyntax } => block
                 .DescendantNodes()
                 .OfType<ReturnStatementSyntax>()
-                .FirstOrDefault(syntax => syntax.Expression is not null)
-                ?.Transform(syntax =>
-                    syntax.Expression is null
-                        ? (null, null, null)
-                        : ModelExtensions
-                            .GetTypeInfo(sematicModel, syntax.Expression, cancellationToken)
-                            .Type?.Transform(t => (t, t.UnwrapTypeFromTask(), t.GetAsGlobal()))
-                        ?? (null, null, null)!
-                )
-            ?? (null, null, null),
+                .FirstOrDefault(s => s.Expression is not null)
+                ?.Expression
+                is { } expr
+                ? (sematicModel.GetTypeInfo(expr, cancellationToken).Type, null)
+                : (null, null),
 
             // Default to void if no return type is found
-            _ => (null, null, null),
+            _ => (null, null),
         };
+
+        // get response type TypeInfo
+        TypeInfo? responseTypeInfo = returnType is not null
+            ? TypeInfo.Create(returnType, returnTypeSyntax)
+            : null;
 
         // determine if the lambda is async by checking kind
         var isAsync = lambdaExpression.AsyncKeyword.IsKind(SyntaxKind.AsyncKeyword);
 
         // the full return type for use in function signatures.
-        var fullResponseType = (ReturnType: responseType, IsAsync: isAsync) switch
+        var fullResponseType = (
+            ReturnType: responseTypeInfo?.FullyQualifiedType,
+            IsAsync: isAsync
+        ) switch
         {
             (null, true) => TypeConstants.Task,
             (null, false) => TypeConstants.Void,
@@ -313,41 +284,23 @@ internal static class DelegateInfoExtractorExtensions
             var (type, _) when type.StartsWith(TypeConstants.Task) => type,
             var (type, _) when type.StartsWith(TypeConstants.ValueTask) => type,
             (var type, true) => $"{TypeConstants.Task}<{type}>",
-            (_, _) => responseType,
+            (_, _) => responseTypeInfo.Value.FullyQualifiedType,
         };
+
+        var updatedResponseType = responseTypeInfo is { } info
+            ? info with
+            {
+                FullyQualifiedType = fullResponseType,
+            }
+            : TypeInfo.CreateFullyQualifiedType(fullResponseType);
 
         // determine if the delegate is returning awaitable value
         var isAwaitable =
             fullResponseType != TypeConstants.Void
             && (isAsync || (returnType?.IsTypeAwaitable() ?? false));
 
-        var isResponseILambdaResponse = returnType.IsILambdaResponse();
-
-        return new DelegateInfo(
-            fullResponseType,
-            unwrappedResponseType,
-            parameters,
-            isAwaitable,
-            isAsync,
-            isResponseILambdaResponse
-        );
+        return new DelegateInfo(parameters, isAwaitable, isAsync, updatedResponseType);
     }
-
-    private static bool IsILambdaResponse(this ITypeSymbol? typeSymbol) =>
-        typeSymbol?.AllInterfaces.Any(i =>
-            i.OriginalDefinition.GetAsGlobal() == "global::AwsLambda.Host.ILambdaResponse<TSelf>"
-        ) ?? false;
-
-    private static bool IsTypeAwaitable(this ITypeSymbol typeSymbol) =>
-        typeSymbol.IsTask() || typeSymbol.IsValueTask();
-
-    private static bool IsTask(this ITypeSymbol typeSymbol) =>
-        typeSymbol.Name == "Task"
-        && typeSymbol.ContainingNamespace?.ToDisplayString() == "System.Threading.Tasks";
-
-    private static bool IsValueTask(this ITypeSymbol typeSymbol) =>
-        typeSymbol.Name == "ValueTask"
-        && typeSymbol.ContainingNamespace?.ToDisplayString() == "System.Threading.Tasks";
 
     private delegate DelegateInfo Updater(
         DelegateInfo delegateInfo,

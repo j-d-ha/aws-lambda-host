@@ -15,7 +15,7 @@ internal static class OnInitSyntaxProvider
     ) =>
         GenericHandlerInfoExtractor.Transformer(
             context,
-            "OnInit",
+            GeneratorConstants.OnInitMethodName,
             IsBaseOnShutdownCall,
             cancellationToken
         );
@@ -26,10 +26,10 @@ internal static class OnInitSyntaxProvider
     private static bool IsBaseOnShutdownCall(this DelegateInfo delegateInfo) =>
         delegateInfo
             is {
-                FullResponseType: TypeConstants.TaskBool,
+                ReturnTypeInfo.FullyQualifiedType: TypeConstants.TaskBool,
                 Parameters: [
-                    { Type: TypeConstants.IServiceProvider },
-                    { Type: TypeConstants.CancellationToken },
+                    { TypeInfo.FullyQualifiedType: TypeConstants.IServiceProvider },
+                    { TypeInfo.FullyQualifiedType: TypeConstants.CancellationToken },
                 ],
             };
 }
