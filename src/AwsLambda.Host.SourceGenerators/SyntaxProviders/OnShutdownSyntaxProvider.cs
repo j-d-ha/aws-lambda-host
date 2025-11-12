@@ -28,8 +28,8 @@ internal static class OnShutdownSyntaxProvider
             is {
                 ReturnTypeInfo.FullyQualifiedType: TypeConstants.Task,
                 Parameters: [
-                    { Type: TypeConstants.IServiceProvider },
-                    { Type: TypeConstants.CancellationToken },
+                    { TypeInfo.FullyQualifiedType: TypeConstants.IServiceProvider },
+                    { TypeInfo.FullyQualifiedType: TypeConstants.CancellationToken },
                 ],
             };
 }

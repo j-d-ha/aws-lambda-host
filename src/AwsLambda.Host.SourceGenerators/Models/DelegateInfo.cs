@@ -4,12 +4,9 @@ using AwsLambda.Host.SourceGenerators.Types;
 namespace AwsLambda.Host.SourceGenerators.Models;
 
 internal readonly record struct DelegateInfo(
-    // string FullResponseType,
-    // string? UnwrappedResponseType,
     EquatableArray<ParameterInfo> Parameters,
     bool IsAwaitable,
     bool IsAsync,
-    bool IsResponseILambdaResponse,
     TypeInfo ReturnTypeInfo
 )
 {

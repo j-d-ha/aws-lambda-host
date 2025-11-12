@@ -24,6 +24,6 @@ internal static class MapHandlerSyntaxProvider
         delegateInfo
             is {
                 ReturnTypeInfo.FullyQualifiedType: TypeConstants.Task,
-                Parameters: [{ Type: TypeConstants.ILambdaHostContext }],
+                Parameters: [{ TypeInfo.FullyQualifiedType: TypeConstants.ILambdaHostContext }],
             };
 }

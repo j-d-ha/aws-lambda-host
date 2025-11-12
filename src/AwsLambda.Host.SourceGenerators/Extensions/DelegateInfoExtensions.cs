@@ -23,7 +23,10 @@ internal static class DelegateInfoExtensions
             // join parameters with comma
             if (delegateInfo.Parameters.Count > 0)
                 signatureBuilder.Append(
-                    string.Join(", ", delegateInfo.Parameters.Select(p => p.Type))
+                    string.Join(
+                        ", ",
+                        delegateInfo.Parameters.Select(p => p.TypeInfo.FullyQualifiedType)
+                    )
                 );
 
             if (delegateInfo.ReturnTypeInfo.FullyQualifiedType != TypeConstants.Void)

@@ -18,7 +18,11 @@ internal static class MapHandlerSources
 
         // get input event type
         var inputEvent = delegateInfo.EventParameter is { } p
-            ? new { IsStream = p.Type == TypeConstants.Stream, p.Type }
+            ? new
+            {
+                IsStream = p.TypeInfo.FullyQualifiedType == TypeConstants.Stream,
+                Type = p.TypeInfo.FullyQualifiedType,
+            }
             : null;
 
         // get output response type and whether it is a stream
@@ -31,15 +35,6 @@ internal static class MapHandlerSources
             }
             : null;
 
-        // is the input request type ILambdaRequest?
-        var isILambdaRequest = delegateInfo.Parameters.Any(p => p.IsILambdaRequest);
-
-        // is the output response type ILambdaResponse?
-        var isILambdaResponse = delegateInfo.IsResponseILambdaResponse;
-
-        // JSON options are needed if the input or output is ILambdaRequest or ILambdaResponse
-        var isJsonOptionsNeeded = isILambdaRequest || isILambdaResponse;
-
         var model = new
         {
             Location = higherOrderMethodInfo.InterceptableLocationInfo,
@@ -49,9 +44,6 @@ internal static class MapHandlerSources
             ShouldAwait = delegateInfo.IsAwaitable,
             InputEvent = inputEvent,
             OutputResponse = outputResponse,
-            IsLambdaRequest = isILambdaRequest,
-            IsLambdaResponse = isILambdaResponse,
-            IsJsonOptionsNeeded = isJsonOptionsNeeded,
         };
 
         var template = TemplateHelper.LoadTemplate(
@@ -70,7 +62,8 @@ internal static class MapHandlerSources
                 Assignment = param.Source switch
                 {
                     // Event -> deserialize to type
-                    ParameterSource.Event => $"context.GetEventT<{param.Type}>()",
+                    ParameterSource.Event =>
+                        $"context.GetEventT<{param.TypeInfo.FullyQualifiedType}>()",
 
                     // ILambdaContext OR ILambdaHostContext -> use context directly
                     ParameterSource.Context => "context",
@@ -80,18 +73,19 @@ internal static class MapHandlerSources
 
                     // inject keyed service from the DI container - required
                     ParameterSource.KeyedService when param.IsRequired =>
-                        $"context.ServiceProvider.GetRequiredKeyedService<{param.Type}>({param.KeyedServiceKey?.DisplayValue})",
+                        $"context.ServiceProvider.GetRequiredKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
 
                     // inject keyed service from the DI container - optional
                     ParameterSource.KeyedService =>
-                        $"context.ServiceProvider.GetKeyedService<{param.Type}>({param.KeyedServiceKey?.DisplayValue})",
+                        $"context.ServiceProvider.GetKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
 
                     // default: inject service from the DI container - required
                     _ when param.IsRequired =>
-                        $"context.ServiceProvider.GetRequiredService<{param.Type}>()",
+                        $"context.ServiceProvider.GetRequiredService<{param.TypeInfo.FullyQualifiedType}>()",
 
                     // default: inject service from the DI container - optional
-                    _ => $"context.ServiceProvider.GetService<{param.Type}>()",
+                    _ =>
+                        $"context.ServiceProvider.GetService<{param.TypeInfo.FullyQualifiedType}>()",
                 },
             })
             .ToArray();

@@ -12,7 +12,7 @@ internal static class OpenTelemetrySources
     )
     {
         // get the handler input event type
-        var eventType = delegateInfo.EventParameter is { } p ? p.Type : null;
+        var eventType = delegateInfo.EventParameter is { } p ? p.TypeInfo.FullyQualifiedType : null;
 
         // get the handler output return type
         var responseType = delegateInfo.HasResponse

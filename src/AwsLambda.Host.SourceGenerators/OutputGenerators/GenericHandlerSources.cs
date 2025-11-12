@@ -125,18 +125,18 @@ internal static class GenericHandlerSources
 
                     // inject keyed service from the DI container - required
                     ParameterSource.KeyedService when param.IsRequired =>
-                        $"serviceProvider.GetRequiredKeyedService<{param.Type}>({param.KeyedServiceKey?.DisplayValue})",
+                        $"serviceProvider.GetRequiredKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
 
                     // inject keyed service from the DI container - optional
                     ParameterSource.KeyedService =>
-                        $"serviceProvider.GetKeyedService<{param.Type}>({param.KeyedServiceKey?.DisplayValue})",
+                        $"serviceProvider.GetKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
 
                     // default: inject service from the DI container - required
                     _ when param.IsRequired =>
-                        $"serviceProvider.GetRequiredService<{param.Type}>()",
+                        $"serviceProvider.GetRequiredService<{param.TypeInfo.FullyQualifiedType}>()",
 
                     // default: inject service from the DI container - optional
-                    _ => $"serviceProvider.GetService<{param.Type}>()",
+                    _ => $"serviceProvider.GetService<{param.TypeInfo.FullyQualifiedType}>()",
                 },
             })
             .ToArray();

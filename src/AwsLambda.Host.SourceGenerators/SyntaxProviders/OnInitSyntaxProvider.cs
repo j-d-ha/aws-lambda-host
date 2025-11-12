@@ -28,8 +28,8 @@ internal static class OnInitSyntaxProvider
             is {
                 ReturnTypeInfo.FullyQualifiedType: TypeConstants.TaskBool,
                 Parameters: [
-                    { Type: TypeConstants.IServiceProvider },
-                    { Type: TypeConstants.CancellationToken },
+                    { TypeInfo.FullyQualifiedType: TypeConstants.IServiceProvider },
+                    { TypeInfo.FullyQualifiedType: TypeConstants.CancellationToken },
                 ],
             };
 }
