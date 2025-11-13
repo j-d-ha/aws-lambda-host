@@ -36,21 +36,21 @@ namespace AwsLambda.Host
     file static class MapHandlerLambdaApplicationExtensions
     {
         // Location: InputFile.cs(13,8)
-        [InterceptsLocation(1, "K45JpkyREytWedvA3UBOZ0UBAABJbnB1dEZpbGUuY3M=")]
+        [InterceptsLocation(1, "z8IWeZ4uNZHF2L8f6RXK0kUBAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaApplication MapHandlerInterceptor(
             this ILambdaApplication application,
             Delegate handler
         )
         {
-            var castHandler = (global::System.Func<global::AwsLambda.Host.Envelopes.APIGateway.ApiGatewayResponseEnvelope<global::Request>, global::IService, global::AwsLambda.Host.Envelopes.APIGateway.ApiGatewayResponseEnvelope<global::Response>>)handler;
+            var castHandler = (global::System.Func<global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Request>, global::IService, global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Response>>)handler;
             var settings = application.Services.GetRequiredService<IOptions<LambdaHostOptions>>().Value;
-            global::AwsLambda.Host.Envelopes.APIGateway.ApiGatewayResponseEnvelope<global::Request>.RegisterConverter(settings.JsonSerializerOptions.Converters);
-            global::AwsLambda.Host.Envelopes.APIGateway.ApiGatewayResponseEnvelope<global::Response>.RegisterConverter(settings.JsonSerializerOptions.Converters);
+            global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Request>.RegisterConverter(settings.JsonSerializerOptions.Converters);
+            global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Response>.RegisterConverter(settings.JsonSerializerOptions.Converters);
 
             Task InvocationDelegate(ILambdaHostContext context)
             {
-                // ParameterInfo { Type = global::AwsLambda.Host.Envelopes.APIGateway.ApiGatewayResponseEnvelope<global::Request>, Name = request, Source = Event, IsNullable = False, IsOptional = False}
-                var arg0 = context.GetEventT<global::AwsLambda.Host.Envelopes.APIGateway.ApiGatewayResponseEnvelope<global::Request>>();
+                // ParameterInfo { Type = global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Request>, Name = request, Source = Event, IsNullable = False, IsOptional = False}
+                var arg0 = context.GetEventT<global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Request>>();
                 // ParameterInfo { Type = global::IService, Name = service, Source = Service, IsNullable = False, IsOptional = False}
                 var arg1 = context.ServiceProvider.GetRequiredService<global::IService>();
                 context.Response = castHandler.Invoke(arg0, arg1);
@@ -59,16 +59,16 @@ namespace AwsLambda.Host
             
             Task Deserializer(ILambdaHostContext context, ILambdaSerializer serializer, Stream eventStream)
             {
-                context.Event = serializer.Deserialize<global::AwsLambda.Host.Envelopes.APIGateway.ApiGatewayResponseEnvelope<global::Request>>(eventStream);
+                context.Event = serializer.Deserialize<global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Request>>(eventStream);
                 return Task.CompletedTask;
             }
             
             Task<Stream> Serializer(ILambdaHostContext context, ILambdaSerializer serializer)
             {
-                var response = context.GetResponseT<global::AwsLambda.Host.Envelopes.APIGateway.ApiGatewayResponseEnvelope<global::Response>>();
+                var response = context.GetResponseT<global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Response>>();
                 var outputStream = new MemoryStream();
                 outputStream.SetLength(0L);
-                serializer.Serialize<global::AwsLambda.Host.Envelopes.APIGateway.ApiGatewayResponseEnvelope<global::Response>>(response, outputStream);
+                serializer.Serialize<global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Response>>(response, outputStream);
                 outputStream.Position = 0L;
                 return Task.FromResult<Stream>(outputStream);
             }

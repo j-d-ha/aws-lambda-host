@@ -19,8 +19,8 @@ public class IRequestAndIResponseVerifyTests
             var lambda = builder.Build();
 
             lambda.MapHandler(
-                ([Event] ApiGatewayResponseEnvelope<Request> request, IService service) =>
-                    new ApiGatewayResponseEnvelope<Response>
+                ([Event] APIGatewayResponseEnvelope<Request> request, IService service) =>
+                    new APIGatewayResponseEnvelope<Response>
                     {
                         Body = new Response(service.GetMessage(request.Body!.Name)),
                         StatusCode = 200,

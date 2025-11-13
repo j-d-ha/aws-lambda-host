@@ -31,6 +31,7 @@ namespace AwsLambda.Host
     using System.Threading.Tasks;
     using Amazon.Lambda.Core;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Options;
 
     file static class MapHandlerLambdaApplicationExtensions
     {
