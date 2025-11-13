@@ -21,5 +21,5 @@ public interface IJsonSerializable
     ///     The list of <see cref="JsonConverter" /> instances to populate with custom
     ///     converters.
     /// </param>
-    static abstract void RegisterTypeInfo(IList<JsonConverter> converters);
+    static abstract void RegisterConverter(IList<JsonConverter> converters);
 }
