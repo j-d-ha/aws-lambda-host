@@ -11,7 +11,7 @@ public class SqsEnvelope<T> : SQSEvent, IJsonSerializable
 
     /// <inheritdoc />
     public static void RegisterConverter(IList<JsonConverter> converters) =>
-        converters.Add(new SqsEnvelopeJsonConverter<SqsEnvelope<T>>());
+        converters.Add(new SqsEnvelopeJsonConverter<T>());
 
     /// <inheritdoc />
     public class SqsMessageEnvelope : SQSMessage
