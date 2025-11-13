@@ -35,6 +35,7 @@
     <!-- Lambda Event Libraries -->
     <PackageVersion Include="Amazon.Lambda.APIGatewayEvents" Version="2.7.2" />
     <PackageVersion Include="Amazon.Lambda.SQSEvents" Version="2.2.0" />
+    <PackageVersion Include="AutoFixture" Version="4.18.1" />
   </ItemGroup>
   <!-- Conditional versions based on target framework -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
