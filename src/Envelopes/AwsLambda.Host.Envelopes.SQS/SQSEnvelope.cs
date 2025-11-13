@@ -4,17 +4,17 @@ using Amazon.Lambda.SQSEvents;
 namespace AwsLambda.Host.Envelopes.SQS;
 
 /// <inheritdoc cref="SQSEvent" />
-public class SqsEnvelope<T> : SQSEvent, IJsonSerializable
+public class SQSEnvelope<T> : SQSEvent, IJsonSerializable
 {
     /// <summary>Get and sets the Records</summary>
-    public new required List<SqsMessageEnvelope> Records { get; set; }
+    public new required List<SQSMessageEnvelope> Records { get; set; }
 
     /// <inheritdoc />
     public static void RegisterConverter(IList<JsonConverter> converters) =>
-        converters.Add(new SqsEnvelopeJsonConverter<T>());
+        converters.Add(new SQSEnvelopeJsonConverter<T>());
 
     /// <inheritdoc />
-    public class SqsMessageEnvelope : SQSMessage
+    public class SQSMessageEnvelope : SQSMessage
     {
         /// <summary>Get and sets the Body</summary>
         [JsonIgnore]
