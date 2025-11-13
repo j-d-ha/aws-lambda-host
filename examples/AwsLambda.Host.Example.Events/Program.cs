@@ -1,76 +1,60 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using Amazon.Lambda.APIGatewayEvents;
 using AwsLambda.Host;
 using AwsLambda.Host.APIGatewayEnvelops;
 using AwsLambda.Host.Envelopes.APIGateway;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 var builder = LambdaApplication.CreateBuilder();
 
 builder.Services.ConfigureLambdaHostOptions(options =>
 {
     options.ClearLambdaOutputFormatting = true;
-});
-
-builder.Services.Configure<JsonSerializerOptions>(options =>
-{
-    options.PropertyNameCaseInsensitive = true;
-    options.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+    options.JsonSerializerOptions.TypeInfoResolverChain.Add(SerializerContext.Default);
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
 });
 
 var lambda = builder.Build();
 
 lambda.MapHandler(
-    ([Event] ApiGatewayRequestEnvelope<Request> request) =>
-        new ApiGatewayResponseEnvelope<Response>
+    ([Event] ApiGatewayRequestEnvelope<Request> request, ILogger<Program> logger) =>
+    {
+        logger.LogInformation("In Handler");
+
+        return new ApiGatewayResponseEnvelope<Response>
         {
-            Body = new Response($"Hello {request.Body!.Name}!", DateTime.UtcNow),
-            StatusCode = 200,
+            Body = new Response($"Hello {request.Body?.Name}!", DateTime.UtcNow),
+            StatusCode = 201,
             Headers = new Dictionary<string, string> { ["Content-Type"] = "application/json" },
-        }
+            IsBase64Encoded = true,
+        };
+    }
 );
 
 // // this wont compile as we can only have a single handler per lambda function
 // lambda.MapHandler(
-//     ([Event] SqsEnvelope<Request> sqsEnvelope, ILogger logger) =>
+//     ([Event] SqsEnvelope<Request> sqsEnvelope, ILogger<Program> logger) =>
 //     {
 //         var responses = new SQSBatchResponse();
 //
 //         foreach (var record in sqsEnvelope.Records)
 //         {
 //             // simulate failure if we get bad data
-//             if (record.Body!.Name == "John")
+//             if (record.Body?.Name is null or "John")
+//             {
 //                 responses.BatchItemFailures.Add(
 //                     new SQSBatchResponse.BatchItemFailure { ItemIdentifier = record.MessageId }
 //                 );
+//
+//                 continue;
+//             }
 //
 //             // otherwise, log the message
 //             logger.LogInformation("Hello {name}!", record.Body.Name);
-//         }
-//
-//         return responses;
-//     }
-// );
-//
-// lambda.MapHandler(
-//     ([Event] SQSEvent sqsEnvelope, ILogger logger, ILambdaHostContext context) =>
-//     {
-//         var responses = new SQSBatchResponse();
-//
-//         foreach (var record in sqsEnvelope.Records)
-//         {
-//             // simulate failure if we get bad data
-//             var body = JsonSerializer.Deserialize<Request>(record.Body);
-//
-//             if (body!.Name == "John")
-//                 responses.BatchItemFailures.Add(
-//                     new SQSBatchResponse.BatchItemFailure { ItemIdentifier = record.MessageId }
-//                 );
-//
-//             // otherwise, log the message
-//             logger.LogInformation("Hello {name}!", body.Name);
 //         }
 //
 //         return responses;
@@ -82,3 +66,11 @@ await lambda.RunAsync();
 internal record Response(string Message, DateTime TimestampUtc);
 
 internal record Request(string Name);
+
+[JsonSerializable(typeof(ApiGatewayRequestEnvelope<Request>))]
+[JsonSerializable(typeof(ApiGatewayResponseEnvelope<Response>))]
+[JsonSerializable(typeof(Request))]
+[JsonSerializable(typeof(Response))]
+[JsonSerializable(typeof(APIGatewayProxyRequest))]
+[JsonSerializable(typeof(APIGatewayProxyResponse))]
+internal partial class SerializerContext : JsonSerializerContext;
