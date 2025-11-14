@@ -49,21 +49,7 @@ public class APIGatewayRequestEnvelopeJsonConverterTests
 
         // Assert - Envelope properties MUST be read correctly despite camelCase policy
         // This is the critical bug prevention: envelope structure is not affected by user policy
-        envelope.Should().NotBeNull();
-        request
-            .Should()
-            .BeEquivalentTo(
-                envelope,
-                options =>
-                {
-                    // dict of string, object plays weird here
-                    options.Excluding(e => e.RequestContext.Authorizer);
-                    // Body on envelope is T but will be string on inner type
-                    options.Excluding(e => e.Body);
-                    return options;
-                }
-            );
-        envelope.Body.Should().BeEquivalentTo(payload);
+        AssertEnvelopeEquivalentToRequest(envelope, request, payload);
     }
 
     #endregion
@@ -91,11 +77,7 @@ public class APIGatewayRequestEnvelopeJsonConverterTests
         );
 
         // Assert - Body is typed as SimplePayload, has the properties
-        envelope.Should().NotBeNull();
-        envelope!.Body.Should().NotBeNull();
-        // These properties only exist on SimplePayload, not on string
-        envelope.Body.Name.Should().Be(payload.Name);
-        envelope.Body.Value.Should().Be(payload.Value);
+        AssertEnvelopeEquivalentToRequest(envelope, request, payload);
     }
 
     #endregion
@@ -136,11 +118,8 @@ public class APIGatewayRequestEnvelopeJsonConverterTests
         );
 
         // Assert - Each type is handled with its own converter
-        intEnvelope.Should().NotBeNull();
-        intEnvelope!.Body.Should().Be(intValue);
-
-        payloadEnvelope.Should().NotBeNull();
-        payloadEnvelope!.Body.Should().BeEquivalentTo(payloadValue);
+        AssertEnvelopeEquivalentToRequest(intEnvelope, intRequest, intValue);
+        AssertEnvelopeEquivalentToRequest(payloadEnvelope, payloadRequest, payloadValue);
     }
 
     #endregion
@@ -168,38 +147,7 @@ public class APIGatewayRequestEnvelopeJsonConverterTests
         );
 
         // Assert - Body is now typed as SimplePayload, not a string
-        envelope.Should().NotBeNull();
-        envelope!.Body.Should().BeEquivalentTo(payload);
-        envelope.Body.Name.Should().Be(payload.Name);
-        envelope.Body.Value.Should().Be(payload.Value);
-    }
-
-    [Fact]
-    public void Serialize_TypedBodyToStringBody_CorrectlySerializes()
-    {
-        // Arrange - Start with typed body, serialize to API Gateway format
-        var options = new JsonSerializerOptions();
-        APIGatewayRequestEnvelope<SimplePayload>.RegisterConverter(options.Converters);
-
-        var payload = _fixture.Create<SimplePayload>();
-        var envelope = _fixture
-            .Build<APIGatewayRequestEnvelope<SimplePayload>>()
-            .With(e => e.Body, payload)
-            .Create();
-
-        // Act - Serialize the envelope
-        var json = JsonSerializer.Serialize(envelope, options);
-
-        // Assert - JSON should contain the body as a serialized string (not double-serialized)
-        json.Should().Contain("\"Body\":");
-
-        // Deserialize to verify round-trip
-        var deserialized = JsonSerializer.Deserialize<APIGatewayRequestEnvelope<SimplePayload>>(
-            json,
-            options
-        );
-        deserialized.Should().NotBeNull();
-        deserialized!.Body.Should().BeEquivalentTo(payload);
+        AssertEnvelopeEquivalentToRequest(envelope, request, payload);
     }
 
     #endregion
@@ -223,10 +171,7 @@ public class APIGatewayRequestEnvelopeJsonConverterTests
         );
 
         // Assert - Body should be null, envelope should still exist
-        envelope.Should().NotBeNull();
-        envelope!.Body.Should().BeNull();
-        envelope.Path.Should().Be(request.Path);
-        envelope.HttpMethod.Should().Be(request.HttpMethod);
+        AssertEnvelopeEquivalentToRequest(envelope, request, null);
     }
 
     [Fact]
@@ -325,6 +270,7 @@ public class APIGatewayRequestEnvelopeJsonConverterTests
         roundTripEnvelope!.Body.Should().BeEquivalentTo(originalEnvelope.Body);
         roundTripEnvelope.Path.Should().Be(originalEnvelope.Path);
         roundTripEnvelope.HttpMethod.Should().Be(originalEnvelope.HttpMethod);
+        roundTripEnvelope.RequestContext.Should().NotBeNull();
     }
 
     [Fact]
@@ -351,15 +297,70 @@ public class APIGatewayRequestEnvelopeJsonConverterTests
 
         // Assert - Envelope structure preserved (PascalCase), body with camelCase policy applied
         roundTripEnvelope.Should().NotBeNull();
-        roundTripEnvelope!.Path.Should().Be(originalEnvelope.Path);
-        roundTripEnvelope.HttpMethod.Should().Be(originalEnvelope.HttpMethod);
-        roundTripEnvelope.Body.Should().BeEquivalentTo(originalEnvelope.Body);
+        originalEnvelope
+            .Should()
+            .BeEquivalentTo(
+                roundTripEnvelope,
+                opts =>
+                {
+                    // dict of string, object plays weird here
+                    opts.Excluding(e => e.RequestContext.Authorizer);
+                    // Body on envelope is T but will be string on inner type
+                    opts.Excluding(e => e.Body);
+                    return opts;
+                }
+            );
+        roundTripEnvelope!.Body.Should().BeEquivalentTo(originalEnvelope.Body);
         roundTripEnvelope.Body.FirstName.Should().Be(payload.FirstName);
     }
 
     #endregion
 
-    #region Test Helper Classes
+    #region Test Helper Methods
+
+    /// <summary>
+    ///     Asserts that an envelope matches the request structure while respecting the envelope's
+    ///     typed Body. This method ensures consistent comparison across all tests by excluding properties
+    ///     that differ between the request and envelope (e.g., Body type and Authorizer dict).
+    /// </summary>
+    /// <typeparam name="T">The type of the payload in the envelope</typeparam>
+    /// <param name="envelope">The deserialized envelope to assert</param>
+    /// <param name="originalRequest">The original request to compare against</param>
+    /// <param name="expectedBody">The expected body value for the envelope</param>
+    private void AssertEnvelopeEquivalentToRequest<T>(
+        APIGatewayRequestEnvelope<T>? envelope,
+        APIGatewayProxyRequest originalRequest,
+        T expectedBody
+    )
+    {
+        AssertEnvelopeEquivalentToEvent(envelope, originalRequest);
+        envelope!.Body.Should().BeEquivalentTo(expectedBody);
+    }
+
+    private void AssertEnvelopeEquivalentToEvent<T>(
+        APIGatewayRequestEnvelope<T>? envelope,
+        APIGatewayProxyRequest originalRequest
+    )
+    {
+        envelope.Should().NotBeNull();
+        originalRequest
+            .Should()
+            .BeEquivalentTo(
+                envelope,
+                options =>
+                {
+                    // dict of string, object plays weird here
+                    options.Excluding(e => e.RequestContext.Authorizer);
+                    // Body on envelope is T but will be string on inner type
+                    options.Excluding(e => e.Body);
+                    return options;
+                }
+            );
+    }
+
+    #endregion
+
+    #region Test Payload Classes
 
     /// <summary>
     ///     Simple payload without any JSON property name attributes. Used to test basic type
