@@ -44,16 +44,22 @@ namespace AwsLambda.Host
         {
             var castHandler = (global::System.Func<global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Request>, global::IService, global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Response>>)handler;
             var settings = application.Services.GetRequiredService<IOptions<LambdaHostOptions>>().Value;
-            global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Request>.RegisterConverter(settings.JsonSerializerOptions.Converters);
-            global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Response>.RegisterConverter(settings.JsonSerializerOptions.Converters);
 
             Task InvocationDelegate(ILambdaHostContext context)
             {
+                if (context.Event is IModelBinder eventBinder)
+                {
+                    eventBinder.BindModel(settings.JsonSerializerOptions);
+                } 
                 // ParameterInfo { Type = global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Request>, Name = request, Source = Event, IsNullable = False, IsOptional = False}
                 var arg0 = context.GetEventT<global::AwsLambda.Host.Envelopes.APIGateway.APIGatewayResponseEnvelope<global::Request>>();
                 // ParameterInfo { Type = global::IService, Name = service, Source = Service, IsNullable = False, IsOptional = False}
                 var arg1 = context.ServiceProvider.GetRequiredService<global::IService>();
                 context.Response = castHandler.Invoke(arg0, arg1);
+                if (context.Response is IModelBinder responseBinder)
+                {
+                    responseBinder.UnbindModel(settings.JsonSerializerOptions);
+                } 
                 return Task.CompletedTask; 
             }
             
