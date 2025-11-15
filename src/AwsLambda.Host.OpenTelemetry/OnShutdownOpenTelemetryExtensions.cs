@@ -156,7 +156,7 @@ public static class OnShutdownOpenTelemetryExtensions
         if (flusherTask.Status != TaskStatus.RanToCompletion)
         {
             logger.LogWarning(
-                "OpenTelemetry {providerName} provider force flush failed to complete within allocated time",
+                "OpenTelemetry {ProviderName} provider force flush failed to complete within allocated time",
                 providerName
             );
 
@@ -164,7 +164,7 @@ public static class OnShutdownOpenTelemetryExtensions
         }
 
         logger.LogInformation(
-            "OpenTelemetry {providerName} provider force flush {status}",
+            "OpenTelemetry {ProviderName} provider force flush {Status}",
             providerName,
             flusherTask.Result ? "succeeded" : "failed"
         );
