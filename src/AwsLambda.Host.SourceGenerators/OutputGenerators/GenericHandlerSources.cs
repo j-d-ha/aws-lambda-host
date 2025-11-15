@@ -59,17 +59,22 @@ internal static class GenericHandlerSources
                 // delegate
                 // return type matches the wrapper return type 1:1
                 var shouldAwait =
-                    fullWrapperReturnType != higherOrderMethodInfo.DelegateInfo.FullResponseType
+                    fullWrapperReturnType
+                        != higherOrderMethodInfo.DelegateInfo.ReturnTypeInfo.FullyQualifiedType
                     && higherOrderMethodInfo.DelegateInfo.IsAwaitable;
 
                 // should return response
                 var shouldReturnResponse =
-                    higherOrderMethodInfo.DelegateInfo.FullResponseType != TypeConstants.Void
+                    higherOrderMethodInfo.DelegateInfo.ReturnTypeInfo.FullyQualifiedType
+                        != TypeConstants.Void
                     && (
                         wrapperReturnType
-                            == higherOrderMethodInfo.DelegateInfo.UnwrappedResponseType
+                            == higherOrderMethodInfo
+                                .DelegateInfo
+                                .ReturnTypeInfo
+                                .UnwrappedFullyQualifiedType
                         || fullWrapperReturnType
-                            == higherOrderMethodInfo.DelegateInfo.FullResponseType
+                            == higherOrderMethodInfo.DelegateInfo.ReturnTypeInfo.FullyQualifiedType
                     );
 
                 // should wrap the response in a Task
@@ -120,18 +125,18 @@ internal static class GenericHandlerSources
 
                     // inject keyed service from the DI container - required
                     ParameterSource.KeyedService when param.IsRequired =>
-                        $"serviceProvider.GetRequiredKeyedService<{param.Type}>({param.KeyedServiceKey?.DisplayValue})",
+                        $"serviceProvider.GetRequiredKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
 
                     // inject keyed service from the DI container - optional
                     ParameterSource.KeyedService =>
-                        $"serviceProvider.GetKeyedService<{param.Type}>({param.KeyedServiceKey?.DisplayValue})",
+                        $"serviceProvider.GetKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
 
                     // default: inject service from the DI container - required
                     _ when param.IsRequired =>
-                        $"serviceProvider.GetRequiredService<{param.Type}>()",
+                        $"serviceProvider.GetRequiredService<{param.TypeInfo.FullyQualifiedType}>()",
 
                     // default: inject service from the DI container - optional
-                    _ => $"serviceProvider.GetService<{param.Type}>()",
+                    _ => $"serviceProvider.GetService<{param.TypeInfo.FullyQualifiedType}>()",
                 },
             })
             .ToArray();

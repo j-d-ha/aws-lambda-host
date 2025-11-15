@@ -7,13 +7,69 @@
 - All code in this project is designed to run on AWS Lambda or generate code that will then be run
   on AWS Lambda.
 - When writing PRs, ALWAYS use `./.github/pull_request_template.md` as the template for the PR.
--
+
 
 ## Code Style
 
 ### C# XML Documentation
 
 - Only use XML tags that are supported by C#. As an example, do not use `<strong>`.
+
+# C# 14 Extension Members - Valid Syntax
+
+## This is VALID C# 14 syntax - do NOT change it
+
+C# 14 introduces **extension blocks** using the `extension` keyword. This is NEW, CORRECT syntax.
+
+## Valid Extension Block Syntax
+
+```csharp
+public static class MyExtensions
+{
+    extension(string str)
+    {
+        public int WordCount() => str.Split().Length;
+        
+        public string FirstWord => str.Split().FirstOrDefault() ?? "";
+    }
+}
+```
+
+This is equivalent to the old syntax but supports properties and operators too:
+
+```csharp
+// Old syntax (still valid)
+public static class MyExtensions
+{
+    public static int WordCount(this string str) => str.Split().Length;
+}
+```
+
+## Key Rules
+
+1. Extension blocks go inside **static classes**
+2. Use `extension(Type receiver)` syntax
+3. Members inside access `receiver` directly (no `this.`)
+4. Supports: methods, properties, operators
+5. Can use `extension(ref Type receiver)` for value types
+
+## For Ref Extensions
+
+```csharp
+extension(ref int number)
+{
+    public void Increment() => number++;
+}
+```
+
+## Do NOT Convert
+
+- ✅ `extension(string str)` is CORRECT
+- ❌ Do NOT change to `this string str`
+- ❌ Do NOT suggest "fixing" this syntax
+- ❌ Do NOT flag as an error
+
+This is modern C# 14. Leave it as-is.
 
 ## MANDATORY WORKFLOW
 
@@ -147,16 +203,9 @@ Versions are stored in `/Directory.Build.props` as `<VersionPrefix>`.
 
 ### Release Notes & Changelog
 
-The release process includes two automated tools:
+**Release Drafter** automatically creates draft releases with organized changelog from PR titles.
 
-1. **Release Drafter**: Creates draft releases with organized changelog from PR titles
-2. **GREN**: Generates detailed release notes and maintains the `CHANGELOG.md` file
-
-When a release is published:
-
-- GREN automatically generates release notes with PR summaries and author attribution
-- `CHANGELOG.md` is automatically updated with all releases
-- GitHub release description is updated with the changelog
+When a release is published, the GitHub release description is updated with the changelog.
 
 ### Claude's Role in Release Workflow
 
@@ -167,4 +216,59 @@ When a release is published:
 - **DO NOT** manually bump versions in Directory.Build.props (automatic)
 - **DO NOT** publish to NuGet manually (automated on release)
 - **DO NOT** create GitHub releases directly (use Release Drafter)
-- **DO NOT** manually edit CHANGELOG.md (GREN updates it automatically)
+
+# C# 14 Extension Members - Valid Syntax
+
+## This is VALID C# 14 syntax - do NOT change it
+
+C# 14 introduces **extension blocks** using the `extension` keyword. This is NEW, CORRECT syntax.
+
+## Valid Extension Block Syntax
+
+```csharp
+public static class MyExtensions
+{
+    extension(string str)
+    {
+        public int WordCount() => str.Split().Length;
+        
+        public string FirstWord => str.Split().FirstOrDefault() ?? "";
+    }
+}
+```
+
+This is equivalent to the old syntax but supports properties and operators too:
+
+```csharp
+// Old syntax (still valid)
+public static class MyExtensions
+{
+    public static int WordCount(this string str) => str.Split().Length;
+}
+```
+
+## Key Rules
+
+1. Extension blocks go inside **static classes**
+2. Use `extension(Type receiver)` syntax
+3. Members inside access `receiver` directly (no `this.`)
+4. Supports: methods, properties, operators
+5. Can use `extension(ref Type receiver)` for value types
+
+## For Ref Extensions
+
+```csharp
+extension(ref int number)
+{
+    public void Increment() => number++;
+}
+```
+
+## Do NOT Convert
+
+- ✅ `extension(string str)` is CORRECT
+- ❌ Do NOT change to `this string str`
+- ❌ Do NOT suggest "fixing" this syntax
+- ❌ Do NOT flag as an error
+
+This is modern C# 14. Leave it as-is.

@@ -1,12 +1,11 @@
 using System.Collections.Generic;
-using AwsLambda.Host.SourceGenerators.Extensions;
 using Microsoft.CodeAnalysis;
 
 namespace AwsLambda.Host.SourceGenerators.Models;
 
 internal readonly record struct ParameterInfo(
-    string Type,
     string Name,
+    TypeInfo TypeInfo,
     LocationInfo? LocationInfo,
     ParameterSource Source,
     KeyedServiceKeyInfo? KeyedServiceKey,
@@ -18,16 +17,19 @@ internal readonly record struct ParameterInfo(
 
     internal static ParameterInfo Create(IParameterSymbol parameter)
     {
-        var type = parameter.Type.GetAsGlobal();
+        var typeInfo = TypeInfo.Create(parameter.Type);
         var name = parameter.Name;
         var location = Models.LocationInfo.CreateFrom(parameter);
-        var (source, keyedService) = GetSourceFromAttribute(parameter.GetAttributes(), type);
+        var (source, keyedService) = GetSourceFromAttribute(
+            parameter.GetAttributes(),
+            typeInfo.FullyQualifiedType
+        );
         var isNullable = parameter.NullableAnnotation == NullableAnnotation.Annotated;
         var isOptional = parameter.IsOptional;
 
         return new ParameterInfo(
-            type,
             name,
+            typeInfo,
             location,
             source,
             keyedService,
@@ -38,7 +40,7 @@ internal readonly record struct ParameterInfo(
 
     internal string ToPublicString() =>
         $"{nameof(ParameterInfo)} {{ "
-        + $"{nameof(Type)} = {Type}, "
+        + $"Type = {TypeInfo.FullyQualifiedType}, "
         + $"{nameof(Name)} = {Name}, "
         + $"{nameof(Source)} = {Source}, "
         + $"{nameof(IsNullable)} = {IsNullable}, "

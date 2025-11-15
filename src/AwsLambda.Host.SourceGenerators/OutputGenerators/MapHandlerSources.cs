@@ -18,15 +18,20 @@ internal static class MapHandlerSources
 
         // get input event type
         var inputEvent = delegateInfo.EventParameter is { } p
-            ? new { IsStream = p.Type == TypeConstants.Stream, p.Type }
+            ? new
+            {
+                IsStream = p.TypeInfo.FullyQualifiedType == TypeConstants.Stream,
+                Type = p.TypeInfo.FullyQualifiedType,
+            }
             : null;
 
         // get output response type and whether it is a stream
         var outputResponse = delegateInfo.HasResponse
             ? new
             {
-                ResponseType = delegateInfo.UnwrappedResponseType,
-                ResponseIsStream = delegateInfo.UnwrappedResponseType == TypeConstants.Stream,
+                ResponseType = delegateInfo.ReturnTypeInfo.UnwrappedFullyQualifiedType,
+                ResponseIsStream = delegateInfo.ReturnTypeInfo.UnwrappedFullyQualifiedType
+                    == TypeConstants.Stream,
             }
             : null;
 
@@ -57,7 +62,8 @@ internal static class MapHandlerSources
                 Assignment = param.Source switch
                 {
                     // Event -> deserialize to type
-                    ParameterSource.Event => $"context.GetEventT<{param.Type}>()",
+                    ParameterSource.Event =>
+                        $"context.GetEventT<{param.TypeInfo.FullyQualifiedType}>()",
 
                     // ILambdaContext OR ILambdaHostContext -> use context directly
                     ParameterSource.Context => "context",
@@ -67,18 +73,19 @@ internal static class MapHandlerSources
 
                     // inject keyed service from the DI container - required
                     ParameterSource.KeyedService when param.IsRequired =>
-                        $"context.ServiceProvider.GetRequiredKeyedService<{param.Type}>({param.KeyedServiceKey?.DisplayValue})",
+                        $"context.ServiceProvider.GetRequiredKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
 
                     // inject keyed service from the DI container - optional
                     ParameterSource.KeyedService =>
-                        $"context.ServiceProvider.GetKeyedService<{param.Type}>({param.KeyedServiceKey?.DisplayValue})",
+                        $"context.ServiceProvider.GetKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
 
                     // default: inject service from the DI container - required
                     _ when param.IsRequired =>
-                        $"context.ServiceProvider.GetRequiredService<{param.Type}>()",
+                        $"context.ServiceProvider.GetRequiredService<{param.TypeInfo.FullyQualifiedType}>()",
 
                     // default: inject service from the DI container - optional
-                    _ => $"context.ServiceProvider.GetService<{param.Type}>()",
+                    _ =>
+                        $"context.ServiceProvider.GetService<{param.TypeInfo.FullyQualifiedType}>()",
                 },
             })
             .ToArray();

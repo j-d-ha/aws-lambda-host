@@ -1,3 +1,4 @@
+using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.RuntimeSupport;
 using Amazon.Lambda.Serialization.SystemTextJson;
@@ -61,11 +62,14 @@ internal static class GeneratorTestHelpers
         LanguageVersion languageVersion = LanguageVersion.CSharp11
     )
     {
+        IEnumerable<KeyValuePair<string, string>> features =
+        [
+            new("InterceptorsNamespaces", "AwsLambda.Host"),
+        ];
+
         var parseOptions = CSharpParseOptions
             .Default.WithLanguageVersion(languageVersion)
-            .WithFeatures([
-                new KeyValuePair<string, string>("InterceptorsNamespaces", "AwsLambda.Host"),
-            ]);
+            .WithFeatures(features);
 
         var syntaxTree = CSharpSyntaxTree.ParseText(source, parseOptions, "InputFile.cs");
 
@@ -81,6 +85,7 @@ internal static class GeneratorTestHelpers
             MetadataReference.CreateFromFile(typeof(LambdaBootstrapBuilder).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(IOptions<>).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ILambdaApplication).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(APIGatewayProxyResponse).Assembly.Location),
             MetadataReference.CreateFromFile(
                 typeof(LambdaOpenTelemetryServiceProviderExtensions).Assembly.Location
             ),

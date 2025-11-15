@@ -1,6 +1,4 @@
-using Amazon.Lambda.Core;
 using Amazon.Lambda.RuntimeSupport.Bootstrap;
-using Amazon.Lambda.Serialization.SystemTextJson;
 
 namespace AwsLambda.Host;
 
@@ -85,17 +83,6 @@ public class LambdaHostOptions
     ///     </para>
     /// </remarks>
     public LambdaBootstrapOptions BootstrapOptions { get; set; } = new();
-
-    /// <summary>
-    ///     Gets or sets the Lambda serializer used for serializing and deserializing Lambda requests
-    ///     and responses.
-    /// </summary>
-    /// <remarks>
-    ///     Defaults to <see cref="DefaultLambdaJsonSerializer" /> which uses System.Text.Json for
-    ///     serialization. This serializer is used for all JSON serialization operations within the Lambda
-    ///     host.
-    /// </remarks>
-    public ILambdaSerializer LambdaSerializer { get; set; } = new DefaultLambdaJsonSerializer();
 
     /// <summary>Gets or sets an optional custom HTTP client for the Lambda bootstrap.</summary>
     /// <remarks>

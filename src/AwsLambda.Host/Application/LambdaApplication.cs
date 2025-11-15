@@ -34,8 +34,17 @@ public sealed class LambdaApplication : IHost, ILambdaApplication, IAsyncDisposa
     public void Dispose() => _host.Dispose();
 
     /// <inheritdoc />
-    public Task StartAsync(CancellationToken cancellationToken = default) =>
-        _host.StartAsync(cancellationToken);
+    /// <remarks>
+    ///     Before starting the host, this method applies default middleware to the invocation
+    ///     pipeline.
+    /// </remarks>
+    public Task StartAsync(CancellationToken cancellationToken = default)
+    {
+        // add default middleware to the end of the pipeline
+        AddDefaultMiddleware();
+
+        return _host.StartAsync(cancellationToken);
+    }
 
     /// <inheritdoc />
     public Task StopAsync(CancellationToken cancellationToken = default) =>
@@ -97,6 +106,10 @@ public sealed class LambdaApplication : IHost, ILambdaApplication, IAsyncDisposa
 
         return this;
     }
+
+    private void AddDefaultMiddleware() =>
+        // Add Envelope middleware
+        this.UseExtractAndPackEnvelope();
 
     //  ┌──────────────────────────────────────────────────────────┐
     //  │                 Builder Factory Methods                  │
