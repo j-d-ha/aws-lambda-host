@@ -141,7 +141,6 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
     private async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // Create a fully composed handler with middleware and request processing.
-        // throw new Exception("ExecuteAsync error");
         var requestHandler = _handlerFactory.CreateHandler(stoppingToken);
 
         var onInitHandler = _lifecycle.OnInit(stoppingToken);
