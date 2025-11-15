@@ -1,10 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Amazon.Lambda.SQSEvents;
 using AwsLambda.Host;
 using AwsLambda.Host.Envelopes.ApiGateway;
-using AwsLambda.Host.Envelopes.Sqs;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -25,43 +24,17 @@ builder.Services.AddLambdaSerializerWithContext<SerializerContext>();
 
 var lambda = builder.Build();
 
-// lambda.MapHandler(
-//     ([Event] APIGatewayRequestEnvelope<Request> request, ILogger<Program> logger) =>
-//     {
-//         logger.LogInformation("In Handler. Payload: {payload}", request.Body);
-//
-//         return new APIGatewayResponseEnvelope<Response>
-//         {
-//             BodyContent = new Response($"Hello {request.BodyContent?.Name}!", DateTime.UtcNow),
-//             StatusCode = 201,
-//             Headers = new Dictionary<string, string> { ["Content-Type"] = "application/json" },
-//         };
-//     }
-// );
-
-// this wont compile as we can only have a single handler per lambda function
 lambda.MapHandler(
-    ([Event] SqsEnvelope<Request> sqsEnvelope, ILogger<Program> logger) =>
+    ([Event] ApiGatewayRequestEnvelope<Request> request, ILogger<Program> logger) =>
     {
-        var responses = new SQSBatchResponse();
+        logger.LogInformation("In Handler. Payload: {payload}", request.Body);
 
-        foreach (var record in sqsEnvelope.Records)
+        return new ApiGatewayResponseEnvelope<Response>
         {
-            // simulate failure if we get bad data
-            if (record.BodyContent?.Name is null or "john")
-            {
-                responses.BatchItemFailures.Add(
-                    new SQSBatchResponse.BatchItemFailure { ItemIdentifier = record.MessageId }
-                );
-
-                continue;
-            }
-
-            // otherwise, log the message
-            logger.LogInformation("Hello {name}!", record.BodyContent.Name);
-        }
-
-        return responses;
+            BodyContent = new Response($"Hello {request.BodyContent?.Name}!", DateTime.UtcNow),
+            StatusCode = 201,
+            Headers = new Dictionary<string, string> { ["Content-Type"] = "application/json" },
+        };
     }
 );
 
@@ -75,6 +48,4 @@ internal record Request(string Name);
 [JsonSerializable(typeof(ApiGatewayResponseEnvelope<Response>))]
 [JsonSerializable(typeof(Request))]
 [JsonSerializable(typeof(Response))]
-[JsonSerializable(typeof(SqsEnvelope<Request>))]
-[JsonSerializable(typeof(SQSBatchResponse))]
 internal partial class SerializerContext : JsonSerializerContext;
