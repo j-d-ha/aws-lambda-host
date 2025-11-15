@@ -1,16 +1,20 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Amazon.Lambda.APIGatewayEvents;
+using AwsLambda.Host.Options;
 
 namespace AwsLambda.Host.Envelopes.APIGateway;
 
 /// <inheritdoc cref="Amazon.Lambda.APIGatewayEvents.APIGatewayProxyResponse" />
-public class APIGatewayResponseEnvelope<T> : APIGatewayProxyResponse, IJsonSerializable
+public class APIGatewayResponseEnvelope<T> : APIGatewayProxyResponse, IEnvelope
 {
     /// <summary>The content of the response body</summary>
     [JsonIgnore]
-    public new T? Body { get; set; }
+    public T? BodyContent { get; set; }
 
-    /// <inheritdoc />
-    public static void RegisterConverter(IList<JsonConverter> converters) =>
-        converters.Add(new APIGatewayResponseJsonConverter<T>());
+    public void ExtractPayload(EnvelopeOptions options) =>
+        BodyContent = JsonSerializer.Deserialize<T>(Body, options.JsonOptions);
+
+    public void PackPayload(EnvelopeOptions options) =>
+        Body = JsonSerializer.Serialize(BodyContent, options.JsonOptions);
 }
