@@ -1,5 +1,4 @@
-﻿using AutoFixture;
-using AwesomeAssertions;
+﻿using AwesomeAssertions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -11,7 +10,6 @@ namespace AwsLambda.Host.OpenTelemetry.UnitTests;
 [TestSubject(typeof(LambdaOpenTelemetryServiceProviderExtensions))]
 public class LambdaOpenTelemetryServiceProviderExtensionsTests
 {
-    private readonly Fixture _fixture = new();
     private readonly IServiceProvider _serviceProvider = Substitute.For<IServiceProvider>();
     private readonly TracerProvider _tracerProvider = Substitute.For<TracerProvider>();
 
