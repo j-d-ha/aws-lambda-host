@@ -93,15 +93,9 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
             return;
 
         // Signal cancellation to the executing method. If disposed or called, this might throw.
-        try
-        {
-            // ReSharper disable once MethodHasAsyncOverload
-            _stoppingCts?.Cancel();
-        }
-        catch
-        {
-            // ignored
-        }
+        await (_stoppingCts?.CancelAsync() ?? Task.CompletedTask).ConfigureAwait(
+            ConfigureAwaitOptions.SuppressThrowing
+        );
 
         // Wait until the lambda task completes or the stop token triggers
         try
