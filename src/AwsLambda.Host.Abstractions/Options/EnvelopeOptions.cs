@@ -4,5 +4,5 @@ namespace AwsLambda.Host.Options;
 
 public class EnvelopeOptions
 {
-    public JsonSerializerOptions JsonOptions = new();
+    public JsonSerializerOptions JsonOptions { get; set; } = new();
 }
