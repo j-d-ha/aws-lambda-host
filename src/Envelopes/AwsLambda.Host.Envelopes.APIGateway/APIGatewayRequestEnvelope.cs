@@ -6,6 +6,11 @@ using AwsLambda.Host.Options;
 namespace AwsLambda.Host.Envelopes.APIGateway;
 
 /// <inheritdoc cref="Amazon.Lambda.APIGatewayEvents.APIGatewayProxyRequest" />
+/// <remarks>
+///     This class extends <see cref="Amazon.Lambda.APIGatewayEvents.APIGatewayProxyRequest" />
+///     and adds a strongly typed <see cref="BodyContent" /> property for easier serialization and
+///     deserialization of request payloads.
+/// </remarks>
 public class APIGatewayRequestEnvelope<T> : APIGatewayProxyRequest, IEnvelope
 {
     /// <summary>The deserialized content of the HTTP request body.</summary>
