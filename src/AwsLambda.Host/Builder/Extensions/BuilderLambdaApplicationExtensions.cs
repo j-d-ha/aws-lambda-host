@@ -4,6 +4,17 @@ using Microsoft.Extensions.Logging;
 
 namespace AwsLambda.Host;
 
+/// <summary>
+///     Provides extension methods on <see cref="LambdaApplication" /> for creating and
+///     configuring <see cref="LambdaApplicationBuilder" /> instances.
+/// </summary>
+/// <remarks>
+///     <para>
+///         These extensions are the primary entry points for initializing a Lambda application. Use
+///         <c>CreateBuilder()</c> to create a builder with standard defaults (configuration, logging,
+///         dependency injection), or <c>CreateEmptyBuilder()</c> for minimal setup.
+///     </para>
+/// </remarks>
 public static class BuilderLambdaApplicationExtensions
 {
     extension(LambdaApplication)
