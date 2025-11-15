@@ -57,7 +57,7 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
             return;
 
         if (_executeTask?.IsCompleted == true)
-            _executeTask?.Dispose();
+            _executeTask.Dispose();
 
         _stoppingCts?.Dispose();
 
@@ -93,15 +93,9 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
             return;
 
         // Signal cancellation to the executing method. If disposed or called, this might throw.
-        try
-        {
-            // ReSharper disable once MethodHasAsyncOverload
-            _stoppingCts?.Cancel();
-        }
-        catch
-        {
-            // ignored
-        }
+        await (_stoppingCts?.CancelAsync() ?? Task.CompletedTask).ConfigureAwait(
+            ConfigureAwaitOptions.SuppressThrowing
+        );
 
         // Wait until the lambda task completes or the stop token triggers
         try
@@ -147,7 +141,6 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
     private async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // Create a fully composed handler with middleware and request processing.
-        // throw new Exception("ExecuteAsync error");
         var requestHandler = _handlerFactory.CreateHandler(stoppingToken);
 
         var onInitHandler = _lifecycle.OnInit(stoppingToken);
