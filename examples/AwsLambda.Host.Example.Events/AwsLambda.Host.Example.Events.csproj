@@ -23,8 +23,8 @@
       ReferenceOutputAssembly="false"
       OutputItemType="Analyzer"
     />
-    <ProjectReference Include="..\..\src\Envelopes\AwsLambda.Host.Envelopes.APIGateway\AwsLambda.Host.Envelopes.APIGateway.csproj" />
-    <ProjectReference Include="..\..\src\Envelopes\AwsLambda.Host.Envelopes.SQS\AwsLambda.Host.Envelopes.SQS.csproj" />
+    <ProjectReference Include="..\..\src\Envelopes\AwsLambda.Host.Envelopes.ApiGateway\AwsLambda.Host.Envelopes.ApiGateway.csproj" />
+    <ProjectReference Include="..\..\src\Envelopes\AwsLambda.Host.Envelopes.Sqs\AwsLambda.Host.Envelopes.Sqs.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="appsettings.json">

@@ -43,9 +43,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwsLambda.Host.Example.Even
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Envelopes", "Envelopes", "{1C3C52D9-2936-4A0C-A9C8-F330F22B8359}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwsLambda.Host.Envelopes.SQS", "src\Envelopes\AwsLambda.Host.Envelopes.SQS\AwsLambda.Host.Envelopes.SQS.csproj", "{8E3037D3-BEB0-4A0B-A09A-CF31F50D0508}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwsLambda.Host.Envelopes.Sqs", "src\Envelopes\AwsLambda.Host.Envelopes.Sqs\AwsLambda.Host.Envelopes.Sqs.csproj", "{8E3037D3-BEB0-4A0B-A09A-CF31F50D0508}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwsLambda.Host.Envelopes.APIGateway", "src\Envelopes\AwsLambda.Host.Envelopes.APIGateway\AwsLambda.Host.Envelopes.APIGateway.csproj", "{83E4EBD0-EE1C-422D-A22C-BC6A1895A879}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwsLambda.Host.Envelopes.ApiGateway", "src\Envelopes\AwsLambda.Host.Envelopes.ApiGateway\AwsLambda.Host.Envelopes.ApiGateway.csproj", "{83E4EBD0-EE1C-422D-A22C-BC6A1895A879}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

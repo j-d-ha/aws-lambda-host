@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using Amazon.Lambda.SQSEvents;
 using AwsLambda.Host.Options;
 
-namespace AwsLambda.Host.Envelopes.SQS;
+namespace AwsLambda.Host.Envelopes.Sqs2;
 
 /// <inheritdoc cref="SQSEvent" />
 /// <remarks>

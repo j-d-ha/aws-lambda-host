@@ -3,7 +3,6 @@ using Amazon.Lambda.Core;
 using Amazon.Lambda.RuntimeSupport;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using AwesomeAssertions;
-using AwsLambda.Host.Envelopes.APIGateway;
 using Basic.Reference.Assemblies;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -86,7 +85,6 @@ internal static class GeneratorTestHelpers
             MetadataReference.CreateFromFile(typeof(LambdaBootstrapBuilder).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(IOptions<>).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ILambdaApplication).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(APIGatewayRequestEnvelope<>).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(APIGatewayProxyResponse).Assembly.Location),
             MetadataReference.CreateFromFile(
                 typeof(LambdaOpenTelemetryServiceProviderExtensions).Assembly.Location

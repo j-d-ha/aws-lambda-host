@@ -8,6 +8,7 @@
     <IncludeBuildOutput>true</IncludeBuildOutput>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <RootNamespace>AwsLambda.Host.Envelopes.Sqs2</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
