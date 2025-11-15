@@ -27,7 +27,7 @@ var lambda = builder.Build();
 lambda.MapHandler(
     ([Event] ApiGatewayRequestEnvelope<Request> request, ILogger<Program> logger) =>
     {
-        logger.LogInformation("In Handler. Payload: {payload}", request.Body);
+        logger.LogInformation("In Handler. Payload: {Payload}", request.Body);
 
         return new ApiGatewayResponseEnvelope<Response>
         {
