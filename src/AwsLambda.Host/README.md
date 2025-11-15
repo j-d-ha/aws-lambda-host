@@ -206,38 +206,32 @@ To use .NET Native AOT, define a JSON serializer context and annotate with types
 ```csharp
 using System.Text.Json.Serialization;
 
-[JsonSerializable(typeof(Order))]
-[JsonSerializable(typeof(OrderResponse))]
+[JsonSerializable(typeof(string))]
 public partial class SerializerContext : JsonSerializerContext;
 ```
 
-Register it with `LambdaApplicationBuilder` by configuring the `JsonSerializerOptions`:
+Register the serializer context with the application:
 
 ```csharp
-using System.Text.Json.Serialization.Metadata;
 using AwsLambda.Host;
 
 var builder = LambdaApplication.CreateBuilder();
 
-builder.Services.ConfigureLambdaHostOptions(options =>
-{
-    options.JsonSerializerOptions.TypeInfoResolverChain.Add(SerializerContext.Default);
-});
+builder.Services.AddLambdaSerializerWithContext<SerializerContext>();
 
 var lambda = builder.Build();
 ```
 
-The framework automatically registers `DefaultLambdaHostJsonSerializer` which uses the configured
-`JsonSerializerOptions` for all serialization operations.
+The `AddLambdaSerializerWithContext<TContext>()` method registers a source-generated JSON serializer
+that uses your context for all Lambda event and response serialization, providing compile-time
+serialization metadata and eliminating runtime reflection.
 
 Enable AOT in your project file:
 
 ```xml
-
 <PublishAot>true</PublishAot>
 <PublishTrimmed>true</PublishTrimmed>
 <TrimMode>full</TrimMode>
-<PublishTrimmed>true</PublishTrimmed>
 <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
 ```
 
