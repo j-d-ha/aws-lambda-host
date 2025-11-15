@@ -54,8 +54,8 @@ public static class BuilderLambdaApplicationExtensions
         ///         <item><description>load app <see cref="IConfiguration" /> from environment variables</description></item>
         ///         <item>
         ///             <description>
-        ///                 configure the <see cref="ILoggerFactory" /> to log to the console, debug,
-        ///                 and event source output
+        ///                 configure the <see cref="ILoggerFactory" /> to log out to the console,
+        ///                 debug, and event source output
         ///             </description>
         ///         </item>
         ///         <item>
