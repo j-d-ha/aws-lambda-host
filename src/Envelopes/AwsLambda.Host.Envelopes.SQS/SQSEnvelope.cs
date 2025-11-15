@@ -28,6 +28,6 @@ public class SQSEnvelope<T> : SQSEvent, IEnvelope
     {
         /// <summary>Get and sets the BodyContent</summary>
         [JsonIgnore]
-        public required T? BodyContent { get; set; }
+        public T? BodyContent { get; set; }
     }
 }
