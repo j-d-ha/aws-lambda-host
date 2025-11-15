@@ -20,5 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Envelopes\AwsLambda.Host.Envelopes.ApiGateway\AwsLambda.Host.Envelopes.ApiGateway.csproj" />
+    <ProjectReference Include="..\..\src\Envelopes\AwsLambda.Host.Envelopes.Sqs\AwsLambda.Host.Envelopes.Sqs.csproj" />
   </ItemGroup>
 </Project>
