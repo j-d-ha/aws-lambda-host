@@ -7,6 +7,10 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeBuildOutput>true</IncludeBuildOutput>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Package Metadata -->
+    <PackageId>AwsLambda.Host.Envelopes.ApiGateway</PackageId>
+    <Description>Strongly-typed API Gateway Models AWS Lambda</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,5 +20,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\AwsLambda.Host.Abstractions\AwsLambda.Host.Abstractions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>
