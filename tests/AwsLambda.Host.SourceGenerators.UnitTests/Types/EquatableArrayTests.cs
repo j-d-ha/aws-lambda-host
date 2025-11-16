@@ -485,6 +485,33 @@ public class EquatableArrayTests
     }
 
     [Fact]
+    public void IntIndexer_WithNullArray_AccessingIndex_ThrowsIndexOutOfRangeException()
+    {
+        // Arrange
+        // Tests: public T this[int index] => (_array ?? [])[index];
+        // When _array is null, it coalesces to empty array, which throws on any index access
+        var array = new EquatableArray<int>(null!);
+
+        // Act & Assert
+        var act = () => _ = array[0];
+        act.Should().ThrowExactly<IndexOutOfRangeException>();
+    }
+
+    [Fact]
+    public void IntIndexer_WithValidIndex_ReturnsCorrectElement()
+    {
+        // Arrange
+        // Tests: public T this[int index] => (_array ?? [])[index];
+        var array = new EquatableArray<string>(new[] { "alpha", "beta", "gamma", "delta" });
+
+        // Act & Assert
+        array[0].Should().Be("alpha");
+        array[1].Should().Be("beta");
+        array[2].Should().Be("gamma");
+        array[3].Should().Be("delta");
+    }
+
+    [Fact]
     public void AsSpan_CanBeSliced()
     {
         // Arrange
@@ -633,6 +660,23 @@ public class EquatableArrayTests
         // Assert
         slice.Length.Should().Be(3);
         slice.SequenceEqual(new[] { "b", "c", "d" }).Should().BeTrue();
+    }
+
+    [Fact]
+    public void RangeIndexer_DirectCall_WithRange_ReturnsCorrectSlice()
+    {
+        // Arrange
+        var array = new EquatableArray<int>(new[] { 10, 20, 30, 40, 50 });
+
+        // Act
+        // Direct call to the Range indexer: public ReadOnlySpan<T> this[Range range] =>
+        // AsSpan()[range];
+        var span = array.AsSpan();
+        var slice = span.Slice(1, 3);
+
+        // Assert
+        slice.Length.Should().Be(3);
+        slice.SequenceEqual(new[] { 20, 30, 40 }).Should().BeTrue();
     }
 
     #endregion
