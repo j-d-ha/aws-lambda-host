@@ -3,6 +3,7 @@ using Amazon.Lambda.Core;
 namespace AwsLambda.Host;
 
 /// <summary>Provides the core API for building and configuring an AWS Lambda application.</summary>
+[Obsolete("This will get deleted soon TM")]
 public interface ILambdaApplication
 {
     /// <summary>Gets the service provider for resolving dependencies.</summary>
