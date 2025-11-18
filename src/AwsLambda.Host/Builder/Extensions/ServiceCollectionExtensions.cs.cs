@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using AwsLambda.Host.Core.Features;
@@ -17,6 +16,17 @@ public static class ServiceCollectionExtensions
 
             // register feature collection
             services.AddSingleton<IFeatureCollection, FeatureCollection>();
+
+            // register core factories
+            services.AddSingleton<
+                ILambdaInvocationBuilderFactory,
+                LambdaInvocationBuilderFactory
+            >();
+            services.AddSingleton<ILambdaOnInitBuilderFactory, LambdaOnInitBuilderFactory>();
+            services.AddSingleton<
+                ILambdaOnShutdownBuilderFactory,
+                LambdaOnShutdownBuilderFactory
+            >();
 
             // Register Lambda execution components
             services.AddSingleton<ILambdaHandlerFactory, LambdaHandlerComposer>();

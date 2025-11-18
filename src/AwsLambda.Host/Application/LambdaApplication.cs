@@ -15,12 +15,25 @@ public sealed class LambdaApplication
         IAsyncDisposable
 {
     private readonly IHost _host;
+    private readonly ILambdaInvocationBuilder _invocationBuilder;
+    private readonly ILambdaOnInitBuilder _onInitBuilder;
+    private readonly ILambdaOnShutdownBuilder _onShutdownBuilder;
 
     internal LambdaApplication(IHost host)
     {
         ArgumentNullException.ThrowIfNull(host);
 
         _host = host;
+
+        _invocationBuilder = Services
+            .GetRequiredService<ILambdaInvocationBuilderFactory>()
+            .CreateBuilder();
+
+        _onInitBuilder = Services.GetRequiredService<ILambdaOnInitBuilderFactory>().CreateBuilder();
+
+        _onShutdownBuilder = Services
+            .GetRequiredService<ILambdaOnShutdownBuilderFactory>()
+            .CreateBuilder();
     }
 
     public IConfiguration Configuration =>
@@ -59,28 +72,38 @@ public sealed class LambdaApplication
     //      │                 ILambdaInvocationBuilder                 │
     //      └──────────────────────────────────────────────────────────┘
 
-    public IDictionary<string, object?> Properties { get; }
-    public List<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>> Middlewares { get; }
-    public LambdaInvocationDelegate? Handler { get; }
+    public IDictionary<string, object?> Properties => _invocationBuilder.Properties;
 
-    public ILambdaInvocationBuilder Handle(LambdaInvocationDelegate handler) =>
-        throw new NotImplementedException();
+    public List<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>> Middlewares =>
+        _invocationBuilder.Middlewares;
+
+    public LambdaInvocationDelegate? Handler => _invocationBuilder.Handler;
+
+    public ILambdaInvocationBuilder Handle(LambdaInvocationDelegate handler)
+    {
+        _invocationBuilder.Handle(handler);
+        return this;
+    }
 
     public ILambdaInvocationBuilder Use(
         Func<LambdaInvocationDelegate, LambdaInvocationDelegate> middleware
-    ) => throw new NotImplementedException();
+    )
+    {
+        _invocationBuilder.Use(middleware);
+        return this;
+    }
 
-    public LambdaInvocationDelegate Build() => throw new NotImplementedException();
+    public LambdaInvocationDelegate Build() => _invocationBuilder.Build();
 
     //      ┌──────────────────────────────────────────────────────────┐
     //      │                   ILambdaOnInitBuilder                   │
     //      └──────────────────────────────────────────────────────────┘
 
-    public List<LambdaInitDelegate> InitHandlers { get; }
+    public List<LambdaInitDelegate> InitHandlers => _onInitBuilder.InitHandlers;
 
     //      ┌──────────────────────────────────────────────────────────┐
     //      │                 ILambdaOnShutdownBuilder                 │
     //      └──────────────────────────────────────────────────────────┘
 
-    public List<LambdaShutdownDelegate> ShutdownHandlers { get; }
+    public List<LambdaShutdownDelegate> ShutdownHandlers => _onShutdownBuilder.ShutdownHandlers;
 }
