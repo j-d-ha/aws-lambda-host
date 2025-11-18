@@ -1,10 +1,10 @@
 namespace AwsLambda.Host;
 
-internal class LambdaHandlerBuilderFactory : ILambdaHandlerBuilderFactory
+internal class LambdaInvocationBuilderFactory : ILambdaInvocationBuilderFactory
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public LambdaHandlerBuilderFactory(IServiceProvider serviceProvider)
+    public LambdaInvocationBuilderFactory(IServiceProvider serviceProvider)
     {
         ArgumentNullException.ThrowIfNull(serviceProvider);
 
