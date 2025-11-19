@@ -3,7 +3,7 @@ namespace AwsLambda.Host;
 internal class LambdaOnInitBuilder : ILambdaOnInitBuilder
 {
     public IServiceProvider Services { get; }
-    public List<LambdaInitDelegate> InitHandlers { get; } = [];
+    public IList<LambdaInitDelegate> InitHandlers { get; } = [];
 
     public LambdaOnInitBuilder(IServiceProvider serviceProvider)
     {

@@ -110,7 +110,7 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
     ///     <list type="bullet">
     ///         <item>
     ///             <description>
-    ///                 Registers a default <see cref="ILambdaCancellationTokenSourceFactory" />
+    ///                 Registers a default <see cref="ILambdaCancellationFactory" />
     ///                 if one is not already registered, which manages cancellation tokens for Lambda
     ///                 invocations.
     ///             </description>

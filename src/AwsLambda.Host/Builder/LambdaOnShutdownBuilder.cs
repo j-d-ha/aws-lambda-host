@@ -3,7 +3,7 @@ namespace AwsLambda.Host;
 internal class LambdaOnShutdownBuilder : ILambdaOnShutdownBuilder
 {
     public IServiceProvider Services { get; }
-    public List<LambdaShutdownDelegate> ShutdownHandlers { get; } = [];
+    public IList<LambdaShutdownDelegate> ShutdownHandlers { get; } = [];
 
     public LambdaOnShutdownBuilder(IServiceProvider serviceProvider)
     {

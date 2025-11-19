@@ -14,21 +14,13 @@ public static class ServiceCollectionExtensions
         {
             ArgumentNullException.ThrowIfNull(services);
 
-            // register feature collection
-            services.AddSingleton<IFeatureCollection, FeatureCollection>();
-
             // register core factories
-            services.AddSingleton<
-                ILambdaInvocationBuilderFactory,
-                LambdaInvocationBuilderFactory
-            >();
-            services.AddSingleton<ILambdaOnInitBuilderFactory, LambdaOnInitBuilderFactory>();
-            services.AddSingleton<
-                ILambdaOnShutdownBuilderFactory,
-                LambdaOnShutdownBuilderFactory
-            >();
+            services.AddSingleton<IInvocationBuilderFactory, DefaultInvocationBuilderFactory>();
+            services.AddSingleton<IOnInitBuilderFactory, DefaultOnInitBuilderFactory>();
+            services.AddSingleton<IOnShutdownBuilderFactory, DefaultOnShutdownBuilderFactory>();
+            services.AddSingleton<IFeatureCollectionFactory, DefaultFeatureCollectionFactory>();
 
-            // Register Lambda execution components
+            // Register internal Lambda execution components
             services.AddSingleton<ILambdaHandlerFactory, LambdaHandlerComposer>();
             services.AddSingleton<ILambdaBootstrapOrchestrator, LambdaBootstrapAdapter>();
             services.AddSingleton<ILambdaLifecycleOrchestrator, LambdaLifecycleOrchestrator>();
@@ -45,8 +37,8 @@ public static class ServiceCollectionExtensions
 
             services.TryAddSingleton<ILambdaSerializer, DefaultLambdaJsonSerializer>();
             services.TryAddSingleton<
-                ILambdaCancellationTokenSourceFactory,
-                LambdaCancellationTokenSourceFactory
+                ILambdaCancellationFactory,
+                DefaultLambdaCancellationFactory
             >();
 
             return services;
