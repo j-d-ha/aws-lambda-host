@@ -63,12 +63,12 @@ public class LambdaOpenTelemetryServiceProviderExtensionsTests
         var nextDelegate = Substitute.For<LambdaInvocationDelegate>();
         var wrappedDelegate = middleware(nextDelegate);
 
-        var context = Substitute.For<ILambdaHostContext>();
-        context.Event.Returns(new object()); // Wrong type
-        context.Response.Returns(new TestResponse());
+        var mocks = CreateMocks();
+
+        mocks.EventFeature.GetEvent(mocks.Context).Returns(new object());
 
         // Act
-        var action = async () => await wrappedDelegate(context);
+        var action = async () => await wrappedDelegate(mocks.Context);
 
         // Assert
         await action.Should().ThrowAsync<InvalidOperationException>();
@@ -82,14 +82,15 @@ public class LambdaOpenTelemetryServiceProviderExtensionsTests
         var nextDelegate = Substitute.For<LambdaInvocationDelegate>();
         var wrappedDelegate = middleware(nextDelegate);
 
-        var context = Substitute.For<ILambdaHostContext>();
-        context.Event.Returns(new TestEvent());
-        context.Response.Returns(new object()); // Wrong type
+        var mocks = CreateMocks();
+
+        mocks.EventFeature.GetEvent(mocks.Context).Returns(new TestEvent());
+        mocks.ResponseFeature.GetResponse().Returns(new object()); // Wrong type
 
         nextDelegate(Arg.Any<ILambdaHostContext>()).Returns(Task.CompletedTask);
 
         // Act
-        var action = async () => await wrappedDelegate(context);
+        var action = async () => await wrappedDelegate(mocks.Context);
 
         // Assert
         await action.Should().ThrowAsync<InvalidOperationException>();
@@ -105,14 +106,15 @@ public class LambdaOpenTelemetryServiceProviderExtensionsTests
 
         var testEvent = new TestEvent();
         var testResponse = new TestResponse();
-        var context = Substitute.For<ILambdaHostContext>();
-        context.Event.Returns(testEvent);
-        context.Response.Returns(testResponse);
+        var mocks = CreateMocks();
+
+        mocks.EventFeature.GetEvent(mocks.Context).Returns(testEvent);
+        mocks.ResponseFeature.GetResponse().Returns(testResponse);
 
         nextDelegate(Arg.Any<ILambdaHostContext>()).Returns(Task.CompletedTask);
 
         // Act
-        await wrappedDelegate(context);
+        await wrappedDelegate(mocks.Context);
 
         // Assert
         await nextDelegate.Received(1)(Arg.Any<ILambdaHostContext>());
@@ -167,14 +169,15 @@ public class LambdaOpenTelemetryServiceProviderExtensionsTests
         var nextDelegate = Substitute.For<LambdaInvocationDelegate>();
         var wrappedDelegate = middleware(nextDelegate);
 
-        var context = Substitute.For<ILambdaHostContext>();
-        context.Event.Returns(new object());
-        context.Response.Returns(new object()); // Wrong type
+        var mocks = CreateMocks();
+
+        mocks.EventFeature.GetEvent(mocks.Context).Returns(new object());
+        mocks.ResponseFeature.GetResponse().Returns(new object()); // Wrong type
 
         nextDelegate(Arg.Any<ILambdaHostContext>()).Returns(Task.CompletedTask);
 
         // Act
-        var action = async () => await wrappedDelegate(context);
+        var action = async () => await wrappedDelegate(mocks.Context);
 
         // Assert
         await action.Should().ThrowAsync<InvalidOperationException>();
@@ -189,14 +192,15 @@ public class LambdaOpenTelemetryServiceProviderExtensionsTests
         var wrappedDelegate = middleware(nextDelegate);
 
         var testResponse = new TestResponse();
-        var context = Substitute.For<ILambdaHostContext>();
-        context.Event.Returns(new object());
-        context.Response.Returns(testResponse);
+        var mocks = CreateMocks();
+
+        mocks.EventFeature.GetEvent(mocks.Context).Returns(new object());
+        mocks.ResponseFeature.GetResponse().Returns(testResponse);
 
         nextDelegate(Arg.Any<ILambdaHostContext>()).Returns(Task.CompletedTask);
 
         // Act
-        await wrappedDelegate(context);
+        await wrappedDelegate(mocks.Context);
 
         // Assert
         await nextDelegate.Received(1)(Arg.Any<ILambdaHostContext>());
@@ -251,12 +255,13 @@ public class LambdaOpenTelemetryServiceProviderExtensionsTests
         var nextDelegate = Substitute.For<LambdaInvocationDelegate>();
         var wrappedDelegate = middleware(nextDelegate);
 
-        var context = Substitute.For<ILambdaHostContext>();
-        context.Event.Returns(new object()); // Wrong type
-        context.Response.Returns(new object());
+        var mocks = CreateMocks();
+
+        mocks.EventFeature.GetEvent(mocks.Context).Returns(new object()); // Wrong type
+        mocks.ResponseFeature.GetResponse().Returns(new object());
 
         // Act
-        var action = async () => await wrappedDelegate(context);
+        var action = async () => await wrappedDelegate(mocks.Context);
 
         // Assert
         await action.Should().ThrowAsync<InvalidOperationException>();
@@ -271,14 +276,15 @@ public class LambdaOpenTelemetryServiceProviderExtensionsTests
         var wrappedDelegate = middleware(nextDelegate);
 
         var testEvent = new TestEvent();
-        var context = Substitute.For<ILambdaHostContext>();
-        context.Event.Returns(testEvent);
-        context.Response.Returns(new object());
+        var mocks = CreateMocks();
+
+        mocks.EventFeature.GetEvent(mocks.Context).Returns(testEvent);
+        mocks.ResponseFeature.GetResponse().Returns(new object());
 
         nextDelegate(Arg.Any<ILambdaHostContext>()).Returns(Task.CompletedTask);
 
         // Act
-        await wrappedDelegate(context);
+        await wrappedDelegate(mocks.Context);
 
         // Assert
         await nextDelegate.Received(1)(Arg.Any<ILambdaHostContext>());
@@ -333,14 +339,15 @@ public class LambdaOpenTelemetryServiceProviderExtensionsTests
         var nextDelegate = Substitute.For<LambdaInvocationDelegate>();
         var wrappedDelegate = middleware(nextDelegate);
 
-        var context = Substitute.For<ILambdaHostContext>();
-        context.Event.Returns(new object());
-        context.Response.Returns(new object());
+        var mocks = CreateMocks();
+
+        mocks.EventFeature.GetEvent(mocks.Context).Returns(new object());
+        mocks.ResponseFeature.GetResponse().Returns(new object());
 
         nextDelegate(Arg.Any<ILambdaHostContext>()).Returns(Task.CompletedTask);
 
         // Act
-        await wrappedDelegate(context);
+        await wrappedDelegate(mocks.Context);
 
         // Assert
         await nextDelegate.Received(1)(Arg.Any<ILambdaHostContext>());
@@ -349,6 +356,28 @@ public class LambdaOpenTelemetryServiceProviderExtensionsTests
     #endregion
 
     #region Test Helpers
+
+    private record Mocks(
+        ILambdaHostContext Context,
+        IFeatureCollection Features,
+        IEventFeature EventFeature,
+        IResponseFeature ResponseFeature
+    );
+
+    private Mocks CreateMocks()
+    {
+        var context = Substitute.For<ILambdaHostContext>();
+        var features = Substitute.For<IFeatureCollection>();
+        var eventFeature = Substitute.For<IEventFeature>();
+        var responseFeature = Substitute.For<IResponseFeature>();
+
+        context.Features.Returns(features);
+
+        features.Get<IEventFeature>().Returns(eventFeature);
+        features.Get<IResponseFeature>().Returns(responseFeature);
+
+        return new Mocks(context, features, eventFeature, responseFeature);
+    }
 
     private class TestEvent { }
 

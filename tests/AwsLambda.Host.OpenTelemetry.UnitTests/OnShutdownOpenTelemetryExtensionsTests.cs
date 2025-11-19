@@ -17,10 +17,10 @@ public class OnShutdownOpenTelemetryExtensionsTests
     #region OnShutdownFlushTracer Tests
 
     [Fact]
-    public void OnShutdownFlushTracer_ThrowsOnNullILambdaApplication()
+    public void OnShutdownFlushTracer_ThrowsOnNullILambdaOnShutdownBuilder()
     {
         // Arrange
-        ILambdaApplication mockApp = null!;
+        ILambdaOnShutdownBuilder mockApp = null!;
 
         // Act
         Action act = () => mockApp.OnShutdownFlushTracer();
@@ -33,7 +33,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
     public void OnShutdownFlushTracer_ThrowsOnNoTracerProviderRegistered()
     {
         // Arrange
-        var mockApp = Substitute.For<ILambdaApplication>();
+        var mockApp = Substitute.For<ILambdaOnShutdownBuilder>();
         var mockServiceProvider = Substitute.For<IServiceProvider>();
         mockServiceProvider.GetService(typeof(TracerProvider)).Returns(null);
         mockApp.Services.Returns(mockServiceProvider);
@@ -53,7 +53,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
     public void OnShutdownFlushTracer_ShouldNotThrowOnNoILoggerFactoryRegistered()
     {
         // Arrange
-        var mockApp = Substitute.For<ILambdaApplication>();
+        var mockApp = Substitute.For<ILambdaOnShutdownBuilder>();
         var mockServiceProvider = Substitute.For<IServiceProvider>();
         mockServiceProvider
             .GetService(typeof(TracerProvider))
@@ -85,7 +85,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
 
         // Assert
         result.Should().Be(mockApp);
-        mockApp.Received(1).OnShutdown(Arg.Any<LambdaShutdownDelegate>());
+        mockApp.ShutdownHandlers.Should().HaveCount(1);
         mockApp
             .Services.GetFakeLogCollector()
             .GetSnapshot()
@@ -105,10 +105,8 @@ public class OnShutdownOpenTelemetryExtensionsTests
     {
         // Arrange
         LambdaShutdownDelegate? capturedShutdownAction = null;
-        var mockApp = CreateMockApp(
-            a => capturedShutdownAction = a,
-            options => options.TracerShouldSucceed = false
-        );
+        var options = new MockOptions { TracerShouldSucceed = false };
+        var mockApp = CreateMockApp(a => capturedShutdownAction = a, options);
 
         var mockServiceProvider = Substitute.For<IServiceProvider>();
 
@@ -120,7 +118,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
 
         // Assert
         result.Should().Be(mockApp);
-        mockApp.Received(1).OnShutdown(Arg.Any<LambdaShutdownDelegate>());
+        mockApp.ShutdownHandlers.Should().HaveCount(1);
         mockApp
             .Services.GetFakeLogCollector()
             .GetSnapshot()
@@ -140,10 +138,8 @@ public class OnShutdownOpenTelemetryExtensionsTests
     {
         // Arrange
         LambdaShutdownDelegate? capturedShutdownAction = null;
-        var mockApp = CreateMockApp(
-            a => capturedShutdownAction = a,
-            options => options.TracerDelay = TimeSpan.FromMilliseconds(10)
-        );
+        var options = new MockOptions { TracerDelay = TimeSpan.FromMilliseconds(10) };
+        var mockApp = CreateMockApp(a => capturedShutdownAction = a, options);
 
         var mockServiceProvider = Substitute.For<IServiceProvider>();
 
@@ -155,7 +151,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
 
         // Assert
         result.Should().Be(mockApp);
-        mockApp.Received(1).OnShutdown(Arg.Any<LambdaShutdownDelegate>());
+        mockApp.ShutdownHandlers.Should().HaveCount(1);
         mockApp
             .Services.GetFakeLogCollector()
             .GetSnapshot()
@@ -175,10 +171,10 @@ public class OnShutdownOpenTelemetryExtensionsTests
     #region OnShutdownFlushMeter Tests
 
     [Fact]
-    public void OnShutdownFlushMeter_ThrowsOnNullILambdaApplication()
+    public void OnShutdownFlushMeter_ThrowsOnNullILambdaOnShutdownBuilder()
     {
         // Arrange
-        ILambdaApplication mockApp = null!;
+        ILambdaOnShutdownBuilder mockApp = null!;
 
         // Act
         Action act = () => mockApp.OnShutdownFlushMeter();
@@ -191,7 +187,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
     public void OnShutdownFlushMeter_ThrowsOnNoMeterProviderRegistered()
     {
         // Arrange
-        var mockApp = Substitute.For<ILambdaApplication>();
+        var mockApp = Substitute.For<ILambdaOnShutdownBuilder>();
         var mockServiceProvider = Substitute.For<IServiceProvider>();
         mockServiceProvider.GetService(typeof(MeterProvider)).Returns(null);
         mockApp.Services.Returns(mockServiceProvider);
@@ -211,7 +207,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
     public void OnShutdownFlushMeter_ShouldNotThrowOnNoILoggerFactoryRegistered()
     {
         // Arrange
-        var mockApp = Substitute.For<ILambdaApplication>();
+        var mockApp = Substitute.For<ILambdaOnShutdownBuilder>();
         var mockServiceProvider = Substitute.For<IServiceProvider>();
         mockServiceProvider
             .GetService(typeof(MeterProvider))
@@ -243,7 +239,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
 
         // Assert
         result.Should().Be(mockApp);
-        mockApp.Received(1).OnShutdown(Arg.Any<LambdaShutdownDelegate>());
+        mockApp.ShutdownHandlers.Should().HaveCount(1);
         mockApp
             .Services.GetFakeLogCollector()
             .GetSnapshot()
@@ -263,10 +259,8 @@ public class OnShutdownOpenTelemetryExtensionsTests
     {
         // Arrange
         LambdaShutdownDelegate? capturedShutdownAction = null;
-        var mockApp = CreateMockApp(
-            a => capturedShutdownAction = a,
-            options => options.MeterShouldSucceed = false
-        );
+        var options = new MockOptions { MeterShouldSucceed = false };
+        var mockApp = CreateMockApp(a => capturedShutdownAction = a, options);
 
         var mockServiceProvider = Substitute.For<IServiceProvider>();
 
@@ -278,7 +272,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
 
         // Assert
         result.Should().Be(mockApp);
-        mockApp.Received(1).OnShutdown(Arg.Any<LambdaShutdownDelegate>());
+        mockApp.ShutdownHandlers.Should().HaveCount(1);
         mockApp
             .Services.GetFakeLogCollector()
             .GetSnapshot()
@@ -298,10 +292,8 @@ public class OnShutdownOpenTelemetryExtensionsTests
     {
         // Arrange
         LambdaShutdownDelegate? capturedShutdownAction = null;
-        var mockApp = CreateMockApp(
-            a => capturedShutdownAction = a,
-            options => options.MeterDelay = TimeSpan.FromMilliseconds(10)
-        );
+        var options = new MockOptions { MeterDelay = TimeSpan.FromMilliseconds(10) };
+        var mockApp = CreateMockApp(a => capturedShutdownAction = a, options);
 
         var mockServiceProvider = Substitute.For<IServiceProvider>();
 
@@ -313,7 +305,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
 
         // Assert
         result.Should().Be(mockApp);
-        mockApp.Received(1).OnShutdown(Arg.Any<LambdaShutdownDelegate>());
+        mockApp.ShutdownHandlers.Should().HaveCount(1);
         mockApp
             .Services.GetFakeLogCollector()
             .GetSnapshot()
@@ -333,10 +325,10 @@ public class OnShutdownOpenTelemetryExtensionsTests
     #region OnShutdownFlushOpenTelemetry Tests
 
     [Fact]
-    public void OnShutdownFlushOpenTelemetry_ThrowsOnNullILambdaApplication()
+    public void OnShutdownFlushOpenTelemetry_ThrowsOnNullILambdaOnShutdownBuilder()
     {
         // Arrange
-        ILambdaApplication mockApp = null!;
+        ILambdaOnShutdownBuilder mockApp = null!;
 
         // Act
         Action act = () => mockApp.OnShutdownFlushOpenTelemetry();
@@ -368,7 +360,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
         mockApp.OnShutdownFlushOpenTelemetry();
 
         // Assert
-        mockApp.Received(2).OnShutdown(Arg.Any<LambdaShutdownDelegate>());
+        mockApp.ShutdownHandlers.Should().HaveCount(2);
     }
 
     [Fact]
@@ -383,7 +375,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
 
         // Assert
         act.Should().NotThrow();
-        mockApp.Received(2).OnShutdown(Arg.Any<LambdaShutdownDelegate>());
+        mockApp.ShutdownHandlers.Should().HaveCount(2);
     }
 
     [Fact]
@@ -431,10 +423,8 @@ public class OnShutdownOpenTelemetryExtensionsTests
     {
         // Arrange
         var shutdownActions = new List<LambdaShutdownDelegate>();
-        var mockApp = CreateMockApp(
-            a => shutdownActions.Add(a),
-            options => options.TracerShouldSucceed = false
-        );
+        var options = new MockOptions { TracerShouldSucceed = false };
+        var mockApp = CreateMockApp(a => shutdownActions.Add(a), options);
 
         var mockServiceProvider = Substitute.For<IServiceProvider>();
 
@@ -474,10 +464,8 @@ public class OnShutdownOpenTelemetryExtensionsTests
     {
         // Arrange
         var shutdownActions = new List<LambdaShutdownDelegate>();
-        var mockApp = CreateMockApp(
-            a => shutdownActions.Add(a),
-            options => options.MeterShouldSucceed = false
-        );
+        var options = new MockOptions { MeterShouldSucceed = false };
+        var mockApp = CreateMockApp(a => shutdownActions.Add(a), options);
 
         var mockServiceProvider = Substitute.For<IServiceProvider>();
 
@@ -517,14 +505,12 @@ public class OnShutdownOpenTelemetryExtensionsTests
     {
         // Arrange
         var shutdownActions = new List<LambdaShutdownDelegate>();
-        var mockApp = CreateMockApp(
-            a => shutdownActions.Add(a),
-            options =>
-            {
-                options.MeterDelay = TimeSpan.FromMilliseconds(10);
-                options.TracerDelay = TimeSpan.FromMilliseconds(10);
-            }
-        );
+        var options = new MockOptions
+        {
+            MeterDelay = TimeSpan.FromMilliseconds(10),
+            TracerDelay = TimeSpan.FromMilliseconds(10),
+        };
+        var mockApp = CreateMockApp(a => shutdownActions.Add(a), options);
 
         var mockServiceProvider = Substitute.For<IServiceProvider>();
         var cancellationToken = new CancellationToken(true);
@@ -564,17 +550,33 @@ public class OnShutdownOpenTelemetryExtensionsTests
 
     #region Test Helpers
 
-    private static ILambdaApplication CreateMockApp(
+
+    private static ILambdaOnShutdownBuilder CreateMockApp(
         Action<LambdaShutdownDelegate> onShutdown,
-        Action<MockOptions>? configureOptions = null
+        MockOptions? options = null
     )
     {
-        var options = new MockOptions();
-        configureOptions?.Invoke(options);
+        options ??= new MockOptions();
 
-        var mockApp = Substitute.For<ILambdaApplication>();
+        var mockApp = Substitute.For<ILambdaOnShutdownBuilder>();
 
-        mockApp.OnShutdown(Arg.Do(onShutdown)).Returns(mockApp);
+        var actualList = new List<LambdaShutdownDelegate>();
+        var shutdownHandlersMock = Substitute.For<IList<LambdaShutdownDelegate>>();
+
+        // When Add is called, invoke the callback and add to the real list
+        shutdownHandlersMock
+            .When(x => x.Add(Arg.Any<LambdaShutdownDelegate>()))
+            .Do(ci =>
+            {
+                var handler = (LambdaShutdownDelegate)ci[0];
+                actualList.Add(handler);
+                onShutdown(handler);
+            });
+
+        // Return the actual list count
+        shutdownHandlersMock.Count.Returns(_ => actualList.Count);
+
+        mockApp.ShutdownHandlers.Returns(shutdownHandlersMock);
 
         var serviceCollection = new ServiceCollection();
 
