@@ -1,4 +1,5 @@
-﻿using AwsLambda.Host;
+﻿using System.Threading.Tasks;
+using AwsLambda.Host;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -10,9 +11,11 @@ var lambda = builder.Build();
 
 lambda.UseClearLambdaOutputFormatting();
 
-lambda.MapHandler(
-    ([Event] Request request, IService service) => new Response(service.GetMessage(request.Name))
-);
+lambda.Handle(context => Task.CompletedTask);
+
+// lambda.MapHandler(
+//     ([Event] Request request, IService service) => new Response(service.GetMessage(request.Name))
+// );
 
 await lambda.RunAsync();
 
