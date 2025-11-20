@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace AwsLambda.Host;
 
@@ -13,6 +14,8 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
     private readonly ILambdaHandlerFactory _handlerFactory;
     private readonly ILambdaLifecycleOrchestrator _lifecycle;
     private readonly IHostApplicationLifetime _lifetime;
+    private readonly IOnInitBuilderFactory _onInitBuilderFactory;
+    private readonly LambdaHostedServiceOptions _options;
     private bool _disposed;
 
     private Task? _executeTask;
@@ -34,18 +37,24 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
         ILambdaBootstrapOrchestrator bootstrap,
         ILambdaHandlerFactory handlerFactory,
         IHostApplicationLifetime lifetime,
-        ILambdaLifecycleOrchestrator lifecycle
+        ILambdaLifecycleOrchestrator lifecycle,
+        IOnInitBuilderFactory onInitBuilderFactory,
+        IOptions<LambdaHostedServiceOptions> lambdaHostOptions
     )
     {
         ArgumentNullException.ThrowIfNull(bootstrap);
         ArgumentNullException.ThrowIfNull(handlerFactory);
         ArgumentNullException.ThrowIfNull(lifetime);
         ArgumentNullException.ThrowIfNull(lifecycle);
+        ArgumentNullException.ThrowIfNull(onInitBuilderFactory);
+        ArgumentNullException.ThrowIfNull(lambdaHostOptions);
 
         _bootstrap = bootstrap;
         _handlerFactory = handlerFactory;
         _lifetime = lifetime;
         _lifecycle = lifecycle;
+        _onInitBuilderFactory = onInitBuilderFactory;
+        _options = lambdaHostOptions.Value;
     }
 
     /// <inheritdoc />
@@ -143,9 +152,12 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
         // Create a fully composed handler with middleware and request processing.
         var requestHandler = _handlerFactory.CreateHandler(stoppingToken);
 
-        var onInitHandler = _lifecycle.OnInit(stoppingToken);
+        var onInitBuilder = _onInitBuilderFactory.CreateBuilder();
+        _options.ConfigureOnInitBuilder?.Invoke(onInitBuilder);
+        var onInitHandler = onInitBuilder.Build();
 
-        // Handle the bootstrap with the processed handler. Once the task completes, we will manually
+        // Handle the bootstrap with the processed handler. Once the task completes, we will
+        // manually
         // trigger the stop of the application.
         try
         {

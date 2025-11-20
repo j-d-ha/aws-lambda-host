@@ -13,7 +13,8 @@ internal class LambdaInvocationBuilder : ILambdaInvocationBuilder
 
     public IDictionary<string, object?> Properties { get; } = new Dictionary<string, object?>();
 
-    public List<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>> Middlewares { get; } = [];
+    public IList<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>> Middlewares { get; } =
+    [];
 
     public LambdaInvocationDelegate? Handler { get; private set; }
 
@@ -45,12 +46,10 @@ internal class LambdaInvocationBuilder : ILambdaInvocationBuilder
         if (Handler is null)
             throw new InvalidOperationException("Lambda Handler has not been set.");
 
-        LambdaInvocationDelegate handler = Handler;
+        var handler = Handler;
 
         for (var i = Middlewares.Count - 1; i >= 0; i--)
-        {
             handler = Middlewares[i](handler);
-        }
 
         return handler;
     }

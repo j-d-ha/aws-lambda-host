@@ -1,5 +1,4 @@
 using Amazon.Lambda.Core;
-using Amazon.Lambda.RuntimeSupport;
 
 namespace AwsLambda.Host;
 
@@ -25,7 +24,7 @@ internal interface ILambdaBootstrapOrchestrator
     /// <returns>A task representing the asynchronous bootstrap execution.</returns>
     Task RunAsync(
         Func<Stream, ILambdaContext, Task<Stream>> handler,
-        LambdaBootstrapInitializer? initializer,
+        LambdaInitDelegate? initializer,
         CancellationToken stoppingToken
     );
 }

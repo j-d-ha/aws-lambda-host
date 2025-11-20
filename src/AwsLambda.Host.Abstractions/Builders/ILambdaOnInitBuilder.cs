@@ -2,7 +2,10 @@ namespace AwsLambda.Host;
 
 public interface ILambdaOnInitBuilder
 {
+    IReadOnlyList<LambdaInitDelegate> InitHandlers { get; }
     IServiceProvider Services { get; }
 
-    IList<LambdaInitDelegate> InitHandlers { get; }
+    ILambdaOnInitBuilder OnInit(LambdaInitDelegate handler);
+
+    LambdaInitDelegate Build();
 }

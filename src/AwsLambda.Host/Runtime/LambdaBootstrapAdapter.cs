@@ -10,38 +10,51 @@ namespace AwsLambda.Host;
 /// </summary>
 internal sealed class LambdaBootstrapAdapter : ILambdaBootstrapOrchestrator
 {
+    private readonly IServiceProvider _serviceProvider;
     private readonly LambdaHostOptions _settings;
 
     /// <summary>Initializes a new instance of the <see cref="LambdaBootstrapAdapter" /> class.</summary>
     /// <param name="lambdaHostSettings">The options containing Lambda host bootstrap configuration.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="lambdaHostSettings" /> is null.</exception>
-    public LambdaBootstrapAdapter(IOptions<LambdaHostOptions> lambdaHostSettings)
+    public LambdaBootstrapAdapter(
+        IOptions<LambdaHostOptions> lambdaHostSettings,
+        IServiceProvider serviceProvider
+    )
     {
         ArgumentNullException.ThrowIfNull(lambdaHostSettings);
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
         _settings = lambdaHostSettings.Value;
+        _serviceProvider = serviceProvider;
     }
 
     /// <inheritdoc />
     public async Task RunAsync(
         Func<Stream, ILambdaContext, Task<Stream>> handler,
-        LambdaBootstrapInitializer? initializer,
+        LambdaInitDelegate? initializer,
         CancellationToken stoppingToken
     )
     {
+        var convertedInitializer = LambdaBootstrapInitializerAdapter(initializer, stoppingToken);
+
         // Wrap the handler with HandlerWrapper to match Lambda runtime expectations.
         using var wrappedHandler = HandlerWrapper.GetHandlerWrapper(handler);
 
         // Create the bootstrap based on configuration.
         using var bootstrap = _settings.BootstrapHttpClient is null
-            ? new LambdaBootstrap(wrappedHandler, _settings.BootstrapOptions, initializer)
+            ? new LambdaBootstrap(wrappedHandler, _settings.BootstrapOptions, convertedInitializer)
             : new LambdaBootstrap(
                 _settings.BootstrapHttpClient,
                 wrappedHandler,
                 _settings.BootstrapOptions,
-                initializer
+                convertedInitializer
             );
 
         await bootstrap.RunAsync(stoppingToken);
     }
+
+    private LambdaBootstrapInitializer LambdaBootstrapInitializerAdapter(
+        LambdaInitDelegate? handler,
+        CancellationToken stoppingToken
+    ) => () => handler?.Invoke(_serviceProvider, stoppingToken) ?? Task.FromResult(true);
 }
