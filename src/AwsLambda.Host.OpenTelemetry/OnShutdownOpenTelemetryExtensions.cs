@@ -78,7 +78,7 @@ public static class OnShutdownOpenTelemetryExtensions
                 application.Services.GetService<ILoggerFactory>()?.CreateLogger(LogCategory)
                 ?? NullLogger.Instance;
 
-            application.ShutdownHandlers.Add(
+            application.OnShutdown(
                 (_, cancellationToken) =>
                     RunForceFlush(
                         "tracer",
@@ -122,7 +122,7 @@ public static class OnShutdownOpenTelemetryExtensions
                 application.Services.GetService<ILoggerFactory>()?.CreateLogger(LogCategory)
                 ?? NullLogger.Instance;
 
-            application.ShutdownHandlers.Add(
+            application.OnShutdown(
                 (_, cancellationToken) =>
                     RunForceFlush(
                         "meter",

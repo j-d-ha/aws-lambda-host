@@ -20,7 +20,7 @@ public static class OutputFormattingLambdaApplicationExtensions
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        application.InitHandlers.Add(
+        application.OnInit(
             Task<bool> (services, _) =>
             {
                 var logger = services.GetService<ILogger<LambdaHostedService>>();
