@@ -201,6 +201,6 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
         Debug.Assert(_builtApplication is not null);
 
         foreach (var handlers in _builtApplication.ShutdownHandlers)
-            builder.ShutdownHandlers.Add(handlers);
+            builder.OnShutdown(handlers);
     }
 }

@@ -23,7 +23,7 @@ public interface ILambdaOnShutdownBuilder
     /// <summary>Registers a handler to execute during the Lambda Shutdown phase.</summary>
     /// <param name="handler">The <see cref="LambdaShutdownDelegate" /> to register.</param>
     /// <returns>The current <see cref="ILambdaOnShutdownBuilder" /> instance for method chaining.</returns>
-    ILambdaOnShutdownBuilder OnInit(LambdaShutdownDelegate handler);
+    ILambdaOnShutdownBuilder OnShutdown(LambdaShutdownDelegate handler);
 
     /// <summary>Builds the final shutdown delegate by composing all registered handlers.</summary>
     /// <remarks>
