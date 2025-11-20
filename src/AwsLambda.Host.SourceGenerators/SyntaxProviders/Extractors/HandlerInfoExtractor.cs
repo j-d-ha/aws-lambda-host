@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using AwsLambda.Host.SourceGenerators.Extensions;
@@ -8,13 +9,81 @@ using AwsLambda.Host.SourceGenerators.Types;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
 using TypeInfo = AwsLambda.Host.SourceGenerators.Models.TypeInfo;
 
 namespace AwsLambda.Host.SourceGenerators;
 
-internal static class DelegateInfoExtractorExtensions
+internal static class HandlerInfoExtractor
 {
-    internal static DelegateInfo? ExtractDelegateInfo(
+    internal static bool Predicate(SyntaxNode node, params string[] methodNames) =>
+        !node.IsGeneratedFile()
+        && node.TryGetMethodName(out var name)
+        && methodNames.Contains(name);
+
+    internal static HigherOrderMethodInfo? Transformer(
+        GeneratorSyntaxContext context,
+        Func<DelegateInfo, bool> delegateFilter,
+        CancellationToken cancellationToken
+    )
+    {
+        var operation = context.SemanticModel.GetOperation(context.Node, cancellationToken);
+
+        if (
+            operation
+                is not IInvocationOperation
+                {
+                    TargetMethod.ContainingNamespace:
+                    {
+                        Name: "Host",
+                        ContainingNamespace:
+                        { Name: "AwsLambda", ContainingNamespace.IsGlobalNamespace: true },
+                    },
+                } targetOperation
+            || targetOperation.TargetMethod.ContainingAssembly.Name != "AwsLambda.Host"
+        )
+            return null;
+
+        if (context.Node is not InvocationExpressionSyntax invocationExpr)
+            return null;
+
+        var handler = invocationExpr.ArgumentList.Arguments.ElementAtOrDefault(0)?.Expression;
+
+        var delegateInfo = handler?.ExtractDelegateInfo(context, cancellationToken);
+        if (delegateInfo is null)
+            return null;
+
+        // filter out non-generic shutdown method calls
+        if (delegateFilter(delegateInfo.Value))
+            return null;
+
+        // get method arguments
+        var argumentInfos = targetOperation
+            .Arguments.Select(argument =>
+            {
+                var typeAsGlobal = argument.Value.Type?.GetAsGlobal();
+                var parameterName = argument.Parameter?.Name;
+
+                return new ArgumentInfo(typeAsGlobal, parameterName);
+            })
+            .ToImmutableArray();
+
+        // get interceptable location
+        var interceptableLocation = context.SemanticModel.GetInterceptableLocation(
+            invocationExpr,
+            cancellationToken
+        )!;
+
+        return new HigherOrderMethodInfo(
+            targetOperation.TargetMethod.Name,
+            LocationInfo: LocationInfo.CreateFrom(context.Node),
+            DelegateInfo: delegateInfo.Value,
+            InterceptableLocationInfo: InterceptableLocationInfo.CreateFrom(interceptableLocation),
+            ArgumentsInfos: argumentInfos
+        );
+    }
+
+    private static DelegateInfo? ExtractDelegateInfo(
         this ExpressionSyntax handler,
         GeneratorSyntaxContext context,
         CancellationToken cancellationToken

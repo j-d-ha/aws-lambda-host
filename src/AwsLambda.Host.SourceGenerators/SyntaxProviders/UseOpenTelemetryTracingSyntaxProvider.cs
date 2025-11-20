@@ -41,7 +41,7 @@ internal static class UseOpenTelemetryTracingSyntaxProvider
             )!;
 
             return new SimpleMethodInfo(
-                GeneratorConstants.UseOpenTelemetryTracingMethodName,
+                targetOperation.TargetMethod.Name,
                 LocationInfo.CreateFrom(context.Node),
                 InterceptableLocationInfo.CreateFrom(interceptableLocation)
             );

@@ -7,18 +7,12 @@ namespace AwsLambda.Host.SourceGenerators;
 internal static class OnShutdownSyntaxProvider
 {
     internal static bool Predicate(SyntaxNode node, CancellationToken cancellationToken) =>
-        GenericHandlerInfoExtractor.Predicate(node, GeneratorConstants.OnShutdownMethodName);
+        HandlerInfoExtractor.Predicate(node, GeneratorConstants.OnShutdownMethodName);
 
     internal static HigherOrderMethodInfo? Transformer(
         GeneratorSyntaxContext context,
         CancellationToken cancellationToken
-    ) =>
-        GenericHandlerInfoExtractor.Transformer(
-            context,
-            "OnShutdown",
-            IsBaseOnShutdownCall,
-            cancellationToken
-        );
+    ) => HandlerInfoExtractor.Transformer(context, IsBaseOnShutdownCall, cancellationToken);
 
     // we want to filter out the non-generic shutdown method calls that use the method signature
     // defined in ILambdaApplication. this is LambdaShutdownDelegate.
