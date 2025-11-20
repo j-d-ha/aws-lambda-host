@@ -6,10 +6,14 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace AwsLambda.Host;
 
+/// <summary>Extension methods for registering Lambda Host services.</summary>
 public static class ServiceCollectionExtensions
 {
     extension(IServiceCollection services)
     {
+        /// <summary>Registers core Lambda Host services into the dependency injection container.</summary>
+        /// <param name="services">The service collection.</param>
+        /// <returns>The service collection for chaining.</returns>
         public IServiceCollection AddLambdaHostCoreServices()
         {
             ArgumentNullException.ThrowIfNull(services);
@@ -31,6 +35,12 @@ public static class ServiceCollectionExtensions
             return services;
         }
 
+        /// <summary>
+        ///     Conditionally registers default Lambda Host services if they haven't been registered
+        ///     already.
+        /// </summary>
+        /// <param name="services">The service collection.</param>
+        /// <returns>The service collection for chaining.</returns>
         public IServiceCollection TryAddLambdaHostDefaultServices()
         {
             ArgumentNullException.ThrowIfNull(services);
