@@ -21,7 +21,7 @@ internal static class LambdaHostOutputGenerator
 
         // if MapHandler calls found, generate the source code. Will always be 0 or 1 at this point.
         // Anything that needs to know types from the handler must be generated here.
-        if (compilationInfo.MapHandlerInvocationInfos.Count == 1)
+        if (compilationInfo.MapHandlerInvocationInfos.Count(x => x.Name != "Handle") == 1)
         {
             var mapHandlerInvocationInfo = compilationInfo.MapHandlerInvocationInfos.First();
 

@@ -10,11 +10,6 @@ namespace AwsLambda.Host;
 ///         <see cref="ILambdaApplication.MapHandler" />, or related extension methods.
 ///     </para>
 ///     <para>
-///         The event object is retrieved from the <see cref="ILambdaHostContext.Event" /> property
-///         and cast to the parameter type. If the event is not of the expected type, a casting
-///         exception will be raised.
-///     </para>
-///     <para>
 ///         This attribute is only valid on method parameters and is processed at compile-time by the
 ///         source generator to generate the necessary wiring code.
 ///     </para>
@@ -33,6 +28,5 @@ namespace AwsLambda.Host;
 ///     }
 ///     </code>
 /// </example>
-/// <seealso cref="ILambdaHostContext.Event" />
 [AttributeUsage(AttributeTargets.Parameter)]
 public sealed class EventAttribute : Attribute;

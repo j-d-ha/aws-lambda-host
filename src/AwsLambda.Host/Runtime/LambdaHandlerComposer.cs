@@ -18,28 +18,6 @@ internal sealed class LambdaHandlerComposer : ILambdaHandlerFactory
     private readonly LambdaHostedServiceOptions _options;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    /// <summary>Initializes a new instance of the <see cref="LambdaHandlerComposer" /> class.</summary>
-    /// <param name="delegateHolder">
-    ///     The holder containing the user-defined handler, middleware, and
-    ///     serialization delegates.
-    /// </param>
-    /// <param name="cancellationFactory">
-    ///     The factory for creating cancellation token sources
-    ///     tied to Lambda invocation timeouts.
-    /// </param>
-    /// <param name="serviceScopeFactory">
-    ///     The factory for creating dependency injection scopes for each
-    ///     Lambda invocation.
-    /// </param>
-    /// <param name="lambdaSerializer">
-    ///     The serializer for handling Lambda request and response
-    ///     serialization.
-    /// </param>
-    /// <exception cref="ArgumentNullException">Thrown when any of the parameters are null.</exception>
-    /// <exception cref="InvalidOperationException">
-    ///     Thrown when the handler is not set in the
-    ///     <paramref name="delegateHolder" />.
-    /// </exception>
     public LambdaHandlerComposer(
         ILambdaCancellationFactory cancellationFactory,
         IInvocationBuilderFactory invocationBuilderFactory,

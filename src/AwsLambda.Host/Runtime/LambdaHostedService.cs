@@ -1,3 +1,4 @@
+using Amazon.Lambda.Core;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
@@ -10,7 +11,6 @@ namespace AwsLambda.Host;
 internal sealed class LambdaHostedService : IHostedService, IDisposable
 {
     private readonly ILambdaBootstrapOrchestrator _bootstrap;
-    private readonly List<Exception> _exceptions = [];
     private readonly ILambdaHandlerFactory _handlerFactory;
     private readonly IHostApplicationLifetime _lifetime;
     private readonly IOnInitBuilderFactory _onInitBuilderFactory;
@@ -22,18 +22,6 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
     private Func<CancellationToken, Task>? _shutdownHandler;
     private CancellationTokenSource? _stoppingCts;
 
-    /// <summary>Initializes a new instance of the <see cref="LambdaHostedService" /> class.</summary>
-    /// <param name="bootstrap">The orchestrator responsible for managing the AWS Lambda bootstrap loop.</param>
-    /// <param name="handlerFactory">
-    ///     The factory responsible for creating and composing the Lambda request
-    ///     handler.
-    /// </param>
-    /// <param name="lifetime">The application lifetime.</param>
-    /// <param name="lifecycle">The orchestrator responsible for handling startup and shutdown callbacks.</param>
-    /// <exception cref="ArgumentNullException">
-    ///     Thrown when <paramref name="bootstrap" /> or
-    ///     <paramref name="handlerFactory" /> is null.
-    /// </exception>
     public LambdaHostedService(
         ILambdaBootstrapOrchestrator bootstrap,
         ILambdaHandlerFactory handlerFactory,
@@ -82,8 +70,21 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
         // Create a linked token to allow cancelling the executing task from the provided token
         _stoppingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
+        // Create a fully composed handler with middleware and request processing.
+        var requestHandler = _handlerFactory.CreateHandler(_stoppingCts.Token);
+
+        // Create an optional initialization handler.
+        var onInitBuilder = _onInitBuilderFactory.CreateBuilder();
+        _options.ConfigureOnInitBuilder?.Invoke(onInitBuilder);
+        var onInitHandler = onInitBuilder.Build();
+
+        // Create the optional shutdown handler.
+        var onShutdownBuilder = _onShutdownBuilderFactory.CreateBuilder();
+        _options.ConfigureOnShutdownBuilder?.Invoke(onShutdownBuilder);
+        _shutdownHandler = onShutdownBuilder.Build();
+
         // Store the task we're executing
-        _executeTask = ExecuteAsync(_stoppingCts.Token);
+        _executeTask = ExecuteAsync(requestHandler, onInitHandler, _stoppingCts.Token);
 
         // If the task is completed, then return it, this will bubble cancellation and failure to
         // the caller
@@ -107,6 +108,8 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
             ConfigureAwaitOptions.SuppressThrowing
         );
 
+        List<Exception> exceptions = [];
+
         // Wait until the lambda task completes or the stop token triggers
         try
         {
@@ -116,7 +119,7 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
         {
             // if the task completes due to the cancellation token triggering, then we need to tell
             // the user that shutdown failed
-            _exceptions.Add(
+            exceptions.Add(
                 new OperationCanceledException(
                     "Graceful shutdown of the Lambda function failed: the bootstrap operation did "
                         + "not complete within the allocated timeout period."
@@ -125,55 +128,39 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
         }
         catch (Exception ex)
         {
-            _exceptions.Add(ex);
+            exceptions.Add(ex);
         }
 
         try
         {
             // Handle shutdown tasks and add any exceptions to the list of exceptions
-            await (_shutdownHandler?.Invoke(cancellationToken) ?? Task.CompletedTask);
+            var shutdownTask = _shutdownHandler?.Invoke(cancellationToken) ?? Task.CompletedTask;
+            await shutdownTask.ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _exceptions.Add(ex);
+            exceptions.Add(ex);
         }
 
-        if (_exceptions.Count > 0)
+        if (exceptions.Count > 0)
             throw new AggregateException(
                 $"{nameof(LambdaHostedService)} encountered errors while running",
-                _exceptions
+                exceptions
             );
     }
 
     /// <summary>Executes the Lambda hosting environment startup sequence.</summary>
-    /// <remarks>
-    ///     This method orchestrates the startup of the Lambda service by: 1. Creating a fully
-    ///     composed handler with middleware pipeline and request processing 2. Running the AWS Lambda
-    ///     bootstrap loop with the composed handler The bootstrap loop continues until the service is
-    ///     stopped or an exception occurs.
-    /// </remarks>
-    /// <param name="stoppingToken">The cancellation token triggered when the service is shutting down.</param>
-    /// <returns>A task representing the asynchronous bootstrap operation.</returns>
-    private async Task ExecuteAsync(CancellationToken stoppingToken)
+    private async Task ExecuteAsync(
+        Func<Stream, ILambdaContext, Task<Stream>> handler,
+        Func<CancellationToken, Task<bool>> initializer,
+        CancellationToken stoppingToken
+    )
     {
         try
         {
-            // Create a fully composed handler with middleware and request processing.
-            var requestHandler = _handlerFactory.CreateHandler(stoppingToken);
-
-            // Create an optional initialization handler.
-            var onInitBuilder = _onInitBuilderFactory.CreateBuilder();
-            _options.ConfigureOnInitBuilder?.Invoke(onInitBuilder);
-            var onInitHandler = onInitBuilder.Build();
-
-            // Create the optional shutdown handler.
-            var onShutdownBuilder = _onShutdownBuilderFactory.CreateBuilder();
-            _options.ConfigureOnShutdownBuilder?.Invoke(onShutdownBuilder);
-            _shutdownHandler = onShutdownBuilder.Build();
-
             // Handle the bootstrap with the processed handler. Once the task completes, we will
             // manually trigger the stop of the application.
-            await _bootstrap.RunAsync(requestHandler, onInitHandler, stoppingToken);
+            await _bootstrap.RunAsync(handler, initializer, stoppingToken);
         }
         finally
         {

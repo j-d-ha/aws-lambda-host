@@ -10,6 +10,9 @@ public static class FeatureLambdaHostContextExtensions
 {
     extension(ILambdaHostContext context)
     {
+        /// <summary>Gets the typed event data from the <see cref="IEventFeature" /> in the Lambda context.</summary>
+        /// <typeparam name="T">The type of event data to retrieve.</typeparam>
+        /// <returns>The typed event data, or null if not found or not of the specified type.</returns>
         public T? GetEvent<T>()
         {
             ArgumentNullException.ThrowIfNull(context);
@@ -19,6 +22,13 @@ public static class FeatureLambdaHostContextExtensions
                 : default;
         }
 
+        /// <summary>
+        ///     Attempts to get the typed event data from the <see cref="IEventFeature" /> in the Lambda
+        ///     context.
+        /// </summary>
+        /// <typeparam name="T">The type of event data to retrieve.</typeparam>
+        /// <param name="result">The typed event data, or null if not found or not of the specified type.</param>
+        /// <returns>True if the event data was found and is of the specified type; otherwise false.</returns>
         public bool TryGetEvent<T>([NotNullWhen(true)] out T? result)
         {
             ArgumentNullException.ThrowIfNull(context);
@@ -27,6 +37,12 @@ public static class FeatureLambdaHostContextExtensions
             return result is not null;
         }
 
+        /// <summary>
+        ///     Gets the typed response data from the <see cref="IResponseFeature" /> in the Lambda
+        ///     context.
+        /// </summary>
+        /// <typeparam name="T">The type of response data to retrieve.</typeparam>
+        /// <returns>The typed response data, or null if not found or not of the specified type.</returns>
         public T? GetResponse<T>()
         {
             ArgumentNullException.ThrowIfNull(context);
@@ -36,6 +52,13 @@ public static class FeatureLambdaHostContextExtensions
                 : default;
         }
 
+        /// <summary>
+        ///     Attempts to get the typed response data from the <see cref="IResponseFeature" /> in the
+        ///     Lambda context.
+        /// </summary>
+        /// <typeparam name="T">The type of response data to retrieve.</typeparam>
+        /// <param name="result">The typed response data, or null if not found or not of the specified type.</param>
+        /// <returns>True if the response data was found and is of the specified type; otherwise false.</returns>
         public bool TryGetResponse<T>([NotNullWhen(true)] out T? result)
         {
             ArgumentNullException.ThrowIfNull(context);

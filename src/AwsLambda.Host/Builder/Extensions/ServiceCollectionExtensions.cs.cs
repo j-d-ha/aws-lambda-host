@@ -12,7 +12,6 @@ public static class ServiceCollectionExtensions
     extension(IServiceCollection services)
     {
         /// <summary>Registers core Lambda Host services into the dependency injection container.</summary>
-        /// <param name="services">The service collection.</param>
         /// <returns>The service collection for chaining.</returns>
         public IServiceCollection AddLambdaHostCoreServices()
         {
@@ -27,7 +26,6 @@ public static class ServiceCollectionExtensions
             // Register internal Lambda execution components
             services.AddSingleton<ILambdaHandlerFactory, LambdaHandlerComposer>();
             services.AddSingleton<ILambdaBootstrapOrchestrator, LambdaBootstrapAdapter>();
-            services.AddSingleton<ILambdaLifecycleOrchestrator, LambdaLifecycleOrchestrator>();
 
             // Register LambdaHostedService as IHostedService
             services.AddHostedService<LambdaHostedService>();
@@ -39,7 +37,6 @@ public static class ServiceCollectionExtensions
         ///     Conditionally registers default Lambda Host services if they haven't been registered
         ///     already.
         /// </summary>
-        /// <param name="services">The service collection.</param>
         /// <returns>The service collection for chaining.</returns>
         public IServiceCollection TryAddLambdaHostDefaultServices()
         {
