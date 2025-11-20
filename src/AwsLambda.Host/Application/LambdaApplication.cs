@@ -18,6 +18,7 @@ public sealed class LambdaApplication
     private readonly ILambdaInvocationBuilder _invocationBuilder;
     private readonly ILambdaOnInitBuilder _onInitBuilder;
     private readonly ILambdaOnShutdownBuilder _onShutdownBuilder;
+    private IReadOnlyList<LambdaInitDelegate> _initHandlers;
 
     internal LambdaApplication(IHost host)
     {
@@ -72,19 +73,24 @@ public sealed class LambdaApplication
     //      │                 ILambdaInvocationBuilder                 │
     //      └──────────────────────────────────────────────────────────┘
 
+    /// <inheritdoc />
     public IDictionary<string, object?> Properties => _invocationBuilder.Properties;
 
+    /// <inheritdoc />
     public IList<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>> Middlewares =>
         _invocationBuilder.Middlewares;
 
+    /// <inheritdoc />
     public LambdaInvocationDelegate? Handler => _invocationBuilder.Handler;
 
+    /// <inheritdoc />
     public ILambdaInvocationBuilder Handle(LambdaInvocationDelegate handler)
     {
         _invocationBuilder.Handle(handler);
         return this;
     }
 
+    /// <inheritdoc />
     public ILambdaInvocationBuilder Use(
         Func<LambdaInvocationDelegate, LambdaInvocationDelegate> middleware
     )
@@ -93,17 +99,30 @@ public sealed class LambdaApplication
         return this;
     }
 
+    /// <inheritdoc />
     public LambdaInvocationDelegate Build() => _invocationBuilder.Build();
 
     //      ┌──────────────────────────────────────────────────────────┐
     //      │                   ILambdaOnInitBuilder                   │
     //      └──────────────────────────────────────────────────────────┘
 
-    public IList<LambdaInitDelegate> InitHandlers => _onInitBuilder.InitHandlers;
+    /// <inheritdoc />
+    public IReadOnlyList<LambdaInitDelegate> InitHandlers => _onInitBuilder.InitHandlers;
+
+    /// <inheritdoc />
+    public ILambdaOnInitBuilder OnInit(LambdaInitDelegate handler)
+    {
+        _onInitBuilder.OnInit(handler);
+        return this;
+    }
+
+    /// <inheritdoc />
+    LambdaInitDelegate ILambdaOnInitBuilder.Build() => _onInitBuilder.Build();
 
     //      ┌──────────────────────────────────────────────────────────┐
     //      │                 ILambdaOnShutdownBuilder                 │
     //      └──────────────────────────────────────────────────────────┘
 
+    /// <inheritdoc />
     public IList<LambdaShutdownDelegate> ShutdownHandlers => _onShutdownBuilder.ShutdownHandlers;
 }

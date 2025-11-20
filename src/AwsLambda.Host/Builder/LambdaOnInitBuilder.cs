@@ -25,6 +25,7 @@ internal class LambdaOnInitBuilder : ILambdaOnInitBuilder
     }
 
     public IServiceProvider Services { get; }
+
     public IReadOnlyList<LambdaInitDelegate> InitHandlers => _handlers.AsReadOnly();
 
     public ILambdaOnInitBuilder OnInit(LambdaInitDelegate handler)
@@ -63,7 +64,7 @@ internal class LambdaOnInitBuilder : ILambdaOnInitBuilder
 
             if (errors.Count > 0)
                 throw new AggregateException(
-                    $"{nameof(LambdaLifecycleOrchestrator)} encountered errors while running OnInit handlers:",
+                    "Encountered errors while running OnInit handlers:",
                     errors
                 );
 

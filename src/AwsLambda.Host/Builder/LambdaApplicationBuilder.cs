@@ -192,7 +192,7 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
             builder.OnInitClearLambdaOutputFormatting();
 
         foreach (var handlers in _builtApplication.InitHandlers)
-            builder.InitHandlers.Add(handlers);
+            builder.OnInit(handlers);
     }
 
     private void ConfigureOnShutdownBuilder(ILambdaOnShutdownBuilder builder)
