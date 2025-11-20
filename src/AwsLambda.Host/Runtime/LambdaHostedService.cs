@@ -19,7 +19,7 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
     private bool _disposed;
 
     private Task? _executeTask;
-    private Func<CancellationToken, Task> _shutdownHandler;
+    private Func<CancellationToken, Task>? _shutdownHandler;
     private CancellationTokenSource? _stoppingCts;
 
     /// <summary>Initializes a new instance of the <see cref="LambdaHostedService" /> class.</summary>
@@ -131,7 +131,7 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
         try
         {
             // Handle shutdown tasks and add any exceptions to the list of exceptions
-            await _shutdownHandler.Invoke(cancellationToken);
+            await (_shutdownHandler?.Invoke(cancellationToken) ?? Task.CompletedTask);
         }
         catch (Exception ex)
         {
