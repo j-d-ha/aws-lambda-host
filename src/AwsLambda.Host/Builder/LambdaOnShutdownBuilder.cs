@@ -1,27 +1,22 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace AwsLambda.Host;
 
 internal class LambdaOnShutdownBuilder : ILambdaOnShutdownBuilder
 {
     private readonly IList<LambdaShutdownDelegate> _handlers = [];
-    private readonly LambdaHostOptions _options;
     private readonly IServiceScopeFactory _scopeFactory;
 
     public LambdaOnShutdownBuilder(
         IServiceProvider serviceProvider,
-        IServiceScopeFactory scopeFactory,
-        IOptions<LambdaHostOptions> options
+        IServiceScopeFactory scopeFactory
     )
     {
         ArgumentNullException.ThrowIfNull(serviceProvider);
         ArgumentNullException.ThrowIfNull(scopeFactory);
-        ArgumentNullException.ThrowIfNull(options);
 
         Services = serviceProvider;
         _scopeFactory = scopeFactory;
-        _options = options.Value;
     }
 
     public IServiceProvider Services { get; }
