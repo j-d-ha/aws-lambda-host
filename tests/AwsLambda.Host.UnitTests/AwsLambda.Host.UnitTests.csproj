@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IncludeSymbols>false</IncludeSymbols>
+    <LangVersion>14</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.Core" />
