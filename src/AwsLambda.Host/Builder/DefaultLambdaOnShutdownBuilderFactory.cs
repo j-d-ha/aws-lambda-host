@@ -2,10 +2,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AwsLambda.Host;
 
-internal class DefaultOnShutdownBuilderFactory(
+internal class DefaultLambdaOnShutdownBuilderFactory(
     IServiceProvider serviceProvider,
     IServiceScopeFactory scopeFactory
-) : IOnShutdownBuilderFactory
+) : ILambdaOnShutdownBuilderFactory
 {
     public ILambdaOnShutdownBuilder CreateBuilder() =>
         new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);

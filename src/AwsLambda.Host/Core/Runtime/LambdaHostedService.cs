@@ -13,8 +13,8 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
     private readonly ILambdaBootstrapOrchestrator _bootstrap;
     private readonly ILambdaHandlerFactory _handlerFactory;
     private readonly ILambdaOnInitBuilderFactory _lambdaOnInitBuilderFactory;
+    private readonly ILambdaOnShutdownBuilderFactory _lambdaOnShutdownBuilderFactory;
     private readonly IHostApplicationLifetime _lifetime;
-    private readonly IOnShutdownBuilderFactory _onShutdownBuilderFactory;
     private readonly LambdaHostedServiceOptions _options;
     private bool _disposed;
 
@@ -28,7 +28,7 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
         IHostApplicationLifetime lifetime,
         ILambdaOnInitBuilderFactory lambdaOnInitBuilderFactory,
         IOptions<LambdaHostedServiceOptions> lambdaHostOptions,
-        IOnShutdownBuilderFactory onShutdownBuilderFactory
+        ILambdaOnShutdownBuilderFactory lambdaOnShutdownBuilderFactory
     )
     {
         ArgumentNullException.ThrowIfNull(bootstrap);
@@ -36,14 +36,14 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
         ArgumentNullException.ThrowIfNull(lifetime);
         ArgumentNullException.ThrowIfNull(lambdaOnInitBuilderFactory);
         ArgumentNullException.ThrowIfNull(lambdaHostOptions);
-        ArgumentNullException.ThrowIfNull(onShutdownBuilderFactory);
+        ArgumentNullException.ThrowIfNull(lambdaOnShutdownBuilderFactory);
 
         _bootstrap = bootstrap;
         _handlerFactory = handlerFactory;
         _lifetime = lifetime;
         _lambdaOnInitBuilderFactory = lambdaOnInitBuilderFactory;
         _options = lambdaHostOptions.Value;
-        _onShutdownBuilderFactory = onShutdownBuilderFactory;
+        _lambdaOnShutdownBuilderFactory = lambdaOnShutdownBuilderFactory;
     }
 
     /// <inheritdoc />
@@ -79,7 +79,7 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
         var onInitHandler = onInitBuilder.Build();
 
         // Create the optional shutdown handler.
-        var onShutdownBuilder = _onShutdownBuilderFactory.CreateBuilder();
+        var onShutdownBuilder = _lambdaOnShutdownBuilderFactory.CreateBuilder();
         _options.ConfigureOnShutdownBuilder?.Invoke(onShutdownBuilder);
         _shutdownHandler = onShutdownBuilder.Build();
 

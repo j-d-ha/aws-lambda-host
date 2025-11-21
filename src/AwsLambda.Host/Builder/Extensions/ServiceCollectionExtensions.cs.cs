@@ -23,7 +23,10 @@ public static class ServiceCollectionExtensions
                 DefaultLambdaInvocationBuilderFactory
             >();
             services.AddSingleton<ILambdaOnInitBuilderFactory, DefaultLambdaOnInitBuilderFactory>();
-            services.AddSingleton<IOnShutdownBuilderFactory, DefaultOnShutdownBuilderFactory>();
+            services.AddSingleton<
+                ILambdaOnShutdownBuilderFactory,
+                DefaultLambdaOnShutdownBuilderFactory
+            >();
             services.AddSingleton<IFeatureCollectionFactory, DefaultFeatureCollectionFactory>();
 
             // Register internal Lambda execution components

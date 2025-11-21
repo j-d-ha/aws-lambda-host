@@ -23,7 +23,7 @@ public class LambdaHostedServiceTests
             HandlerFactory = Substitute.For<ILambdaHandlerFactory>();
             Lifetime = Substitute.For<IHostApplicationLifetime>();
             LambdaOnInitBuilderFactory = Substitute.For<ILambdaOnInitBuilderFactory>();
-            OnShutdownBuilderFactory = Substitute.For<IOnShutdownBuilderFactory>();
+            LambdaOnShutdownBuilderFactory = Substitute.For<ILambdaOnShutdownBuilderFactory>();
             OnInitBuilder = Substitute.For<ILambdaOnInitBuilder>();
             OnShutdownBuilder = Substitute.For<ILambdaOnShutdownBuilder>();
 
@@ -43,10 +43,10 @@ public class LambdaHostedServiceTests
         public ILambdaHandlerFactory HandlerFactory { get; }
         public IOptions<LambdaHostedServiceOptions> LambdaHostOptions { get; }
         public ILambdaOnInitBuilderFactory LambdaOnInitBuilderFactory { get; }
+        public ILambdaOnShutdownBuilderFactory LambdaOnShutdownBuilderFactory { get; }
         public IHostApplicationLifetime Lifetime { get; }
         public ILambdaOnInitBuilder OnInitBuilder { get; }
         public ILambdaOnShutdownBuilder OnShutdownBuilder { get; }
-        public IOnShutdownBuilderFactory OnShutdownBuilderFactory { get; }
         public Func<CancellationToken, Task>? OnShutdownBuilderHandler { get; set; }
 
         private void SetupDefaults()
@@ -59,7 +59,7 @@ public class LambdaHostedServiceTests
 
             OnInitBuilder.Build().Returns(async ct => await Task.FromResult(true));
 
-            OnShutdownBuilderFactory.CreateBuilder().Returns(OnShutdownBuilder);
+            LambdaOnShutdownBuilderFactory.CreateBuilder().Returns(OnShutdownBuilder);
 
             OnShutdownBuilder
                 .Build()
@@ -83,7 +83,7 @@ public class LambdaHostedServiceTests
                 Lifetime,
                 LambdaOnInitBuilderFactory,
                 LambdaHostOptions,
-                OnShutdownBuilderFactory
+                LambdaOnShutdownBuilderFactory
             );
 
         private static Func<Stream, ILambdaContext, Task<Stream>> CreateDefaultHandler() =>
@@ -103,7 +103,7 @@ public class LambdaHostedServiceTests
     [InlineData(2)] // lifetime
     [InlineData(3)] // lambdaOnInitBuilderFactory
     [InlineData(4)] // lambdaHostOptions
-    [InlineData(5)] // onShutdownBuilderFactory
+    [InlineData(5)] // lambdaOnShutdownBuilderFactory
     public void Constructor_WithNullParameter_ThrowsArgumentNullException(int parameterIndex)
     {
         // Arrange
@@ -113,7 +113,7 @@ public class LambdaHostedServiceTests
         var onInitBuilderFactory = parameterIndex == 3 ? null : _fixture.LambdaOnInitBuilderFactory;
         var lambdaHostOptions = parameterIndex == 4 ? null : _fixture.LambdaHostOptions;
         var onShutdownBuilderFactory =
-            parameterIndex == 5 ? null : _fixture.OnShutdownBuilderFactory;
+            parameterIndex == 5 ? null : _fixture.LambdaOnShutdownBuilderFactory;
 
         // Act & Assert
         var act = () =>
@@ -213,7 +213,7 @@ public class LambdaHostedServiceTests
             _fixture.Lifetime,
             _fixture.LambdaOnInitBuilderFactory,
             options,
-            _fixture.OnShutdownBuilderFactory
+            _fixture.LambdaOnShutdownBuilderFactory
         );
 
         // Act
@@ -233,7 +233,7 @@ public class LambdaHostedServiceTests
         await service.StartAsync(CancellationToken.None);
 
         // Assert
-        _fixture.OnShutdownBuilderFactory.Received(1).CreateBuilder();
+        _fixture.LambdaOnShutdownBuilderFactory.Received(1).CreateBuilder();
     }
 
     [Fact]
@@ -258,7 +258,7 @@ public class LambdaHostedServiceTests
             _fixture.Lifetime,
             _fixture.LambdaOnInitBuilderFactory,
             options,
-            _fixture.OnShutdownBuilderFactory
+            _fixture.LambdaOnShutdownBuilderFactory
         );
 
         // Act

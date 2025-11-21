@@ -32,7 +32,7 @@ public sealed class LambdaApplication
         _onInitBuilder = Services.GetRequiredService<ILambdaOnInitBuilderFactory>().CreateBuilder();
 
         _onShutdownBuilder = Services
-            .GetRequiredService<IOnShutdownBuilderFactory>()
+            .GetRequiredService<ILambdaOnShutdownBuilderFactory>()
             .CreateBuilder();
     }
 
