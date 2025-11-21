@@ -268,6 +268,83 @@ public class LambdaApplicationBuilderTests
     }
 
     [Fact]
+    public void Build_ConfigureOnInitBuilderCallback_AppliesInitHandlers()
+    {
+        // Arrange
+        var builder = LambdaApplication.CreateBuilder();
+        var app = builder.Build();
+
+        // Register init handlers on the app
+        LambdaInitDelegate handler1 = (_, __) => Task.FromResult(true);
+        LambdaInitDelegate handler2 = (_, __) => Task.FromResult(false);
+        app.OnInit(handler1);
+        app.OnInit(handler2);
+
+        var options = app.Services.GetRequiredService<IOptions<LambdaHostedServiceOptions>>();
+        var callbackDelegate = options.Value.ConfigureOnInitBuilder;
+
+        // Act - create onInit builder to verify callback applies handlers
+        var onInitBuilder = app
+            .Services.GetRequiredService<ILambdaOnInitBuilderFactory>()
+            .CreateBuilder();
+
+        callbackDelegate.Invoke(onInitBuilder);
+
+        // Assert - verify the init builders have the registered handlers
+        onInitBuilder.InitHandlers.Should().Contain(handler1);
+        onInitBuilder.InitHandlers.Should().Contain(handler2);
+    }
+
+    [Fact]
+    public void Build_ConfigureOnInitBuilderCallback_AppliesClearLambdaOutputFormattingWhenEnabled()
+    {
+        // Arrange
+        var builderSettings = new HostApplicationBuilderSettings();
+        var builder = LambdaApplication.CreateBuilder(builderSettings);
+
+        // Configure to enable ClearLambdaOutputFormatting via appsettings
+        builder.Configuration["AwsLambdaHost:ClearLambdaOutputFormatting"] = "true";
+
+        var app = builder.Build();
+
+        var options = app.Services.GetRequiredService<IOptions<LambdaHostedServiceOptions>>();
+        var callbackDelegate = options.Value.ConfigureOnInitBuilder;
+
+        // Act - create onInit builder and invoke callback
+        var onInitBuilder = app
+            .Services.GetRequiredService<ILambdaOnInitBuilderFactory>()
+            .CreateBuilder();
+
+        callbackDelegate.Invoke(onInitBuilder);
+
+        // Assert - verify that OnInitClearLambdaOutputFormatting was called (handler registered)
+        // The ClearLambdaOutputFormatting handler should be in the init handlers
+        onInitBuilder.InitHandlers.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public void Build_ConfigureOnInitBuilderCallback_SkipsClearLambdaOutputFormattingWhenDisabled()
+    {
+        // Arrange
+        var builder = LambdaApplication.CreateBuilder();
+        var app = builder.Build();
+
+        var options = app.Services.GetRequiredService<IOptions<LambdaHostedServiceOptions>>();
+        var callbackDelegate = options.Value.ConfigureOnInitBuilder;
+
+        // Act - create onInit builder without registering init handlers
+        var onInitBuilder = app
+            .Services.GetRequiredService<ILambdaOnInitBuilderFactory>()
+            .CreateBuilder();
+
+        callbackDelegate.Invoke(onInitBuilder);
+
+        // Assert - when ClearLambdaOutputFormatting is false and no handlers registered,
+        // the init handlers list should be empty
+        onInitBuilder.InitHandlers.Should().BeEmpty();
+    }
+
+    [Fact]
     public void Build_AppliesConfigureOnShutdownBuilderCallback()
     {
         // Arrange
