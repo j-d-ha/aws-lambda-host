@@ -178,7 +178,7 @@ public class LambdaApplicationBuilderTests
         // Act
         var callbackDelegate = options.Value.ConfigureHandlerBuilder;
         callbackDelegate.Should().NotBeNull();
-        var act = () => callbackDelegate!.Invoke(mockBuilder);
+        var act = () => callbackDelegate.Invoke(mockBuilder);
 
         // Assert - should throw because no handler was registered in the application
         act.Should()
@@ -241,7 +241,7 @@ public class LambdaApplicationBuilderTests
             .CreateBuilder();
 
         // The callback should apply middlewares and properties from the app
-        var exception = Record.Exception(() => callbackDelegate.Invoke(invocationBuilder));
+        var exception = Record.Exception(() => callbackDelegate?.Invoke(invocationBuilder));
 
         // Assert - callback should handle the registered middleware and properties
         // If exception occurs, it should not be about missing handler
@@ -275,8 +275,8 @@ public class LambdaApplicationBuilderTests
         var app = builder.Build();
 
         // Register init handlers on the app
-        LambdaInitDelegate handler1 = (_, __) => Task.FromResult(true);
-        LambdaInitDelegate handler2 = (_, __) => Task.FromResult(false);
+        LambdaInitDelegate handler1 = (_, _) => Task.FromResult(true);
+        LambdaInitDelegate handler2 = (_, _) => Task.FromResult(false);
         app.OnInit(handler1);
         app.OnInit(handler2);
 
@@ -288,7 +288,7 @@ public class LambdaApplicationBuilderTests
             .Services.GetRequiredService<ILambdaOnInitBuilderFactory>()
             .CreateBuilder();
 
-        callbackDelegate.Invoke(onInitBuilder);
+        callbackDelegate?.Invoke(onInitBuilder);
 
         // Assert - verify the init builders have the registered handlers
         onInitBuilder.InitHandlers.Should().Contain(handler1);
@@ -315,7 +315,7 @@ public class LambdaApplicationBuilderTests
             .Services.GetRequiredService<ILambdaOnInitBuilderFactory>()
             .CreateBuilder();
 
-        callbackDelegate.Invoke(onInitBuilder);
+        callbackDelegate?.Invoke(onInitBuilder);
 
         // Assert - verify that OnInitClearLambdaOutputFormatting was called (handler registered)
         // The ClearLambdaOutputFormatting handler should be in the init handlers
@@ -337,7 +337,7 @@ public class LambdaApplicationBuilderTests
             .Services.GetRequiredService<ILambdaOnInitBuilderFactory>()
             .CreateBuilder();
 
-        callbackDelegate.Invoke(onInitBuilder);
+        callbackDelegate?.Invoke(onInitBuilder);
 
         // Assert - when ClearLambdaOutputFormatting is false and no handlers registered,
         // the init handlers list should be empty
@@ -366,8 +366,8 @@ public class LambdaApplicationBuilderTests
         var app = builder.Build();
 
         // Register shutdown handlers on the app
-        LambdaShutdownDelegate handler1 = (_, __) => Task.CompletedTask;
-        LambdaShutdownDelegate handler2 = (_, __) => Task.CompletedTask;
+        LambdaShutdownDelegate handler1 = (_, _) => Task.CompletedTask;
+        LambdaShutdownDelegate handler2 = (_, _) => Task.CompletedTask;
         app.OnShutdown(handler1);
         app.OnShutdown(handler2);
 
@@ -379,7 +379,7 @@ public class LambdaApplicationBuilderTests
             .Services.GetRequiredService<ILambdaOnShutdownBuilderFactory>()
             .CreateBuilder();
 
-        callbackDelegate.Invoke(onShutdownBuilder);
+        callbackDelegate?.Invoke(onShutdownBuilder);
 
         // Assert - verify the shutdown builder has the registered handlers
         onShutdownBuilder.ShutdownHandlers.Should().Contain(handler1);
@@ -401,7 +401,7 @@ public class LambdaApplicationBuilderTests
             .Services.GetRequiredService<ILambdaOnShutdownBuilderFactory>()
             .CreateBuilder();
 
-        callbackDelegate.Invoke(onShutdownBuilder);
+        callbackDelegate?.Invoke(onShutdownBuilder);
 
         // Assert - when no handlers are registered, the shutdown handlers list should be empty
         onShutdownBuilder.ShutdownHandlers.Should().BeEmpty();
@@ -415,9 +415,9 @@ public class LambdaApplicationBuilderTests
         var app = builder.Build();
 
         // Register multiple shutdown handlers
-        LambdaShutdownDelegate handler1 = (_, __) => Task.CompletedTask;
-        LambdaShutdownDelegate handler2 = (_, __) => Task.CompletedTask;
-        LambdaShutdownDelegate handler3 = (_, __) => Task.CompletedTask;
+        LambdaShutdownDelegate handler1 = (_, _) => Task.CompletedTask;
+        LambdaShutdownDelegate handler2 = (_, _) => Task.CompletedTask;
+        LambdaShutdownDelegate handler3 = (_, _) => Task.CompletedTask;
         app.OnShutdown(handler1);
         app.OnShutdown(handler2);
         app.OnShutdown(handler3);
@@ -430,7 +430,7 @@ public class LambdaApplicationBuilderTests
             .Services.GetRequiredService<ILambdaOnShutdownBuilderFactory>()
             .CreateBuilder();
 
-        callbackDelegate.Invoke(onShutdownBuilder);
+        callbackDelegate?.Invoke(onShutdownBuilder);
 
         // Assert - all handlers should be applied in order
         onShutdownBuilder.ShutdownHandlers.Should().HaveCount(3);
@@ -492,7 +492,7 @@ public class LambdaApplicationBuilderTests
         // Arrange
         var builder = LambdaApplication.CreateBuilder();
         var app = builder.Build();
-        LambdaInitDelegate handler = (_, __) => Task.FromResult(true);
+        LambdaInitDelegate handler = (_, _) => Task.FromResult(true);
 
         // Act
         var result = app.OnInit(handler);
@@ -508,8 +508,8 @@ public class LambdaApplicationBuilderTests
         // Arrange
         var builder = LambdaApplication.CreateBuilder();
         var app = builder.Build();
-        LambdaInitDelegate handler1 = (_, __) => Task.FromResult(true);
-        LambdaInitDelegate handler2 = (_, __) => Task.FromResult(false);
+        LambdaInitDelegate handler1 = (_, _) => Task.FromResult(true);
+        LambdaInitDelegate handler2 = (_, _) => Task.FromResult(false);
 
         // Act
         app.OnInit(handler1);
@@ -527,7 +527,7 @@ public class LambdaApplicationBuilderTests
         // Arrange
         var builder = LambdaApplication.CreateBuilder();
         var app = builder.Build();
-        LambdaShutdownDelegate handler = (_, __) => Task.CompletedTask;
+        LambdaShutdownDelegate handler = (_, _) => Task.CompletedTask;
 
         // Act
         var result = app.OnShutdown(handler);
@@ -543,8 +543,8 @@ public class LambdaApplicationBuilderTests
         // Arrange
         var builder = LambdaApplication.CreateBuilder();
         var app = builder.Build();
-        LambdaShutdownDelegate handler1 = (_, __) => Task.CompletedTask;
-        LambdaShutdownDelegate handler2 = (_, __) => Task.CompletedTask;
+        LambdaShutdownDelegate handler1 = (_, _) => Task.CompletedTask;
+        LambdaShutdownDelegate handler2 = (_, _) => Task.CompletedTask;
 
         // Act
         app.OnShutdown(handler1);
@@ -623,9 +623,9 @@ public class LambdaApplicationBuilderTests
         app.Lifetime.Should().NotBeNull();
     }
 
-    private interface ITestService { }
+    private interface ITestService;
 
-    private class TestService : ITestService { }
+    private class TestService : ITestService;
 
     private class TestServiceProviderFactory : IServiceProviderFactory<object>
     {
