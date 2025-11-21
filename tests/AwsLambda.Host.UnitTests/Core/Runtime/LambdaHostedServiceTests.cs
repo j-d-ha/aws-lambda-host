@@ -394,6 +394,27 @@ public class LambdaHostedServiceTests
     }
 
     [Fact]
+    public async Task StopAsync_PropagatesNonCanceledExceptionFromExecuteTask()
+    {
+        // Arrange
+        var handlerException = new InvalidOperationException("Handler error");
+        var taskCompletionSource = new TaskCompletionSource();
+        _fixture.BootstrapTask = taskCompletionSource.Task;
+
+        var service = _fixture.CreateService();
+        await service.StartAsync(CancellationToken.None);
+
+        // Simulate an exception from the execute task (after StartAsync completes)
+        taskCompletionSource.SetException(handlerException);
+
+        // Act & Assert - StopAsync should propagate non-TaskCanceledException from execute task
+        var act = () => service.StopAsync(CancellationToken.None);
+        await act.Should()
+            .ThrowExactlyAsync<AggregateException>()
+            .Where(ae => ae.InnerExceptions.Contains(handlerException));
+    }
+
+    [Fact]
     public async Task StopAsync_PropagatesBootstrapExceptionWhenBootstrapFails()
     {
         // Arrange
