@@ -15,6 +15,20 @@
 
 - Only use XML tags that are supported by C#. As an example, do not use `<strong>`.
 
+### Unit Testing
+
+- **Framework**: xUnit with `[Fact]` and `[Theory]` attributes
+- **Mocking**: NSubstitute for creating mocks
+- **Test Data**: AutoFixture.Xunit3 with `[AutoNSubstituteData]` for automatic fixture and mock
+  injection
+- **Assertions**: AwesomeAssertions with fluent `.Should()` syntax
+- **Keep tests simple and focused**: Only test the class/method being tested, not dependencies
+- **Use `[Theory, AutoNSubstituteData]`** for tests that need injected mocks/fixtures
+- **Use `[Fact]`** for simple tests with hardcoded values
+- **No section comments**: Organize tests logically without `#region` blocks
+- **Test only what can be meaningfully tested**: Don't write tests for things that depend entirely
+  on external library internals
+
 # C# 14 Extension Members - Valid Syntax
 
 ## This is VALID C# 14 syntax - do NOT change it
