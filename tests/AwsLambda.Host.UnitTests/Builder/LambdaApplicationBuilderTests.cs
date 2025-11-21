@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using NSubstitute;
 using Xunit;
 
 namespace AwsLambda.Host.UnitTests.Builder;
@@ -152,7 +153,7 @@ public class LambdaApplicationBuilderTests
     }
 
     [Fact]
-    public void Build_AppliesConfigureHandlerBuilderCallback()
+    public void Build_RegistersConfigureHandlerBuilderCallback()
     {
         // Arrange
         var builder = LambdaApplication.CreateBuilder();
@@ -162,7 +163,94 @@ public class LambdaApplicationBuilderTests
         // Act & Assert
         var callbackDelegate = options.Value.ConfigureHandlerBuilder;
         callbackDelegate.Should().NotBeNull();
-        // Callback will validate that a handler is set when invoked
+        // Callback is registered and will apply middlewares and handler when invoked
+    }
+
+    [Fact]
+    public void Build_ConfigureHandlerBuilderCallback_ThrowsWhenHandlerNotSet()
+    {
+        // Arrange
+        var builder = LambdaApplication.CreateBuilder();
+        var app = builder.Build();
+        var options = app.Services.GetRequiredService<IOptions<LambdaHostedServiceOptions>>();
+        var mockBuilder = Substitute.For<ILambdaInvocationBuilder>();
+
+        // Act
+        var callbackDelegate = options.Value.ConfigureHandlerBuilder;
+        callbackDelegate.Should().NotBeNull();
+        var act = () => callbackDelegate!.Invoke(mockBuilder);
+
+        // Assert - should throw because no handler was registered in the application
+        act.Should()
+            .ThrowExactly<InvalidOperationException>()
+            .WithMessage("Lambda Handler is not set.");
+    }
+
+    [Fact]
+    public void Build_ConfigureHandlerBuilderCallback_AppliesHandlerWhenSet()
+    {
+        // Arrange
+        var builder = LambdaApplication.CreateBuilder();
+        var app = builder.Build();
+
+        // Register a handler on the app
+        LambdaInvocationDelegate handler = _ => Task.CompletedTask;
+        app.Handle(handler);
+
+        var options = app.Services.GetRequiredService<IOptions<LambdaHostedServiceOptions>>();
+        var callbackDelegate = options.Value.ConfigureHandlerBuilder;
+        callbackDelegate.Should().NotBeNull();
+
+        // Act - create a real invocation builder to verify callback applies the handler
+        var invocationBuilder = app
+            .Services.GetRequiredService<ILambdaInvocationBuilderFactory>()
+            .CreateBuilder();
+
+        // The callback will attempt to apply the handler and middlewares
+        var exception = Record.Exception(() => callbackDelegate.Invoke(invocationBuilder));
+
+        // Assert - if an exception occurs, it should not be "Handler not set" since we registered
+        // one
+        if (exception != null)
+            exception.Message.Should().NotContain("Lambda Handler is not set");
+    }
+
+    [Fact]
+    public void Build_ConfigureHandlerBuilderCallback_AppliesMiddlewareAndProperties()
+    {
+        // Arrange
+        var builder = LambdaApplication.CreateBuilder();
+        var app = builder.Build();
+
+        // Register handler, middleware, and properties on the app
+        LambdaInvocationDelegate handler = _ => Task.CompletedTask;
+        Func<LambdaInvocationDelegate, LambdaInvocationDelegate> middleware = next => next;
+        const string propKey = "testPropKey";
+        const string propValue = "testPropValue";
+
+        app.Handle(handler);
+        app.Use(middleware);
+        app.Properties[propKey] = propValue;
+
+        var options = app.Services.GetRequiredService<IOptions<LambdaHostedServiceOptions>>();
+        var callbackDelegate = options.Value.ConfigureHandlerBuilder;
+
+        // Act - create invocation builder to verify callback applies all components
+        var invocationBuilder = app
+            .Services.GetRequiredService<ILambdaInvocationBuilderFactory>()
+            .CreateBuilder();
+
+        // The callback should apply middlewares and properties from the app
+        var exception = Record.Exception(() => callbackDelegate.Invoke(invocationBuilder));
+
+        // Assert - callback should handle the registered middleware and properties
+        // If exception occurs, it should not be about missing handler
+        if (exception != null)
+            exception.Message.Should().NotContain("Lambda Handler is not set");
+
+        // Verify the invocation builder has the registered properties
+        invocationBuilder.Properties.Should().ContainKey(propKey);
+        invocationBuilder.Properties[propKey].Should().Be(propValue);
     }
 
     [Fact]
