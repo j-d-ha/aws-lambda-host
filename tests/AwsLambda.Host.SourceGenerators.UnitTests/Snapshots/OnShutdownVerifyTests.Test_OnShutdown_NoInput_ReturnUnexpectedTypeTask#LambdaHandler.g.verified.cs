@@ -34,9 +34,9 @@ namespace AwsLambda.Host
     file static class OnShutdownLambdaApplicationExtensions
     {
         // Location: InputFile.cs(9,8)
-        [InterceptsLocation(1, "GPk+9A4D6uMtB12TxSsq+bEAAABJbnB1dEZpbGUuY3M=")]
-        internal static ILambdaApplication OnShutdownInterceptor0(
-            this ILambdaApplication application,
+        [InterceptsLocation(1, "7VZZWgk+mtmIsq0tOFQr7rEAAABJbnB1dEZpbGUuY3M=")]
+        internal static ILambdaOnShutdownBuilder OnShutdownInterceptor0(
+            this ILambdaOnShutdownBuilder application,
             Delegate handler
         )
         {
