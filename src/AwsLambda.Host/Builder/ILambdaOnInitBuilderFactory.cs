@@ -1,6 +1,6 @@
 namespace AwsLambda.Host;
 
-internal interface IOnInitBuilderFactory
+internal interface ILambdaOnInitBuilderFactory
 {
     ILambdaOnInitBuilder CreateBuilder();
 }

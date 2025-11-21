@@ -3,11 +3,11 @@ using Microsoft.Extensions.Options;
 
 namespace AwsLambda.Host;
 
-internal class DefaultOnInitBuilderFactory(
+internal class DefaultLambdaOnInitBuilderFactory(
     IServiceProvider serviceProvider,
     IServiceScopeFactory scopeFactory,
     IOptions<LambdaHostOptions> options
-) : IOnInitBuilderFactory
+) : ILambdaOnInitBuilderFactory
 {
     public ILambdaOnInitBuilder CreateBuilder() =>
         new LambdaOnInitBuilder(serviceProvider, scopeFactory, options);

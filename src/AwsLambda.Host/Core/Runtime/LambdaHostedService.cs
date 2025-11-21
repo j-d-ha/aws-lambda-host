@@ -12,8 +12,8 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
 {
     private readonly ILambdaBootstrapOrchestrator _bootstrap;
     private readonly ILambdaHandlerFactory _handlerFactory;
+    private readonly ILambdaOnInitBuilderFactory _lambdaOnInitBuilderFactory;
     private readonly IHostApplicationLifetime _lifetime;
-    private readonly IOnInitBuilderFactory _onInitBuilderFactory;
     private readonly IOnShutdownBuilderFactory _onShutdownBuilderFactory;
     private readonly LambdaHostedServiceOptions _options;
     private bool _disposed;
@@ -26,7 +26,7 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
         ILambdaBootstrapOrchestrator bootstrap,
         ILambdaHandlerFactory handlerFactory,
         IHostApplicationLifetime lifetime,
-        IOnInitBuilderFactory onInitBuilderFactory,
+        ILambdaOnInitBuilderFactory lambdaOnInitBuilderFactory,
         IOptions<LambdaHostedServiceOptions> lambdaHostOptions,
         IOnShutdownBuilderFactory onShutdownBuilderFactory
     )
@@ -34,14 +34,14 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
         ArgumentNullException.ThrowIfNull(bootstrap);
         ArgumentNullException.ThrowIfNull(handlerFactory);
         ArgumentNullException.ThrowIfNull(lifetime);
-        ArgumentNullException.ThrowIfNull(onInitBuilderFactory);
+        ArgumentNullException.ThrowIfNull(lambdaOnInitBuilderFactory);
         ArgumentNullException.ThrowIfNull(lambdaHostOptions);
         ArgumentNullException.ThrowIfNull(onShutdownBuilderFactory);
 
         _bootstrap = bootstrap;
         _handlerFactory = handlerFactory;
         _lifetime = lifetime;
-        _onInitBuilderFactory = onInitBuilderFactory;
+        _lambdaOnInitBuilderFactory = lambdaOnInitBuilderFactory;
         _options = lambdaHostOptions.Value;
         _onShutdownBuilderFactory = onShutdownBuilderFactory;
     }
@@ -74,7 +74,7 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
         var requestHandler = _handlerFactory.CreateHandler(_stoppingCts.Token);
 
         // Create an optional initialization handler.
-        var onInitBuilder = _onInitBuilderFactory.CreateBuilder();
+        var onInitBuilder = _lambdaOnInitBuilderFactory.CreateBuilder();
         _options.ConfigureOnInitBuilder?.Invoke(onInitBuilder);
         var onInitHandler = onInitBuilder.Build();
 

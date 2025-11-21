@@ -22,7 +22,7 @@ public static class ServiceCollectionExtensions
                 ILambdaInvocationBuilderFactory,
                 DefaultLambdaInvocationBuilderFactory
             >();
-            services.AddSingleton<IOnInitBuilderFactory, DefaultOnInitBuilderFactory>();
+            services.AddSingleton<ILambdaOnInitBuilderFactory, DefaultLambdaOnInitBuilderFactory>();
             services.AddSingleton<IOnShutdownBuilderFactory, DefaultOnShutdownBuilderFactory>();
             services.AddSingleton<IFeatureCollectionFactory, DefaultFeatureCollectionFactory>();
 

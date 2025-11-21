@@ -29,7 +29,7 @@ public sealed class LambdaApplication
             .GetRequiredService<ILambdaInvocationBuilderFactory>()
             .CreateBuilder();
 
-        _onInitBuilder = Services.GetRequiredService<IOnInitBuilderFactory>().CreateBuilder();
+        _onInitBuilder = Services.GetRequiredService<ILambdaOnInitBuilderFactory>().CreateBuilder();
 
         _onShutdownBuilder = Services
             .GetRequiredService<IOnShutdownBuilderFactory>()
