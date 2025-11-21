@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Amazon.Lambda.Core;
 
 namespace AwsLambda.Host;
@@ -9,6 +10,7 @@ namespace AwsLambda.Host;
 ///         cref="ILambdaApplication.MapHandler(LambdaInvocationDelegate, Func{ILambdaHostContext, ILambdaSerializer, Stream, Task}, Func{ILambdaHostContext, ILambdaSerializer, Task{Stream}})" />
 ///     that support automatic dependency injection and serialization for Lambda handlers.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public static class MapHandlerLambdaApplicationExtensions
 {
     /// <summary>
