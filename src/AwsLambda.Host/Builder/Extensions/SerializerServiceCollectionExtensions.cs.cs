@@ -1,9 +1,8 @@
 using System.Text.Json.Serialization;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace AwsLambda.Host;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>Provides extension methods for configuring Lambda host services.</summary>
 public static class SerializerServiceCollectionExtensions

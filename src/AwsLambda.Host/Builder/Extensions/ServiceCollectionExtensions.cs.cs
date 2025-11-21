@@ -1,12 +1,12 @@
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
+using AwsLambda.Host;
 using AwsLambda.Host.Core.Features;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace AwsLambda.Host;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>Extension methods for registering Lambda Host services.</summary>
 public static class ServiceCollectionExtensions
