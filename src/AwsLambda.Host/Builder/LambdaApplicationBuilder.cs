@@ -136,21 +136,6 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
     /// </exception>
     public LambdaApplication Build()
     {
-        // Get LambdaHostOptions from DI for final configuration.
-        var lambdaHostOptions = Services
-            .BuildServiceProvider()
-            .GetRequiredService<IOptions<LambdaHostOptions>>()
-            .Value;
-
-        // Set the shutdown timeout to the configured value minus the buffer.
-        var shutdownTimeout =
-            lambdaHostOptions.ShutdownDuration - lambdaHostOptions.ShutdownDurationBuffer;
-
-        Services.PostConfigure<HostOptions>(options =>
-            options.ShutdownTimeout =
-                shutdownTimeout >= TimeSpan.Zero ? shutdownTimeout : TimeSpan.Zero
-        );
-
         Services.TryAddLambdaHostDefaultServices();
 
         _builtApplication = new LambdaApplication(_hostBuilder.Build());

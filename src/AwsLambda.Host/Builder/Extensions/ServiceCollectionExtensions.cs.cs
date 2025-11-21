@@ -3,6 +3,8 @@ using Amazon.Lambda.Serialization.SystemTextJson;
 using AwsLambda.Host.Core.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace AwsLambda.Host;
 
@@ -35,6 +37,12 @@ public static class ServiceCollectionExtensions
 
             // Register LambdaHostedService as IHostedService
             services.AddHostedService<LambdaHostedService>();
+
+            // Register options related services
+            services.AddSingleton<
+                IPostConfigureOptions<HostOptions>,
+                HostOptionsPostConfiguration
+            >();
 
             return services;
         }
