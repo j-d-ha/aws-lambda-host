@@ -13,6 +13,7 @@ public class MapHandlerIncrementalGeneratorDiagnosticTests
         var diagnostics = GenerateDiagnostics(
             """
             using AwsLambda.Host;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -34,6 +35,7 @@ public class MapHandlerIncrementalGeneratorDiagnosticTests
         var diagnostics = GenerateDiagnostics(
             """
             using AwsLambda.Host;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -63,6 +65,7 @@ public class MapHandlerIncrementalGeneratorDiagnosticTests
         var diagnostics = GenerateDiagnostics(
             """
             using AwsLambda.Host;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -90,6 +93,7 @@ public class MapHandlerIncrementalGeneratorDiagnosticTests
         var diagnostics = GenerateDiagnostics(
             """
             using AwsLambda.Host;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
@@ -130,6 +134,7 @@ public class MapHandlerIncrementalGeneratorDiagnosticTests
         var diagnostics = GenerateDiagnostics(
             """
             using AwsLambda.Host;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
