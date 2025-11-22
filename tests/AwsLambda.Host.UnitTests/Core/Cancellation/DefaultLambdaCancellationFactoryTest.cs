@@ -1,9 +1,3 @@
-using Amazon.Lambda.Core;
-using AwesomeAssertions;
-using JetBrains.Annotations;
-using NSubstitute;
-using Xunit;
-
 namespace AwsLambda.Host.UnitTests;
 
 [TestSubject(typeof(DefaultLambdaCancellationFactory))]

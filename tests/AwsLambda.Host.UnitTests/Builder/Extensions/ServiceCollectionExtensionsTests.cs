@@ -1,11 +1,6 @@
-using Amazon.Lambda.Core;
-using AwesomeAssertions;
-using AwsLambda.Host.Core;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace AwsLambda.Host.UnitTests.Builder.Extensions;
 
@@ -314,13 +309,8 @@ public class ServiceCollectionExtensionsTests
 // Test implementation for verifying TryAdd behavior
 internal class CustomLambdaSerializer : ILambdaSerializer
 {
-    public T Deserialize<T>(Stream requestStream)
-    {
-        throw new NotImplementedException();
-    }
+    public T Deserialize<T>(Stream requestStream) => throw new NotImplementedException();
 
-    public void Serialize<T>(T response, Stream responseStream)
-    {
+    public void Serialize<T>(T response, Stream responseStream) =>
         throw new NotImplementedException();
-    }
 }

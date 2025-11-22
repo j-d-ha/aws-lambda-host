@@ -1,8 +1,3 @@
-using AwesomeAssertions;
-using JetBrains.Annotations;
-using NSubstitute;
-using Xunit;
-
 namespace AwsLambda.Host.UnitTests.Builder;
 
 [TestSubject(typeof(DefaultLambdaInvocationBuilderFactory))]

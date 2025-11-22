@@ -1,7 +1,4 @@
-using AwesomeAssertions;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 
 namespace AwsLambda.Host.UnitTests.Builder;
 

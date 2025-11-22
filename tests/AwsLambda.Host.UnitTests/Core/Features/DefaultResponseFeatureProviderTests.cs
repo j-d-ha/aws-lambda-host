@@ -1,9 +1,3 @@
-using Amazon.Lambda.Core;
-using AwesomeAssertions;
-using AwsLambda.Host.Core;
-using JetBrains.Annotations;
-using Xunit;
-
 namespace AwsLambda.Host.UnitTests.Core.Features;
 
 [TestSubject(typeof(DefaultResponseFeatureProvider<>))]

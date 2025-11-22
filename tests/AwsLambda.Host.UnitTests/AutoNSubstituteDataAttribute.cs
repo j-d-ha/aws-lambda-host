@@ -1,6 +1,4 @@
-using AutoFixture;
 using AutoFixture.AutoNSubstitute;
-using AutoFixture.Xunit3;
 
 namespace AwsLambda.Host.UnitTests;
 

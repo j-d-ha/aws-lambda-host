@@ -1,11 +1,6 @@
 using System.Reflection;
-using Amazon.Lambda.Core;
-using AwesomeAssertions;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using NSubstitute;
-using Xunit;
 
 namespace AwsLambda.Host.UnitTests.Core.Runtime;
 

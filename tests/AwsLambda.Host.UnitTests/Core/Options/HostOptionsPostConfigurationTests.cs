@@ -1,8 +1,5 @@
-using AwesomeAssertions;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace AwsLambda.Host.UnitTests.Core.Options;
 

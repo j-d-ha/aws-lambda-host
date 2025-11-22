@@ -1,9 +1,5 @@
 using System.Text.Json.Serialization;
-using Amazon.Lambda.Core;
-using AwesomeAssertions;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 
 namespace AwsLambda.Host.UnitTests.Builder.Extensions;
 

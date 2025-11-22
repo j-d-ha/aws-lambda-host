@@ -1,11 +1,3 @@
-using Amazon.Lambda.Core;
-using AutoFixture.Xunit3;
-using AwesomeAssertions;
-using AwsLambda.Host.Core;
-using JetBrains.Annotations;
-using NSubstitute;
-using Xunit;
-
 namespace AwsLambda.Host.UnitTests.Core.Features;
 
 [TestSubject(typeof(DefaultEventFeatureProvider<>))]
@@ -17,11 +9,9 @@ public class DefaultEventFeatureProviderTests
     [AutoNSubstituteData]
     internal void Constructor_WithValidSerializer_SuccessfullyConstructs(
         DefaultEventFeatureProvider<string> provider
-    )
-    {
+    ) =>
         // Assert
         provider.Should().NotBeNull();
-    }
 
     #endregion
 
@@ -29,11 +19,11 @@ public class DefaultEventFeatureProviderTests
 
     [Theory]
     [AutoNSubstituteData]
-    internal void Provider_ImplementsIFeatureProvider(DefaultEventFeatureProvider<string> provider)
-    {
+    internal void Provider_ImplementsIFeatureProvider(
+        DefaultEventFeatureProvider<string> provider
+    ) =>
         // Assert
         provider.Should().BeAssignableTo<IFeatureProvider>();
-    }
 
     #endregion
 
