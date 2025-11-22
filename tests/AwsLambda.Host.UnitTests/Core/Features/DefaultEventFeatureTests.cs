@@ -12,18 +12,24 @@ namespace AwsLambda.Host.UnitTests.Core.Features;
 [TestSubject(typeof(DefaultEventFeature<>))]
 public class DefaultEventFeatureTests
 {
-    #region Helper Methods
+    #region RawInvocationData Integration Tests
 
-    private ILambdaHostContext CreateMockContext(ILambdaSerializer serializer)
+    [Theory]
+    [AutoNSubstituteData]
+    internal void GetEvent_PassesRawEventStreamToSerializer(
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<string> feature,
+        ILambdaHostContext context
+    )
     {
-        var rawData = new RawInvocationData
-        {
-            Event = new MemoryStream(),
-            Response = new MemoryStream(),
-        };
-        var context = Substitute.For<ILambdaHostContext>();
-        context.RawInvocationData.Returns(rawData);
-        return context;
+        // Arrange
+        serializer.Deserialize<string>(Arg.Any<Stream>()).Returns("result");
+
+        // Act
+        _ = feature.GetEvent(context);
+
+        // Assert
+        serializer.Received(1).Deserialize<string>(context.RawInvocationData.Event);
     }
 
     #endregion
@@ -78,14 +84,14 @@ public class DefaultEventFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void GetEvent_WithComplexObject_ReturnsDeserializedObject(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<TestEvent> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
         var expectedEvent = new TestEvent { Id = 42, Name = "test" };
         serializer.Deserialize<TestEvent>(Arg.Any<Stream>()).Returns(expectedEvent);
-        var feature = new DefaultEventFeature<TestEvent>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
         var result = feature.GetEvent(context);
@@ -97,34 +103,15 @@ public class DefaultEventFeatureTests
 
     [Theory]
     [AutoNSubstituteData]
-    internal void GetEvent_WithReferenceTypeEvent_ReturnsDeserializedValue(
-        [Frozen] ILambdaSerializer serializer
-    )
-    {
-        // Arrange
-        const string expectedEvent = "event-value";
-        serializer.Deserialize<string>(Arg.Any<Stream>()).Returns(expectedEvent);
-        var feature = new DefaultEventFeature<string>(serializer);
-        var context = CreateMockContext(serializer);
-
-        // Act
-        var result = feature.GetEvent(context);
-
-        // Assert
-        result.Should().Be(expectedEvent);
-    }
-
-    [Theory]
-    [AutoNSubstituteData]
     internal void GetEvent_WithNullableEvent_ReturnsDeserializedNullValue(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<string?> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
         string? expectedEvent = null;
         serializer.Deserialize<string?>(Arg.Any<Stream>()).Returns(expectedEvent);
-        var feature = new DefaultEventFeature<string?>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
         var result = feature.GetEvent(context);
@@ -139,13 +126,15 @@ public class DefaultEventFeatureTests
 
     [Theory]
     [AutoNSubstituteData]
-    internal void GetEvent_CallsDeserializerOnFirstInvocation([Frozen] ILambdaSerializer serializer)
+    internal void GetEvent_CallsDeserializerOnFirstInvocation(
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<string> feature,
+        ILambdaHostContext context
+    )
     {
         // Arrange
         const string expectedEvent = "test-data";
         serializer.Deserialize<string>(Arg.Any<Stream>()).Returns(expectedEvent);
-        var feature = new DefaultEventFeature<string>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
         _ = feature.GetEvent(context);
@@ -157,14 +146,14 @@ public class DefaultEventFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void GetEvent_CachesResultAndDoesNotDeserializeOnSecondInvocation(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<string> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
         const string expectedEvent = "test-data";
         serializer.Deserialize<string>(Arg.Any<Stream>()).Returns(expectedEvent);
-        var feature = new DefaultEventFeature<string>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
         var result1 = feature.GetEvent(context);
@@ -179,14 +168,14 @@ public class DefaultEventFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void GetEvent_ReturnsSameCachedInstanceOnMultipleInvocations(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<TestEvent> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
         var expectedEvent = new TestEvent { Id = 1, Name = "cached" };
         serializer.Deserialize<TestEvent>(Arg.Any<Stream>()).Returns(expectedEvent);
-        var feature = new DefaultEventFeature<TestEvent>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
         var result1 = feature.GetEvent(context);
@@ -203,8 +192,8 @@ public class DefaultEventFeatureTests
     [AutoNSubstituteData]
     internal void GetEvent_WithMultipleInstances_CachesPerInstance(
         ILambdaSerializer serializer1,
-        ILambdaSerializer serializer2,
         ILambdaHostContext context1,
+        ILambdaSerializer serializer2,
         ILambdaHostContext context2
     )
     {
@@ -231,48 +220,14 @@ public class DefaultEventFeatureTests
 
     #endregion
 
-    #region RawInvocationData Integration Tests
-
-    [Theory]
-    [AutoNSubstituteData]
-    internal void GetEvent_PassesRawEventStreamToSerializer([Frozen] ILambdaSerializer serializer)
-    {
-        // Arrange
-        serializer.Deserialize<string>(Arg.Any<Stream>()).Returns("result");
-        var feature = new DefaultEventFeature<string>(serializer);
-        var context = CreateMockContext(serializer);
-
-        // Act
-        _ = feature.GetEvent(context);
-
-        // Assert
-        serializer.Received(1).Deserialize<string>(context.RawInvocationData.Event);
-    }
-
-    [Theory]
-    [AutoNSubstituteData]
-    internal void GetEvent_UsesContextRawInvocationDataEvent([Frozen] ILambdaSerializer serializer)
-    {
-        // Arrange
-        serializer.Deserialize<string>(Arg.Any<Stream>()).Returns("result");
-        var feature = new DefaultEventFeature<string>(serializer);
-        var context = CreateMockContext(serializer);
-
-        // Act
-        _ = feature.GetEvent(context);
-
-        // Assert
-        serializer.Received(1).Deserialize<string>(context.RawInvocationData.Event);
-    }
-
-    #endregion
-
     #region Generic Type Handling Tests
 
     [Theory]
     [AutoNSubstituteData]
     internal void GetEvent_WithGenericListType_ReturnsDeserializedList(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<List<TestEvent>> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
@@ -282,8 +237,6 @@ public class DefaultEventFeatureTests
             new() { Id = 2, Name = "item2" },
         };
         serializer.Deserialize<List<TestEvent>>(Arg.Any<Stream>()).Returns(expectedList);
-        var feature = new DefaultEventFeature<List<TestEvent>>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
         var result = feature.GetEvent(context);
@@ -296,14 +249,14 @@ public class DefaultEventFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void GetEvent_WithGenericDictionaryType_ReturnsDeserializedDictionary(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<Dictionary<string, int>> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
         var expectedDict = new Dictionary<string, int> { { "key1", 10 }, { "key2", 20 } };
         serializer.Deserialize<Dictionary<string, int>>(Arg.Any<Stream>()).Returns(expectedDict);
-        var feature = new DefaultEventFeature<Dictionary<string, int>>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
         var result = feature.GetEvent(context);
@@ -315,7 +268,9 @@ public class DefaultEventFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void GetEvent_WithNestedGenericType_ReturnsDeserializedNestedType(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<NestedEvent> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
@@ -327,8 +282,6 @@ public class DefaultEventFeatureTests
             },
         };
         serializer.Deserialize<NestedEvent>(Arg.Any<Stream>()).Returns(expectedNested);
-        var feature = new DefaultEventFeature<NestedEvent>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
         var result = feature.GetEvent(context);
@@ -344,17 +297,17 @@ public class DefaultEventFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void IEventFeatureGetEvent_ReturnsObjectCastFromGenericGetEvent(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<string> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
         const string expectedEvent = "interface-test";
         serializer.Deserialize<string>(Arg.Any<Stream>()).Returns(expectedEvent);
-        IEventFeature feature = new DefaultEventFeature<string>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
-        var result = feature.GetEvent(context);
+        var result = ((IEventFeature)feature).GetEvent(context);
 
         // Assert
         result.Should().Be(expectedEvent);
@@ -363,14 +316,14 @@ public class DefaultEventFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void IEventFeatureGetEvent_AndGenericGetEvent_ReturnSameCachedInstance(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<TestEvent> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
         var expectedEvent = new TestEvent { Id = 99, Name = "same" };
         serializer.Deserialize<TestEvent>(Arg.Any<Stream>()).Returns(expectedEvent);
-        var feature = new DefaultEventFeature<TestEvent>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
         var genericResult = feature.GetEvent(context);
@@ -401,15 +354,15 @@ public class DefaultEventFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void GetEvent_WhenDeserializerThrowsException_PropagatesException(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<string> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
         serializer
             .Deserialize<string>(Arg.Any<Stream>())
             .Throws(new InvalidOperationException("Deserialization failed"));
-        var feature = new DefaultEventFeature<string>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act & Assert
         var act = () => feature.GetEvent(context);
@@ -419,15 +372,15 @@ public class DefaultEventFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void GetEvent_AfterDeserializationException_RethrowsExceptionOnNextCall(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<string> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
         serializer
             .Deserialize<string>(Arg.Any<Stream>())
             .Throws(new InvalidOperationException("Error"));
-        var feature = new DefaultEventFeature<string>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act & Assert
         var act1 = () => feature.GetEvent(context);
@@ -446,13 +399,13 @@ public class DefaultEventFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void GetEvent_WithEmptyMemoryStream_DeserializesEmptyStream(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<string> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
         serializer.Deserialize<string>(Arg.Any<Stream>()).Returns("");
-        var feature = new DefaultEventFeature<string>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
         var result = feature.GetEvent(context);
@@ -464,13 +417,13 @@ public class DefaultEventFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void GetEvent_WithValueTypeDefaultValue_ReturnsDefaultOfT(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<int> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
         serializer.Deserialize<int>(Arg.Any<Stream>()).Returns(0);
-        var feature = new DefaultEventFeature<int>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
         var result = feature.GetEvent(context);
@@ -482,14 +435,14 @@ public class DefaultEventFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void GetEvent_WithLargeObject_ReturnsDeserializedLargeObject(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<TestEvent> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
         var largeEvent = new TestEvent { Id = int.MaxValue, Name = new string('x', 10000) };
         serializer.Deserialize<TestEvent>(Arg.Any<Stream>()).Returns(largeEvent);
-        var feature = new DefaultEventFeature<TestEvent>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
         var result = feature.GetEvent(context);
@@ -502,14 +455,14 @@ public class DefaultEventFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void GetEvent_WithNullableStruct_ReturnsDeserializedNullValue(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<int?> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
         int? expectedEvent = null;
         serializer.Deserialize<int?>(Arg.Any<Stream>()).Returns(expectedEvent);
-        var feature = new DefaultEventFeature<int?>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
         var result = feature.GetEvent(context);
@@ -521,14 +474,14 @@ public class DefaultEventFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void GetEvent_WithNullableStructValue_ReturnsDeserializedValue(
-        [Frozen] ILambdaSerializer serializer
+        [Frozen] ILambdaSerializer serializer,
+        DefaultEventFeature<int?> feature,
+        ILambdaHostContext context
     )
     {
         // Arrange
         int? expectedEvent = 42;
         serializer.Deserialize<int?>(Arg.Any<Stream>()).Returns(expectedEvent);
-        var feature = new DefaultEventFeature<int?>(serializer);
-        var context = CreateMockContext(serializer);
 
         // Act
         var result = feature.GetEvent(context);
@@ -541,13 +494,13 @@ public class DefaultEventFeatureTests
 
     #region Test Data Classes
 
-    private sealed class TestEvent
+    internal sealed class TestEvent
     {
         public int Id { get; set; }
         public string Name { get; set; } = "";
     }
 
-    private sealed class NestedEvent
+    internal sealed class NestedEvent
     {
         public List<TestEvent> Items { get; set; } = [];
     }
