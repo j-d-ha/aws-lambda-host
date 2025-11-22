@@ -1,4 +1,4 @@
-namespace AwsLambda.Host;
+namespace AwsLambda.Host.Core;
 
 /// <summary>Contains the raw request and response streams for a Lambda invocation.</summary>
 /// <remarks>
