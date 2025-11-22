@@ -26,31 +26,38 @@ serialization:
 Define your request and response types, then create a handler:
 
 ```csharp
-using AwsLambda.Host;
+using System;
+using System.Collections.Generic;
+using AwsLambda.Host.Builder;
 using AwsLambda.Host.Envelopes.ApiGateway;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 var builder = LambdaApplication.CreateBuilder();
 var lambda = builder.Build();
 
 // ApiGatewayRequestEnvelope<Request> provides the API Gateway event with deserialized request body
 // ApiGatewayResponseEnvelope<Response> wraps the response and serializes it to the body
-lambda.MapHandler(([Event] ApiGatewayRequestEnvelope<Request> request, ILogger<Program> logger) =>
-{
-    logger.LogInformation("Request: {Name}", request.BodyContent?.Name);
-
-    return new ApiGatewayResponseEnvelope<Response>
+lambda.MapHandler(
+    ([Event] ApiGatewayRequestEnvelope<Request> request, ILogger<Program> logger) =>
     {
-        BodyContent = new Response($"Hello {request.BodyContent?.Name}!", DateTime.UtcNow),
-        StatusCode = 200,
-        Headers = new Dictionary<string, string> { ["Content-Type"] = "application/json" },
-    };
-});
+        logger.LogInformation("Request: {Name}", request.BodyContent?.Name);
+
+        return new ApiGatewayResponseEnvelope<Response>
+        {
+            BodyContent = new Response($"Hello {request.BodyContent?.Name}!", DateTime.UtcNow),
+            StatusCode = 200,
+            Headers = new Dictionary<string, string> { ["Content-Type"] = "application/json" },
+        };
+    }
+);
 
 await lambda.RunAsync();
 
 // Your request and response payloads
-record Request(string Name);
-record Response(string Message, DateTime TimestampUtc);
+internal record Request(string Name);
+
+internal record Response(string Message, DateTime TimestampUtc);
 ```
 
 For HTTP API v2, use `ApiGatewayV2RequestEnvelope<T>` and `ApiGatewayV2ResponseEnvelope<T>` in the
