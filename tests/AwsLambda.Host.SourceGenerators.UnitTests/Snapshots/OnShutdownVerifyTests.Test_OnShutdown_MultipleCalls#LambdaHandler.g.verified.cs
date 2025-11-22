@@ -23,18 +23,20 @@ namespace System.Runtime.CompilerServices
     }
 }
 
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System;
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     
     file static class OnShutdownLambdaApplicationExtensions
     {
-        // Location: InputFile.cs(9,8)
-        [InterceptsLocation(1, "752jWHLpcl0NwGol0bVk/LEAAABJbnB1dEZpbGUuY3M=")]
+        // Location: InputFile.cs(10,8)
+        [InterceptsLocation(1, "8z0FL9iGVp57G+1Z1fBD39QAAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnShutdownBuilder OnShutdownInterceptor0(
             this ILambdaOnShutdownBuilder application,
             Delegate handler
@@ -51,8 +53,8 @@ namespace AwsLambda.Host
             }
         }
         
-        // Location: InputFile.cs(14,8)
-        [InterceptsLocation(1, "752jWHLpcl0NwGol0bVk/PQAAABJbnB1dEZpbGUuY3M=")]
+        // Location: InputFile.cs(15,8)
+        [InterceptsLocation(1, "8z0FL9iGVp57G+1Z1fBD3xcBAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnShutdownBuilder OnShutdownInterceptor1(
             this ILambdaOnShutdownBuilder application,
             Delegate handler
@@ -73,8 +75,8 @@ namespace AwsLambda.Host
             }
         }
         
-        // Location: InputFile.cs(21,8)
-        [InterceptsLocation(1, "752jWHLpcl0NwGol0bVk/F8BAABJbnB1dEZpbGUuY3M=")]
+        // Location: InputFile.cs(22,8)
+        [InterceptsLocation(1, "8z0FL9iGVp57G+1Z1fBD34IBAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnShutdownBuilder OnShutdownInterceptor2(
             this ILambdaOnShutdownBuilder application,
             Delegate handler
