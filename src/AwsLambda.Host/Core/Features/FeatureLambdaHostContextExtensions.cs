@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace AwsLambda.Host;
+namespace AwsLambda.Host.Core;
 
 /// <summary>
 ///     Provides extension methods for safely accessing typed event and response data from the

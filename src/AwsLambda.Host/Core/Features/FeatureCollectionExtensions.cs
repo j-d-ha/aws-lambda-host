@@ -15,6 +15,10 @@ public static class FeatureCollectionExtensions
 {
     extension(IFeatureCollection featureCollection)
     {
+        //      ┌──────────────────────────────────────────────────────────┐
+        //      │          General IFeatureCollection Exceptions           │
+        //      └──────────────────────────────────────────────────────────┘
+
         /// <summary>Attempts to get a feature from the collection.</summary>
         /// <typeparam name="T">The type of feature to retrieve.</typeparam>
         /// <param name="result">The retrieved feature, or null if not found.</param>

@@ -1,12 +1,14 @@
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System;
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using Amazon.Lambda.Core;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     using Microsoft.Extensions.DependencyInjection;
-
+    
     file static class MapHandlerLambdaApplicationExtensions
     {
         // Location: {{ location.display_location }}
@@ -34,8 +36,16 @@ namespace AwsLambda.Host
                 {{~ end ~}}
                 {{ if output_response != null; ~}} var response = {{ end }}{{ if should_await ~}} await {{ end ~}} castHandler.Invoke({{ for arg in handler_args }}arg{{ for.index }}{{ if !for.last }}, {{ end }}{{ end }});
                 {{~ if output_response != null; ~}}
-                context.SetResponseT(response);
-                {{~ end ~}}  
+                {{~ if output_response.response_is_stream ~}}
+                context.RawInvocationData.Response = response;
+                {{~ else ~}}
+                if (context.Features.Get<IResponseFeature>() is not IResponseFeature<{{ output_response.response_type }}> responseFeature)
+                {
+                    throw new InvalidOperationException($"Response feature for type '{typeof({{ output_response.response_type }}).FullName}' is not available in the collection.");
+                }
+                responseFeature.SetResponse(response);
+                {{~ end ~}}
+                {{~ end ~}}
                 {{~ if !should_await ~}}
                 return Task.CompletedTask; 
                 {{~ end ~}}
@@ -49,39 +59,13 @@ namespace AwsLambda.Host
         internal static LambdaApplication BuildInterceptor(this LambdaApplicationBuilder builder)
         {
             {{~ if input_event != null && !input_event.is_stream ~}}
-            builder.Services.AddSingleton<IFeatureProvider, DefaultEventFeatureProvider>();
+            builder.Services.AddSingleton<IFeatureProvider, DefaultEventFeatureProvider<{{ input_event.type }}>>();
             {{~ end ~}}
             {{~ if output_response != null && !output_response.response_is_stream ~}}
-            builder.Services.AddSingleton<IFeatureProvider, DefaultResponseFeatureProvider>();
+            builder.Services.AddSingleton<IFeatureProvider, DefaultResponseFeatureProvider<{{ output_response.response_type }}>>();
             {{~ end ~}}
             return builder.Build();
         }
         {{~ end ~}}
-
-        private static T GetEventT<T>(this ILambdaHostContext context)
-        {
-            if (!context.TryGetEvent<T>(out var eventT))
-            {
-                throw new InvalidOperationException($"Lambda event of type '{typeof(T).FullName}' is not available in the context.");
-            }
-            
-            return eventT!;
-        }
-
-        private static void SetResponseT<T>(this ILambdaHostContext context, T response)
-        {
-            if (response is Stream stream)
-            {
-                context.RawInvocationData.Response = stream;
-                return;
-            }
-    
-            if (!context.Features.TryGet<IResponseFeature>(out var responseFeature))
-            {
-                throw new InvalidOperationException("Response feature is not available in the context.");
-            }
-    
-            responseFeature.SetResponse(response);
-        }
     }
 }

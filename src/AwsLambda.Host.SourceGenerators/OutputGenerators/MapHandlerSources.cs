@@ -74,7 +74,7 @@ internal static class MapHandlerSources
                         "context.RawInvocationData.Event",
 
                     ParameterSource.Event =>
-                        $"context.GetEventT<{param.TypeInfo.FullyQualifiedType}>()",
+                        $"context.GetRequiredEvent<{param.TypeInfo.FullyQualifiedType}>()",
 
                     // ILambdaContext OR ILambdaHostContext -> use context directly
                     ParameterSource.Context => "context",

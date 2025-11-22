@@ -5,7 +5,7 @@ internal static class TypeConstants
 {
     internal const string ILambdaContext = "global::Amazon.Lambda.Core.ILambdaContext";
 
-    internal const string ILambdaHostContext = "global::AwsLambda.Host.ILambdaHostContext";
+    internal const string ILambdaHostContext = "global::AwsLambda.Host.Core.ILambdaHostContext";
 
     internal const string CancellationToken = "global::System.Threading.CancellationToken";
 
@@ -24,20 +24,12 @@ internal static class TypeConstants
     internal const string Stream = "global::System.IO.Stream";
 
     internal const string IServiceProvider = "global::System.IServiceProvider";
-
-    internal const string IJsonSerializable = "global::AwsLambda.Host.IJsonSerializable";
-
-    internal const string MapHandlerDeserializer =
-        "global::System.Func<global::AwsLambda.Host.ILambdaHostContext, global::Amazon.Lambda.Core.ILambdaSerializer, global::System.IO.Stream, global::System.Threading.Tasks.Task>?";
-
-    internal const string MapHandlerSerializer =
-        "global::System.Func<global::AwsLambda.Host.ILambdaHostContext, global::Amazon.Lambda.Core.ILambdaSerializer, global::System.Threading.Tasks.Task<global::System.IO.Stream>>?";
 }
 
 /// <summary>Constants for attribute names used in source generation.</summary>
 internal static class AttributeConstants
 {
-    internal const string EventAttribute = "AwsLambda.Host.EventAttribute";
+    internal const string EventAttribute = "AwsLambda.Host.Builder.EventAttribute";
 
     internal const string FromKeyedService =
         "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute";

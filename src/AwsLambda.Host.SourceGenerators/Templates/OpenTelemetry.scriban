@@ -1,7 +1,9 @@
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System.Runtime.CompilerServices;
     using Microsoft.Extensions.DependencyInjection;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     
     file static class OpenTelemetryLambdaApplicationExtensions
     {
