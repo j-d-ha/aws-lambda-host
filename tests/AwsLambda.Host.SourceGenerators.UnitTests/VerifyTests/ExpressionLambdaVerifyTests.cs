@@ -15,11 +15,10 @@ public class ExpressionLambdaVerifyTests
 
             var lambda = builder.Build();
 
-            lambda.MapHandler(Task (ILambdaHostContext context) => Task.CompletedTask);
+            lambda.Handle(Task (ILambdaHostContext context) => Task.CompletedTask);
 
             await lambda.RunAsync();
-            """,
-            0
+            """
         );
 
     [Fact]
@@ -37,15 +36,10 @@ public class ExpressionLambdaVerifyTests
 
             var lambda = builder.Build();
 
-            lambda.MapHandler(
-                Task (ILambdaHostContext context) => Task.CompletedTask,
-                Task (ILambdaHostContext context, ILambdaSerializer serializer, Stream stream) =>  Task.CompletedTask,
-                Task<Stream> (ILambdaHostContext context, ILambdaSerializer serializer) => Task.FromResult<Stream>(new MemoryStream(0))
-            );
+            lambda.Handle(Task (ILambdaHostContext context) => Task.CompletedTask);
 
             await lambda.RunAsync();
-            """,
-            0
+            """
         );
 
     [Fact]
