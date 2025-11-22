@@ -1,4 +1,4 @@
-﻿using AwsLambda.Host;
+﻿using System;
 using AwsLambda.Host.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,18 +9,17 @@ builder.Services.AddSingleton<IService, Service>();
 
 var lambda = builder.Build();
 
-lambda.UseClearLambdaOutputFormatting();
-
-lambda.MapHandler(
-    ([Event] Request request, IService service) => new Response(service.GetMessage(request.Name))
-);
-
 lambda.UseMiddleware(
     async (context, next) =>
     {
-        context.Features.Get<ILambdaHostContext>();
+        Console.WriteLine("[Middleware 1] Before");
         await next(context);
+        Console.WriteLine("[Middleware 1] After");
     }
+);
+
+lambda.MapHandler(
+    ([Event] Request request, IService service) => new Response(service.GetMessage(request.Name))
 );
 
 await lambda.RunAsync();

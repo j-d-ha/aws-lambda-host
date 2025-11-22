@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
-using AwsLambda.Host;
+using AwsLambda.Host.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 var builder = LambdaApplication.CreateBuilder();
