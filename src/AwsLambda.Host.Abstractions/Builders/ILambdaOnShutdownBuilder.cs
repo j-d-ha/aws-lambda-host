@@ -28,7 +28,7 @@ public interface ILambdaOnShutdownBuilder
     /// <summary>Builds the final shutdown delegate by composing all registered handlers.</summary>
     /// <remarks>
     ///     <para>
-    ///         Composes all registered handlers into a single function that executes them concurrently
+    ///         Composes all registered handlers into a single function that executes them sequentially
     ///         during the Shutdown phase with timeout enforcement and exception handling. The returned
     ///         function accepts a <see cref="CancellationToken" /> for cancellation support and can be
     ///         invoked multiple times.
