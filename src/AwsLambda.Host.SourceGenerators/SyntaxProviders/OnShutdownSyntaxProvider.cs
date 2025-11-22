@@ -15,7 +15,7 @@ internal static class OnShutdownSyntaxProvider
     ) => HandlerInfoExtractor.Transformer(context, IsBaseOnShutdownCall, cancellationToken);
 
     // we want to filter out the non-generic shutdown method calls that use the method signature
-    // defined in ILambdaApplication. this is LambdaShutdownDelegate.
+    // defined in ILambdaOnShutdownBuilder. this is LambdaShutdownDelegate.
     // Func<IServiceProvider, CancellationToken, Task>
     private static bool IsBaseOnShutdownCall(this DelegateInfo delegateInfo) =>
         delegateInfo
