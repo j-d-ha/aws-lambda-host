@@ -1,95 +1,11 @@
 using System.Reflection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 
 namespace AwsLambda.Host.UnitTests.Core.Runtime;
 
 [TestSubject(typeof(LambdaHostedService))]
 public class LambdaHostedServiceTests
 {
-    private readonly Fixture _fixture = new();
-
-    /// <summary>Fixture for setting up mocks and dependencies for LambdaHostedService tests.</summary>
-    private class Fixture
-    {
-        public Fixture()
-        {
-            Bootstrap = Substitute.For<ILambdaBootstrapOrchestrator>();
-            HandlerFactory = Substitute.For<ILambdaHandlerFactory>();
-            Lifetime = Substitute.For<IHostApplicationLifetime>();
-            LambdaOnInitBuilderFactory = Substitute.For<ILambdaOnInitBuilderFactory>();
-            LambdaOnShutdownBuilderFactory = Substitute.For<ILambdaOnShutdownBuilderFactory>();
-            OnInitBuilder = Substitute.For<ILambdaOnInitBuilder>();
-            OnShutdownBuilder = Substitute.For<ILambdaOnShutdownBuilder>();
-
-            LambdaHostOptions = Microsoft.Extensions.Options.Options.Create(
-                new LambdaHostedServiceOptions()
-            );
-
-            BootstrapTask = Task.CompletedTask;
-            OnShutdownBuilderHandler = async ct => await Task.CompletedTask;
-
-            SetupDefaults();
-        }
-
-        public ILambdaBootstrapOrchestrator Bootstrap { get; }
-
-        public Task BootstrapTask { get; set; }
-        public ILambdaHandlerFactory HandlerFactory { get; }
-        public IOptions<LambdaHostedServiceOptions> LambdaHostOptions { get; }
-        public ILambdaOnInitBuilderFactory LambdaOnInitBuilderFactory { get; }
-        public ILambdaOnShutdownBuilderFactory LambdaOnShutdownBuilderFactory { get; }
-        public IHostApplicationLifetime Lifetime { get; }
-        public ILambdaOnInitBuilder OnInitBuilder { get; }
-        public ILambdaOnShutdownBuilder OnShutdownBuilder { get; }
-        public Func<CancellationToken, Task>? OnShutdownBuilderHandler { get; set; }
-
-        private void SetupDefaults()
-        {
-            HandlerFactory
-                .CreateHandler(Arg.Any<CancellationToken>())
-                .Returns(_ => CreateDefaultHandler());
-
-            LambdaOnInitBuilderFactory.CreateBuilder().Returns(OnInitBuilder);
-
-            OnInitBuilder.Build().Returns(async ct => await Task.FromResult(true));
-
-            LambdaOnShutdownBuilderFactory.CreateBuilder().Returns(OnShutdownBuilder);
-
-            OnShutdownBuilder
-                .Build()
-                .Returns(ct => OnShutdownBuilderHandler?.Invoke(ct) ?? Task.CompletedTask);
-
-            Bootstrap
-                .RunAsync(
-                    Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
-                    Arg.Any<Func<CancellationToken, Task<bool>>>(),
-                    Arg.Any<CancellationToken>()
-                )
-                .Returns(_ => BootstrapTask);
-
-            Lifetime.WhenForAnyArgs(l => l.StopApplication()).Do(c => { });
-        }
-
-        public LambdaHostedService CreateService() =>
-            new(
-                Bootstrap,
-                HandlerFactory,
-                Lifetime,
-                LambdaOnInitBuilderFactory,
-                LambdaHostOptions,
-                LambdaOnShutdownBuilderFactory
-            );
-
-        private static Func<Stream, ILambdaContext, Task<Stream>> CreateDefaultHandler() =>
-            async (inputStream, context) =>
-            {
-                var responseStream = new MemoryStream();
-                await Task.CompletedTask;
-                return responseStream;
-            };
-    }
-
     #region Constructor Validation Tests
 
     [Theory]
@@ -99,16 +15,20 @@ public class LambdaHostedServiceTests
     [InlineData(3)] // lambdaOnInitBuilderFactory
     [InlineData(4)] // lambdaHostOptions
     [InlineData(5)] // lambdaOnShutdownBuilderFactory
-    public void Constructor_WithNullParameter_ThrowsArgumentNullException(int parameterIndex)
+    internal void Constructor_WithNullParameter_ThrowsArgumentNullException(int parameterIndex)
     {
         // Arrange
-        var bootstrap = parameterIndex == 0 ? null : _fixture.Bootstrap;
-        var handlerFactory = parameterIndex == 1 ? null : _fixture.HandlerFactory;
-        var lifetime = parameterIndex == 2 ? null : _fixture.Lifetime;
-        var onInitBuilderFactory = parameterIndex == 3 ? null : _fixture.LambdaOnInitBuilderFactory;
-        var lambdaHostOptions = parameterIndex == 4 ? null : _fixture.LambdaHostOptions;
+        var bootstrap = parameterIndex == 0 ? null : Substitute.For<ILambdaBootstrapOrchestrator>();
+        var handlerFactory = parameterIndex == 1 ? null : Substitute.For<ILambdaHandlerFactory>();
+        var lifetime = parameterIndex == 2 ? null : Substitute.For<IHostApplicationLifetime>();
+        var onInitBuilderFactory =
+            parameterIndex == 3 ? null : Substitute.For<ILambdaOnInitBuilderFactory>();
+        var lambdaHostOptions =
+            parameterIndex == 4
+                ? null
+                : Microsoft.Extensions.Options.Options.Create(new LambdaHostedServiceOptions());
         var onShutdownBuilderFactory =
-            parameterIndex == 5 ? null : _fixture.LambdaOnShutdownBuilderFactory;
+            parameterIndex == 5 ? null : Substitute.For<ILambdaOnShutdownBuilderFactory>();
 
         // Act & Assert
         var act = () =>
@@ -123,12 +43,12 @@ public class LambdaHostedServiceTests
         act.Should().ThrowExactly<ArgumentNullException>();
     }
 
-    [Fact]
-    public void Constructor_WithValidParameters_SuccessfullyConstructs()
+    [Theory]
+    [AutoNSubstituteData]
+    internal void Constructor_WithValidParameters_SuccessfullyConstructs(
+        LambdaHostedService service
+    )
     {
-        // Act
-        var service = _fixture.CreateService();
-
         // Assert
         service.Should().NotBeNull();
         service.Should().BeAssignableTo<IHostedService>();
@@ -139,11 +59,14 @@ public class LambdaHostedServiceTests
 
     #region StartAsync Tests
 
-    [Fact]
-    public async Task StartAsync_CreatesLinkedCancellationTokenSource()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StartAsync_CreatesLinkedCancellationTokenSource(
+        [Frozen] ILambdaBootstrapOrchestrator bootstrapOrchestrator,
+        LambdaHostedService service
+    )
     {
         // Arrange
-        var service = _fixture.CreateService();
         using var cts = new CancellationTokenSource();
 
         // Act
@@ -151,8 +74,8 @@ public class LambdaHostedServiceTests
 
         // Assert
         // Verify by attempting to cancel and checking if the bootstrap was called with a token
-        await _fixture
-            .Bootstrap.Received(1)
+        await bootstrapOrchestrator
+            .Received(1)
             .RunAsync(
                 Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
                 Arg.Any<Func<CancellationToken, Task<bool>>>(),
@@ -160,34 +83,43 @@ public class LambdaHostedServiceTests
             );
     }
 
-    [Fact]
-    public async Task StartAsync_CreatesRequestHandler()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StartAsync_CreatesRequestHandler(
+        [Frozen] ILambdaHandlerFactory handlerFactory,
+        LambdaHostedService service
+    )
     {
-        // Arrange
-        var service = _fixture.CreateService();
-
         // Act
         await service.StartAsync(CancellationToken.None);
 
         // Assert
-        _fixture.HandlerFactory.Received(1).CreateHandler(Arg.Any<CancellationToken>());
+        handlerFactory.Received(1).CreateHandler(Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task StartAsync_CreatesOnInitBuilder()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StartAsync_CreatesOnInitBuilder(
+        [Frozen] ILambdaOnInitBuilderFactory factory,
+        LambdaHostedService service
+    )
     {
-        // Arrange
-        var service = _fixture.CreateService();
-
         // Act
         await service.StartAsync(CancellationToken.None);
 
         // Assert
-        _fixture.LambdaOnInitBuilderFactory.Received(1).CreateBuilder();
+        factory.Received(1).CreateBuilder();
     }
 
-    [Fact]
-    public async Task StartAsync_InvokesConfigureOnInitBuilder_WhenProvided()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StartAsync_InvokesConfigureOnInitBuilder_WhenProvided(
+        ILambdaBootstrapOrchestrator bootstrap,
+        ILambdaHandlerFactory handlerFactory,
+        IHostApplicationLifetime lifetime,
+        ILambdaOnInitBuilderFactory onInitBuilderFactory,
+        ILambdaOnShutdownBuilderFactory onShutdownBuilderFactory
+    )
     {
         // Arrange
         var configureInvoked = false;
@@ -203,12 +135,12 @@ public class LambdaHostedServiceTests
         var options = Microsoft.Extensions.Options.Options.Create(lambdaOptions);
 
         var service = new LambdaHostedService(
-            _fixture.Bootstrap,
-            _fixture.HandlerFactory,
-            _fixture.Lifetime,
-            _fixture.LambdaOnInitBuilderFactory,
+            bootstrap,
+            handlerFactory,
+            lifetime,
+            onInitBuilderFactory,
             options,
-            _fixture.LambdaOnShutdownBuilderFactory
+            onShutdownBuilderFactory
         );
 
         // Act
@@ -218,21 +150,29 @@ public class LambdaHostedServiceTests
         configureInvoked.Should().BeTrue();
     }
 
-    [Fact]
-    public async Task StartAsync_CreatesOnShutdownBuilder()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StartAsync_CreatesOnShutdownBuilder(
+        [Frozen] ILambdaOnShutdownBuilderFactory onShutdownBuilderFactory,
+        LambdaHostedService service
+    )
     {
-        // Arrange
-        var service = _fixture.CreateService();
-
         // Act
         await service.StartAsync(CancellationToken.None);
 
         // Assert
-        _fixture.LambdaOnShutdownBuilderFactory.Received(1).CreateBuilder();
+        onShutdownBuilderFactory.Received(1).CreateBuilder();
     }
 
-    [Fact]
-    public async Task StartAsync_InvokesConfigureOnShutdownBuilder_WhenProvided()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StartAsync_InvokesConfigureOnShutdownBuilder_WhenProvided(
+        ILambdaBootstrapOrchestrator bootstrap,
+        ILambdaHandlerFactory handlerFactory,
+        IHostApplicationLifetime lifetime,
+        ILambdaOnInitBuilderFactory onInitBuilderFactory,
+        ILambdaOnShutdownBuilderFactory onShutdownBuilderFactory
+    )
     {
         // Arrange
         var configureInvoked = false;
@@ -248,12 +188,12 @@ public class LambdaHostedServiceTests
         var options = Microsoft.Extensions.Options.Options.Create(lambdaOptions);
 
         var service = new LambdaHostedService(
-            _fixture.Bootstrap,
-            _fixture.HandlerFactory,
-            _fixture.Lifetime,
-            _fixture.LambdaOnInitBuilderFactory,
+            bootstrap,
+            handlerFactory,
+            lifetime,
+            onInitBuilderFactory,
             options,
-            _fixture.LambdaOnShutdownBuilderFactory
+            onShutdownBuilderFactory
         );
 
         // Act
@@ -263,42 +203,49 @@ public class LambdaHostedServiceTests
         configureInvoked.Should().BeTrue();
     }
 
-    [Fact]
-    public async Task StartAsync_StartsExecuteAsyncTask()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StartAsync_StartsExecuteAsyncTask(
+        [Frozen] ILambdaHandlerFactory handlerFactory,
+        LambdaHostedService service
+    )
     {
-        // Arrange
-        var service = _fixture.CreateService();
-        _fixture.BootstrapTask = new TaskCompletionSource().Task;
-
         // Act
         await service.StartAsync(CancellationToken.None);
 
         // Assert
-        _fixture.HandlerFactory.Received(1).CreateHandler(Arg.Any<CancellationToken>());
+        handlerFactory.Received(1).CreateHandler(Arg.Any<CancellationToken>());
     }
 
     #endregion
 
     #region StopAsync Tests
 
-    [Fact]
-    public async Task StopAsync_WithoutStartAsync_ReturnsImmediately()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StopAsync_WithoutStartAsync_ReturnsImmediately(LambdaHostedService service)
     {
-        // Arrange
-        var service = _fixture.CreateService();
-
         // Act & Assert (should not throw)
         await service.StopAsync(CancellationToken.None);
     }
 
-    [Fact]
-    public async Task StopAsync_CancelsExecuteTask()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StopAsync_CancelsExecuteTask(
+        [Frozen] ILambdaBootstrapOrchestrator bootstrap,
+        LambdaHostedService service
+    )
     {
         // Arrange
         var taskCompletionSource = new TaskCompletionSource();
-        _fixture.BootstrapTask = taskCompletionSource.Task;
+        bootstrap
+            .RunAsync(
+                Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
+                Arg.Any<Func<CancellationToken, Task<bool>>>(),
+                Arg.Any<CancellationToken>()
+            )
+            .Returns(_ => taskCompletionSource.Task);
 
-        var service = _fixture.CreateService();
         await service.StartAsync(CancellationToken.None);
 
         // Act
@@ -308,8 +255,8 @@ public class LambdaHostedServiceTests
         await stopTask;
 
         // Assert
-        await _fixture
-            .Bootstrap.Received(1)
+        await bootstrap
+            .Received(1)
             .RunAsync(
                 Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
                 Arg.Any<Func<CancellationToken, Task<bool>>>(),
@@ -317,14 +264,23 @@ public class LambdaHostedServiceTests
             );
     }
 
-    [Fact]
-    public async Task StopAsync_WaitsForBootstrapToComplete()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StopAsync_WaitsForBootstrapToComplete(
+        [Frozen] ILambdaBootstrapOrchestrator bootstrap,
+        LambdaHostedService service
+    )
     {
         // Arrange
         var taskCompletionSource = new TaskCompletionSource();
-        _fixture.BootstrapTask = taskCompletionSource.Task;
+        bootstrap
+            .RunAsync(
+                Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
+                Arg.Any<Func<CancellationToken, Task<bool>>>(),
+                Arg.Any<CancellationToken>()
+            )
+            .Returns(_ => taskCompletionSource.Task);
 
-        var service = _fixture.CreateService();
         await service.StartAsync(CancellationToken.None);
 
         // Verify task is not completed
@@ -339,14 +295,23 @@ public class LambdaHostedServiceTests
         await act.Should().NotThrowAsync();
     }
 
-    [Fact]
-    public async Task StopAsync_ThrowsOperationCanceledException_WhenBootstrapTimesOut()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StopAsync_ThrowsOperationCanceledException_WhenBootstrapTimesOut(
+        [Frozen] ILambdaBootstrapOrchestrator bootstrap,
+        LambdaHostedService service
+    )
     {
         // Arrange
         var taskCompletionSource = new TaskCompletionSource();
-        _fixture.BootstrapTask = taskCompletionSource.Task;
+        bootstrap
+            .RunAsync(
+                Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
+                Arg.Any<Func<CancellationToken, Task<bool>>>(),
+                Arg.Any<CancellationToken>()
+            )
+            .Returns(_ => taskCompletionSource.Task);
 
-        var service = _fixture.CreateService();
         await service.StartAsync(CancellationToken.None);
 
         using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(10));
@@ -362,21 +327,33 @@ public class LambdaHostedServiceTests
             );
     }
 
-    [Fact]
-    public async Task StopAsync_InvokesShutdownHandler()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StopAsync_InvokesShutdownHandler(
+        [Frozen] ILambdaBootstrapOrchestrator bootstrap,
+        [Frozen] ILambdaOnShutdownBuilder onShutdownBuilder,
+        LambdaHostedService service
+    )
     {
         // Arrange
         var taskCompletionSource = new TaskCompletionSource();
-        _fixture.BootstrapTask = taskCompletionSource.Task;
+        bootstrap
+            .RunAsync(
+                Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
+                Arg.Any<Func<CancellationToken, Task<bool>>>(),
+                Arg.Any<CancellationToken>()
+            )
+            .Returns(_ => taskCompletionSource.Task);
 
         var shutdownHandlerInvoked = false;
-        _fixture.OnShutdownBuilderHandler = async ct =>
-        {
-            shutdownHandlerInvoked = true;
-            await Task.CompletedTask;
-        };
+        onShutdownBuilder
+            .Build()
+            .Returns(async ct =>
+            {
+                shutdownHandlerInvoked = true;
+                await Task.CompletedTask;
+            });
 
-        var service = _fixture.CreateService();
         await service.StartAsync(CancellationToken.None);
 
         // Act
@@ -388,21 +365,33 @@ public class LambdaHostedServiceTests
         shutdownHandlerInvoked.Should().BeTrue();
     }
 
-    [Fact]
-    public async Task StopAsync_PropagatesShutdownHandlerException()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StopAsync_PropagatesShutdownHandlerException(
+        [Frozen] ILambdaBootstrapOrchestrator bootstrap,
+        [Frozen] ILambdaOnShutdownBuilder onShutdownBuilder,
+        LambdaHostedService service
+    )
     {
         // Arrange
         var shutdownException = new InvalidOperationException("Shutdown handler error");
         var taskCompletionSource = new TaskCompletionSource();
-        _fixture.BootstrapTask = taskCompletionSource.Task;
+        bootstrap
+            .RunAsync(
+                Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
+                Arg.Any<Func<CancellationToken, Task<bool>>>(),
+                Arg.Any<CancellationToken>()
+            )
+            .Returns(_ => taskCompletionSource.Task);
 
-        _fixture.OnShutdownBuilderHandler = async ct =>
-        {
-            await Task.CompletedTask;
-            throw shutdownException;
-        };
+        onShutdownBuilder
+            .Build()
+            .Returns(async ct =>
+            {
+                await Task.CompletedTask;
+                throw shutdownException;
+            });
 
-        var service = _fixture.CreateService();
         await service.StartAsync(CancellationToken.None);
 
         // Act & Assert - StopAsync should propagate exception from shutdown handler
@@ -415,15 +404,24 @@ public class LambdaHostedServiceTests
             .Where(ae => ae.InnerExceptions.Contains(shutdownException));
     }
 
-    [Fact]
-    public async Task StopAsync_PropagatesNonCanceledExceptionFromExecuteTask()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StopAsync_PropagatesNonCanceledExceptionFromExecuteTask(
+        [Frozen] ILambdaBootstrapOrchestrator bootstrap,
+        LambdaHostedService service
+    )
     {
         // Arrange
         var handlerException = new InvalidOperationException("Handler error");
         var taskCompletionSource = new TaskCompletionSource();
-        _fixture.BootstrapTask = taskCompletionSource.Task;
+        bootstrap
+            .RunAsync(
+                Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
+                Arg.Any<Func<CancellationToken, Task<bool>>>(),
+                Arg.Any<CancellationToken>()
+            )
+            .Returns(_ => taskCompletionSource.Task);
 
-        var service = _fixture.CreateService();
         await service.StartAsync(CancellationToken.None);
 
         // Simulate an exception from the execute task (after StartAsync completes)
@@ -436,16 +434,24 @@ public class LambdaHostedServiceTests
             .Where(ae => ae.InnerExceptions.Contains(handlerException));
     }
 
-    [Fact]
-    public async Task StopAsync_PropagatesBootstrapExceptionWhenBootstrapFails()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task StopAsync_PropagatesBootstrapExceptionWhenBootstrapFails(
+        [Frozen] ILambdaBootstrapOrchestrator bootstrap,
+        LambdaHostedService service
+    )
     {
         // Arrange
         var bootstrapException = new InvalidOperationException("Bootstrap failed");
         var taskCompletionSource = new TaskCompletionSource();
         taskCompletionSource.SetException(bootstrapException);
-        _fixture.BootstrapTask = taskCompletionSource.Task;
-
-        var service = _fixture.CreateService();
+        bootstrap
+            .RunAsync(
+                Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
+                Arg.Any<Func<CancellationToken, Task<bool>>>(),
+                Arg.Any<CancellationToken>()
+            )
+            .Returns(_ => taskCompletionSource.Task);
 
         // Act & Assert - StartAsync returns the failed task which throws when awaited
         var act = async () => await service.StartAsync(CancellationToken.None);
@@ -456,38 +462,43 @@ public class LambdaHostedServiceTests
 
     #region Dispose Tests
 
-    [Fact]
-    public async Task Dispose_Idempotent_WhenNotStarted()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task Dispose_Idempotent_WhenNotStarted(LambdaHostedService service)
     {
-        // Arrange
-        var service = _fixture.CreateService();
-
         // Act & Assert - multiple dispose calls should not throw
         service.Dispose();
         service.Dispose();
         service.Dispose();
     }
 
-    [Fact]
-    public void Dispose_IsIdempotent()
+    [Theory]
+    [AutoNSubstituteData]
+    internal void Dispose_IsIdempotent(LambdaHostedService service)
     {
-        // Arrange
-        var service = _fixture.CreateService();
-
         // Act & Assert (should not throw)
         service.Dispose();
         service.Dispose();
         service.Dispose();
     }
 
-    [Fact]
-    public async Task Dispose_DisposesExecuteTask()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task Dispose_DisposesExecuteTask(
+        [Frozen] ILambdaBootstrapOrchestrator bootstrap,
+        LambdaHostedService service
+    )
     {
         // Arrange
         var taskCompletionSource = new TaskCompletionSource();
-        _fixture.BootstrapTask = taskCompletionSource.Task;
+        bootstrap
+            .RunAsync(
+                Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
+                Arg.Any<Func<CancellationToken, Task<bool>>>(),
+                Arg.Any<CancellationToken>()
+            )
+            .Returns(_ => taskCompletionSource.Task);
 
-        var service = _fixture.CreateService();
         await service.StartAsync(CancellationToken.None);
 
         // Act
@@ -503,18 +514,19 @@ public class LambdaHostedServiceTests
 
     #region ExecuteAsync Behavior Tests (via StartAsync/StopAsync)
 
-    [Fact]
-    public async Task ExecuteAsync_CallsBootstrapRunAsync()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task ExecuteAsync_CallsBootstrapRunAsync(
+        [Frozen] ILambdaBootstrapOrchestrator bootstrap,
+        LambdaHostedService service
+    )
     {
-        // Arrange
-        var service = _fixture.CreateService();
-
         // Act
         await service.StartAsync(CancellationToken.None);
 
         // Assert
-        await _fixture
-            .Bootstrap.Received(1)
+        await bootstrap
+            .Received(1)
             .RunAsync(
                 Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
                 Arg.Any<Func<CancellationToken, Task<bool>>>(),
@@ -522,14 +534,24 @@ public class LambdaHostedServiceTests
             );
     }
 
-    [Fact]
-    public async Task ExecuteAsync_CallsLifetimeStopApplication_InFinallyBlock()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task ExecuteAsync_CallsLifetimeStopApplication_InFinallyBlock(
+        [Frozen] ILambdaBootstrapOrchestrator bootstrap,
+        [Frozen] IHostApplicationLifetime lifetime,
+        LambdaHostedService service
+    )
     {
         // Arrange
         var taskCompletionSource = new TaskCompletionSource();
-        _fixture.BootstrapTask = taskCompletionSource.Task;
+        bootstrap
+            .RunAsync(
+                Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
+                Arg.Any<Func<CancellationToken, Task<bool>>>(),
+                Arg.Any<CancellationToken>()
+            )
+            .Returns(_ => taskCompletionSource.Task);
 
-        var service = _fixture.CreateService();
         await service.StartAsync(CancellationToken.None);
 
         // Act
@@ -539,21 +561,29 @@ public class LambdaHostedServiceTests
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
         // Assert
-        _fixture.Lifetime.Received(1).StopApplication();
+        lifetime.Received(1).StopApplication();
     }
 
     #endregion
 
     #region Full Lifecycle Tests
 
-    [Fact]
-    public async Task FullLifecycle_StartAsyncStopAsyncDispose()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task FullLifecycle_StartAsyncStopAsyncDispose(
+        [Frozen] ILambdaBootstrapOrchestrator bootstrap,
+        LambdaHostedService service
+    )
     {
         // Arrange
         var taskCompletionSource = new TaskCompletionSource();
-        _fixture.BootstrapTask = taskCompletionSource.Task;
-
-        var service = _fixture.CreateService();
+        bootstrap
+            .RunAsync(
+                Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
+                Arg.Any<Func<CancellationToken, Task<bool>>>(),
+                Arg.Any<CancellationToken>()
+            )
+            .Returns(_ => taskCompletionSource.Task);
 
         // Act - StartAsync
         await service.StartAsync(CancellationToken.None);
@@ -571,16 +601,24 @@ public class LambdaHostedServiceTests
         service.Should().NotBeNull();
     }
 
-    [Fact]
-    public async Task FullLifecycle_WithException_PropagatesInStartAsync()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task FullLifecycle_WithException_PropagatesInStartAsync(
+        [Frozen] ILambdaBootstrapOrchestrator bootstrap,
+        LambdaHostedService service
+    )
     {
         // Arrange
         var bootstrapException = new InvalidOperationException("Bootstrap error");
         var taskCompletionSource = new TaskCompletionSource();
         taskCompletionSource.SetException(bootstrapException);
-        _fixture.BootstrapTask = taskCompletionSource.Task;
-
-        var service = _fixture.CreateService();
+        bootstrap
+            .RunAsync(
+                Arg.Any<Func<Stream, ILambdaContext, Task<Stream>>>(),
+                Arg.Any<Func<CancellationToken, Task<bool>>>(),
+                Arg.Any<CancellationToken>()
+            )
+            .Returns(_ => taskCompletionSource.Task);
 
         // Act & Assert - StartAsync returns the failed task which throws when awaited
         var act = async () => await service.StartAsync(CancellationToken.None);
@@ -593,7 +631,7 @@ public class LambdaHostedServiceTests
 /// <summary>Extension methods for testing LambdaHostedService private state.</summary>
 internal static class LambdaHostedServiceTestExtensions
 {
-    public static Task? GetExecuteTask(this LambdaHostedService service)
+    internal static Task? GetExecuteTask(this LambdaHostedService service)
     {
         var field = typeof(LambdaHostedService).GetField(
             "_executeTask",
