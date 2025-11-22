@@ -11,6 +11,7 @@ internal class DefaultEventFeature<T> : IEventFeature<T>
 {
     private readonly ILambdaSerializer _lambdaSerializer;
     private T _data = default!;
+    private bool _isDeserialized;
 
     public DefaultEventFeature(ILambdaSerializer lambdaSerializer)
     {
@@ -21,7 +22,11 @@ internal class DefaultEventFeature<T> : IEventFeature<T>
 
     public T GetEvent(ILambdaHostContext context)
     {
-        _data ??= _lambdaSerializer.Deserialize<T>(context.RawInvocationData.Event);
+        if (!_isDeserialized)
+        {
+            _data = _lambdaSerializer.Deserialize<T>(context.RawInvocationData.Event);
+            _isDeserialized = true;
+        }
 
         return _data;
     }

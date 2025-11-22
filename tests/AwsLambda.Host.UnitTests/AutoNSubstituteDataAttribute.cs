@@ -5,7 +5,9 @@ using AutoFixture.Xunit3;
 namespace AwsLambda.Host.UnitTests;
 
 public class AutoNSubstituteDataAttribute()
-    : AutoDataAttribute(() => new Fixture().Customize(new AutoNSubstituteCustomization()));
+    : AutoDataAttribute(() =>
+        new Fixture().Customize(new AutoNSubstituteCustomization { ConfigureMembers = true })
+    );
 
 public class InlineAutoNSubstituteDataAttribute : InlineAutoDataAttribute
 {
