@@ -10,7 +10,7 @@ namespace AwsLambda.Host.Core.Features;
 internal class DefaultEventFeature<T> : IEventFeature<T>
 {
     private readonly ILambdaSerializer _lambdaSerializer;
-    private T _data;
+    private T _data = default!;
 
     public DefaultEventFeature(ILambdaSerializer lambdaSerializer)
     {

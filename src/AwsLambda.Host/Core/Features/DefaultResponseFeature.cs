@@ -11,7 +11,7 @@ internal class DefaultResponseFeature<T> : IResponseFeature<T>
 {
     private readonly ILambdaSerializer _lambdaSerializer;
     private bool _isSet;
-    private T _response;
+    private T _response = default!;
 
     public DefaultResponseFeature(ILambdaSerializer lambdaSerializer)
     {
