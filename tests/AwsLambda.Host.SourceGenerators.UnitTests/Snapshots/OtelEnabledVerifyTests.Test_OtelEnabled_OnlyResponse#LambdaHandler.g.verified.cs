@@ -23,19 +23,21 @@ namespace System.Runtime.CompilerServices
     }
 }
 
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System;
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using Amazon.Lambda.Core;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     using Microsoft.Extensions.DependencyInjection;
-
+    
     file static class MapHandlerLambdaApplicationExtensions
     {
-        // Location: InputFile.cs(10,8)
-        [InterceptsLocation(1, "c7Jk1yFccxP66+slMK4E67YAAABJbnB1dEZpbGUuY3M=")]
+        // Location: InputFile.cs(11,8)
+        [InterceptsLocation(1, "V1rdx21g5a+slUYwHpqULNkAAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaInvocationBuilder MapHandlerInterceptor(
             this ILambdaInvocationBuilder application,
             Delegate handler
@@ -48,107 +50,34 @@ namespace AwsLambda.Host
             Task InvocationDelegate(ILambdaHostContext context)
             {
                 var response = castHandler.Invoke();
-                context.SetResponseT(response);
+                if (context.Features.Get<IResponseFeature>() is not IResponseFeature<global::Response> responseFeature)
+                {
+                    throw new InvalidOperationException($"Response feature for type 'global::Response' is not available in the collection.");
+                }
+                responseFeature.SetResponse(response);
                 return Task.CompletedTask; 
             }
         }
         
-        [InterceptsLocation(1, "c7Jk1yFccxP66+slMK4E64IAAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(6,22)
+        [InterceptsLocation(1, "V1rdx21g5a+slUYwHpqULKUAAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(7,22)
         internal static LambdaApplication BuildInterceptor(this LambdaApplicationBuilder builder)
         {
-            builder.Services.AddSingleton<IFeatureProvider, ResponseFeatureProvider>();
+            builder.Services.AddSingleton<IFeatureProvider, DefaultResponseFeatureProvider<global::Response>>();
             return builder.Build();
-        }
-
-        private static T GetEventT<T>(this ILambdaHostContext context)
-        {
-            if (!context.TryGetEvent<T>(out var eventT))
-            {
-                throw new InvalidOperationException($"Lambda event of type '{typeof(T).FullName}' is not available in the context.");
-            }
-            
-            return eventT!;
-        }
-
-        private static void SetResponseT<T>(this ILambdaHostContext context, T response)
-        {
-            if (response is Stream stream)
-            {
-                context.RawInvocationData.Response = stream;
-                return;
-            }
-    
-            if (!context.Features.TryGet<IResponseFeature>(out var responseFeature))
-            {
-                throw new InvalidOperationException("Response feature is not available in the context.");
-            }
-    
-            responseFeature.SetResponse(response);
-        }
-    }
-    
-    file class ResponseFeatureProvider(ILambdaSerializer lambdaSerializer) : IFeatureProvider
-    {
-        private static readonly Type FeatureType = typeof(IResponseFeature);
-    
-        public bool TryCreate(Type type, out object? feature)
-        {
-            feature = type == FeatureType ? new ResponseFeature(lambdaSerializer) : null;
-    
-            return feature is not null;
-        }
-    }
-    
-    file class ResponseFeature : IResponseFeature
-    {
-#nullable disable
-        private global::Response _data;
-#nullable restore
-    
-        private readonly ILambdaSerializer _lambdaSerializer;
-    
-        public ResponseFeature(ILambdaSerializer lambdaSerializer)
-        {
-            ArgumentNullException.ThrowIfNull(lambdaSerializer);
-    
-            _lambdaSerializer = lambdaSerializer;
-        }
-    
-        public object? GetResponse() => _data;
-    
-        public void SetResponse(object? response)
-        {
-            if (response is null)
-            {
-                _data = null;
-                return;
-            }
-    
-            _data = (global::Response)response;
-        }
-    
-        public void SerializeToStream(ILambdaHostContext context)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-    
-            if (_data is null)
-                return;
-    
-            context.RawInvocationData.Response.SetLength(0L);
-            _lambdaSerializer.Serialize<global::Response>(_data, context.RawInvocationData.Response);
-            context.RawInvocationData.Response.Position = 0L;
         }
     }
 }
 
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System.Runtime.CompilerServices;
     using Microsoft.Extensions.DependencyInjection;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     
     file static class OpenTelemetryLambdaApplicationExtensions
     {
-        [InterceptsLocation(1, "c7Jk1yFccxP66+slMK4E65MAAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(8,8)
+        [InterceptsLocation(1, "V1rdx21g5a+slUYwHpqULLYAAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(9,8)
         internal static ILambdaInvocationBuilder UseOpenTelemetryTracingInterceptor(
             this ILambdaInvocationBuilder application
         )
