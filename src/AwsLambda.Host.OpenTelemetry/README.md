@@ -80,24 +80,23 @@ for your specific observability backend and instrumentation needs.
 Set up OpenTelemetry with the AWS Lambda instrumentation:
 
 ```csharp
-using AwsLambda.Host;
+using AwsLambda.Host.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using OpenTelemetry.Exporter;
+using Microsoft.Extensions.Hosting;
+using OpenTelemetry.Instrumentation.AWSLambda;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 var builder = LambdaApplication.CreateBuilder();
 
 // Configure OpenTelemetry with tracing
-builder.Services
-    .AddOpenTelemetry()
+builder
+    .Services.AddOpenTelemetry()
     .WithTracing(configure =>
         configure
             .AddAWSLambdaConfigurations()
             .SetResourceBuilder(
-                ResourceBuilder
-                    .CreateDefault()
-                    .AddService("MyLambda", serviceVersion: "1.0.0")
+                ResourceBuilder.CreateDefault().AddService("MyLambda", serviceVersion: "1.0.0")
             )
             .AddOtlpExporter(options =>
             {
@@ -186,8 +185,7 @@ Register it with the `TracerProvider` and inject it into your handler:
 ```csharp
 builder.Services.AddSingleton<Instrumentation>();
 
-// In WithTracing configuration:
-.AddSource(Instrumentation.ActivitySourceName)
+var lambda = builder.Build();
 
 // In your handler:
 lambda.MapHandler(([Event] Request request, Instrumentation instrumentation) =>
