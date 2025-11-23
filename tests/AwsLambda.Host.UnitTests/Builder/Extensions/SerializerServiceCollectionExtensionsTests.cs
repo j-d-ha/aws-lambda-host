@@ -42,7 +42,7 @@ public class SerializerServiceCollectionExtensionsTests
         // Assert
         serviceCollection.Should().HaveCount(1);
         var descriptor = serviceCollection[0];
-        descriptor.ServiceType.Should().Be(typeof(ILambdaSerializer));
+        descriptor.ServiceType.Should().Be<ILambdaSerializer>();
         descriptor.Lifetime.Should().Be(ServiceLifetime.Singleton);
     }
 

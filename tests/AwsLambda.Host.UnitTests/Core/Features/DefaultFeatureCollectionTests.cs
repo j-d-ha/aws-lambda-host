@@ -369,7 +369,7 @@ public class DefaultFeatureCollectionTest
 
         // Assert
         items.Should().HaveCount(1);
-        items[0].Key.Should().Be(typeof(string));
+        items[0].Key.Should().Be<string>();
         items[0].Value.Should().Be(feature);
     }
 
