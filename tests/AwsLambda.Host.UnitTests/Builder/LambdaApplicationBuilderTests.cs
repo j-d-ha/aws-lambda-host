@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -622,6 +623,80 @@ public class LambdaApplicationBuilderTests
         app.Should().NotBeNull();
         // With defaults disabled, minimal configuration is applied
         app.Configuration.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Build_WithCONTENTROOTEnvVar_UsesCONTENTROOTPath()
+    {
+        // Arrange
+        var currentDir = System.Environment.CurrentDirectory;
+        var configManager = new ConfigurationManager();
+        configManager["CONTENTROOT"] = currentDir;
+        var options = new LambdaApplicationOptions { Configuration = configManager };
+
+        // Act
+        var builder = LambdaApplication.CreateBuilder(options);
+        var app = builder.Build();
+
+        // Assert
+        app.Environment.ContentRootPath.Should().Be(currentDir);
+    }
+
+    [Fact]
+    public void Build_WithLAMBDA_TASK_ROOTEnvVar_UsesLambdaTaskRoot()
+    {
+        // Arrange
+        var currentDir = System.Environment.CurrentDirectory;
+        var configManager = new ConfigurationManager();
+        configManager["LAMBDA_TASK_ROOT"] = currentDir;
+        var options = new LambdaApplicationOptions { Configuration = configManager };
+
+        // Act
+        var builder = LambdaApplication.CreateBuilder(options);
+        var app = builder.Build();
+
+        // Assert
+        app.Environment.ContentRootPath.Should().Be(currentDir);
+    }
+
+    [Fact]
+    public void Build_WithBothCONTENTROOTAndLAMBDA_TASK_ROOT_PrefersCONTENTROOT()
+    {
+        // Arrange
+        var currentDir = System.Environment.CurrentDirectory;
+        var configManager = new ConfigurationManager();
+        configManager["CONTENTROOT"] = currentDir;
+        configManager["LAMBDA_TASK_ROOT"] = "/different/path";
+        var options = new LambdaApplicationOptions { Configuration = configManager };
+
+        // Act
+        var builder = LambdaApplication.CreateBuilder(options);
+        var app = builder.Build();
+
+        // Assert - CONTENTROOT should take precedence over LAMBDA_TASK_ROOT
+        app.Environment.ContentRootPath.Should().Be(currentDir);
+    }
+
+    [Fact]
+    public void Build_WithExplicitContentRootPath_OverridesEnvVars()
+    {
+        // Arrange
+        var currentDir = System.Environment.CurrentDirectory;
+        var configManager = new ConfigurationManager();
+        configManager["CONTENTROOT"] = "/some/other/path";
+        configManager["LAMBDA_TASK_ROOT"] = "/another/path";
+        var options = new LambdaApplicationOptions
+        {
+            Configuration = configManager,
+            ContentRootPath = currentDir
+        };
+
+        // Act
+        var builder = LambdaApplication.CreateBuilder(options);
+        var app = builder.Build();
+
+        // Assert - explicit path should take precedence over env vars
+        app.Environment.ContentRootPath.Should().Be(currentDir);
     }
 
     [Fact]
