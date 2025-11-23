@@ -1,4 +1,5 @@
 global using AutoFixture;
+global using AutoFixture.Xunit3;
 global using AwesomeAssertions;
 global using AwsLambda.Host;
 global using AwsLambda.Host.Builder;

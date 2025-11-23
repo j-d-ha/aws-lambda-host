@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using AwsLambda.Host.UnitTests;
+using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Trace;
 
 namespace AwsLambda.Host.OpenTelemetry.UnitTests;
@@ -6,14 +7,6 @@ namespace AwsLambda.Host.OpenTelemetry.UnitTests;
 [TestSubject(typeof(LambdaOpenTelemetryServiceProviderExtensions))]
 public class LambdaOpenTelemetryServiceProviderExtensionsTests
 {
-    private readonly IServiceProvider _serviceProvider = Substitute.For<IServiceProvider>();
-    private readonly TracerProvider _tracerProvider = Substitute.For<TracerProvider>();
-
-    public LambdaOpenTelemetryServiceProviderExtensionsTests() =>
-        _serviceProvider.GetService(typeof(TracerProvider)).Returns(_tracerProvider);
-
-    #region GetOpenTelemetryTracer<TEvent, TResponse>
-
     [Fact]
     public void GetOpenTelemetryTracer_WithNullServiceProvider_ThrowsArgumentNullException()
     {
@@ -27,98 +20,135 @@ public class LambdaOpenTelemetryServiceProviderExtensionsTests
         action.Should().ThrowExactly<ArgumentNullException>();
     }
 
-    [Fact]
-    public void GetOpenTelemetryTracer_WithoutTracerProvider_ThrowsInvalidOperationException()
+    [Theory]
+    [AutoNSubstituteData]
+    public void GetOpenTelemetryTracer_WithoutTracerProvider_ThrowsInvalidOperationException(
+        [Frozen] IServiceProvider serviceProvider
+    )
     {
         // Arrange
-        _serviceProvider.GetService(typeof(TracerProvider)).Returns(null);
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(null);
 
         // Act
-        var action = () => _serviceProvider.GetOpenTelemetryTracer<TestEvent, TestResponse>();
+        var action = () => serviceProvider.GetOpenTelemetryTracer<TestEvent, TestResponse>();
 
         // Assert
         action.Should().ThrowExactly<InvalidOperationException>();
     }
 
-    [Fact]
-    public void GetOpenTelemetryTracer_ReturnsMiddlewareFunction()
+    [Theory]
+    [AutoNSubstituteData]
+    public void GetOpenTelemetryTracer_ReturnsMiddlewareFunction(
+        [Frozen] IServiceProvider serviceProvider,
+        TracerProvider tracerProvider
+    )
     {
+        // Arrange
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(tracerProvider);
+
         // Act
-        var middleware = _serviceProvider.GetOpenTelemetryTracer<TestEvent, TestResponse>();
+        var middleware = serviceProvider.GetOpenTelemetryTracer<TestEvent, TestResponse>();
 
         // Assert
         middleware.Should().NotBeNull();
         middleware.Should().BeOfType<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>>();
     }
 
-    [Fact]
-    public async Task GetOpenTelemetryTracer_WithIncorrectEventType_ThrowsInvalidOperationException()
+    [Theory]
+    [AutoNSubstituteData]
+    public async Task GetOpenTelemetryTracer_WithIncorrectEventType_ThrowsInvalidOperationException(
+        [Frozen] IServiceProvider serviceProvider,
+        TracerProvider tracerProvider,
+        ILambdaHostContext context,
+        IFeatureCollection features,
+        IEventFeature eventFeature,
+        IResponseFeature responseFeature
+    )
     {
         // Arrange
-        var middleware = _serviceProvider.GetOpenTelemetryTracer<TestEvent, TestResponse>();
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(tracerProvider);
+        var middleware = serviceProvider.GetOpenTelemetryTracer<TestEvent, TestResponse>();
         var nextDelegate = Substitute.For<LambdaInvocationDelegate>();
         var wrappedDelegate = middleware(nextDelegate);
 
-        var mocks = CreateMocks();
-
-        mocks.EventFeature.GetEvent(mocks.Context).Returns(new object());
+        context.Features.Returns(features);
+        features.Get<IEventFeature>().Returns(eventFeature);
+        features.Get<IResponseFeature>().Returns(responseFeature);
+        eventFeature.GetEvent(context).Returns(new object());
 
         // Act
-        var action = async () => await wrappedDelegate(mocks.Context);
+        var action = async () => await wrappedDelegate(context);
 
         // Assert
         await action.Should().ThrowAsync<InvalidOperationException>();
     }
 
-    [Fact]
-    public async Task GetOpenTelemetryTracer_WithIncorrectResponseType_ThrowsInvalidOperationException()
+    [Theory]
+    [AutoNSubstituteData]
+    public async Task GetOpenTelemetryTracer_WithIncorrectResponseType_ThrowsInvalidOperationException(
+        [Frozen] IServiceProvider serviceProvider,
+        TracerProvider tracerProvider,
+        ILambdaHostContext context,
+        IFeatureCollection features,
+        IEventFeature eventFeature,
+        IResponseFeature responseFeature
+    )
     {
         // Arrange
-        var middleware = _serviceProvider.GetOpenTelemetryTracer<TestEvent, TestResponse>();
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(tracerProvider);
+        var middleware = serviceProvider.GetOpenTelemetryTracer<TestEvent, TestResponse>();
         var nextDelegate = Substitute.For<LambdaInvocationDelegate>();
         var wrappedDelegate = middleware(nextDelegate);
 
-        var mocks = CreateMocks();
-
-        mocks.EventFeature.GetEvent(mocks.Context).Returns(new TestEvent());
-        mocks.ResponseFeature.GetResponse().Returns(new object()); // Wrong type
+        context.Features.Returns(features);
+        features.Get<IEventFeature>().Returns(eventFeature);
+        features.Get<IResponseFeature>().Returns(responseFeature);
+        eventFeature.GetEvent(context).Returns(new TestEvent());
+        responseFeature.GetResponse().Returns(new object()); // Wrong type
 
         nextDelegate(Arg.Any<ILambdaHostContext>()).Returns(Task.CompletedTask);
 
         // Act
-        var action = async () => await wrappedDelegate(mocks.Context);
+        var action = async () => await wrappedDelegate(context);
 
         // Assert
         await action.Should().ThrowAsync<InvalidOperationException>();
     }
 
-    [Fact]
-    public async Task GetOpenTelemetryTracer_WithValidEventAndResponse_CallsNextDelegate()
+    [Theory]
+    [AutoNSubstituteData]
+    public async Task GetOpenTelemetryTracer_WithValidEventAndResponse_CallsNextDelegate(
+        [Frozen] IServiceProvider serviceProvider,
+        TracerProvider tracerProvider,
+        ILambdaHostContext context,
+        IFeatureCollection features,
+        IEventFeature eventFeature,
+        IResponseFeature responseFeature
+    )
     {
         // Arrange
-        var middleware = _serviceProvider.GetOpenTelemetryTracer<TestEvent, TestResponse>();
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(tracerProvider);
+        var middleware = serviceProvider.GetOpenTelemetryTracer<TestEvent, TestResponse>();
         var nextDelegate = Substitute.For<LambdaInvocationDelegate>();
         var wrappedDelegate = middleware(nextDelegate);
 
         var testEvent = new TestEvent();
         var testResponse = new TestResponse();
-        var mocks = CreateMocks();
 
-        mocks.EventFeature.GetEvent(mocks.Context).Returns(testEvent);
-        mocks.ResponseFeature.GetResponse().Returns(testResponse);
+        context.Features.Returns(features);
+        features.Get<IEventFeature>().Returns(eventFeature);
+        features.Get<IResponseFeature>().Returns(responseFeature);
+        eventFeature.GetEvent(context).Returns(testEvent);
+        responseFeature.GetResponse().Returns(testResponse);
 
         nextDelegate(Arg.Any<ILambdaHostContext>()).Returns(Task.CompletedTask);
 
         // Act
-        await wrappedDelegate(mocks.Context);
+        await wrappedDelegate(context);
 
         // Assert
         await nextDelegate.Received(1)(Arg.Any<ILambdaHostContext>());
     }
-
-    #endregion
-
-    #region GetOpenTelemetryTracerNoEvent<TResponse>
 
     [Fact]
     public void GetOpenTelemetryTracerNoEvent_WithNullServiceProvider_ThrowsArgumentNullException()
@@ -133,78 +163,105 @@ public class LambdaOpenTelemetryServiceProviderExtensionsTests
         action.Should().ThrowExactly<ArgumentNullException>();
     }
 
-    [Fact]
-    public void GetOpenTelemetryTracerNoEvent_WithoutTracerProvider_ThrowsInvalidOperationException()
+    [Theory]
+    [AutoNSubstituteData]
+    public void GetOpenTelemetryTracerNoEvent_WithoutTracerProvider_ThrowsInvalidOperationException(
+        [Frozen] IServiceProvider serviceProvider
+    )
     {
         // Arrange
-        _serviceProvider.GetService(typeof(TracerProvider)).Returns(null);
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(null);
 
         // Act
-        var action = () => _serviceProvider.GetOpenTelemetryTracerNoEvent<TestResponse>();
+        var action = () => serviceProvider.GetOpenTelemetryTracerNoEvent<TestResponse>();
 
         // Assert
         action.Should().ThrowExactly<InvalidOperationException>();
     }
 
-    [Fact]
-    public void GetOpenTelemetryTracerNoEvent_ReturnsMiddlewareFunction()
+    [Theory]
+    [AutoNSubstituteData]
+    public void GetOpenTelemetryTracerNoEvent_ReturnsMiddlewareFunction(
+        [Frozen] IServiceProvider serviceProvider,
+        TracerProvider tracerProvider
+    )
     {
+        // Arrange
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(tracerProvider);
+
         // Act
-        var middleware = _serviceProvider.GetOpenTelemetryTracerNoEvent<TestResponse>();
+        var middleware = serviceProvider.GetOpenTelemetryTracerNoEvent<TestResponse>();
 
         // Assert
         middleware.Should().NotBeNull();
         middleware.Should().BeOfType<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>>();
     }
 
-    [Fact]
-    public async Task GetOpenTelemetryTracerNoEvent_WithIncorrectResponseType_ThrowsInvalidOperationException()
+    [Theory]
+    [AutoNSubstituteData]
+    public async Task GetOpenTelemetryTracerNoEvent_WithIncorrectResponseType_ThrowsInvalidOperationException(
+        [Frozen] IServiceProvider serviceProvider,
+        TracerProvider tracerProvider,
+        ILambdaHostContext context,
+        IFeatureCollection features,
+        IEventFeature eventFeature,
+        IResponseFeature responseFeature
+    )
     {
         // Arrange
-        var middleware = _serviceProvider.GetOpenTelemetryTracerNoEvent<TestResponse>();
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(tracerProvider);
+        var middleware = serviceProvider.GetOpenTelemetryTracerNoEvent<TestResponse>();
         var nextDelegate = Substitute.For<LambdaInvocationDelegate>();
         var wrappedDelegate = middleware(nextDelegate);
 
-        var mocks = CreateMocks();
-
-        mocks.EventFeature.GetEvent(mocks.Context).Returns(new object());
-        mocks.ResponseFeature.GetResponse().Returns(new object()); // Wrong type
+        context.Features.Returns(features);
+        features.Get<IEventFeature>().Returns(eventFeature);
+        features.Get<IResponseFeature>().Returns(responseFeature);
+        eventFeature.GetEvent(context).Returns(new object());
+        responseFeature.GetResponse().Returns(new object()); // Wrong type
 
         nextDelegate(Arg.Any<ILambdaHostContext>()).Returns(Task.CompletedTask);
 
         // Act
-        var action = async () => await wrappedDelegate(mocks.Context);
+        var action = async () => await wrappedDelegate(context);
 
         // Assert
         await action.Should().ThrowAsync<InvalidOperationException>();
     }
 
-    [Fact]
-    public async Task GetOpenTelemetryTracerNoEvent_WithValidResponse_CallsNextDelegate()
+    [Theory]
+    [AutoNSubstituteData]
+    public async Task GetOpenTelemetryTracerNoEvent_WithValidResponse_CallsNextDelegate(
+        [Frozen] IServiceProvider serviceProvider,
+        TracerProvider tracerProvider,
+        ILambdaHostContext context,
+        IFeatureCollection features,
+        IEventFeature eventFeature,
+        IResponseFeature responseFeature
+    )
     {
         // Arrange
-        var middleware = _serviceProvider.GetOpenTelemetryTracerNoEvent<TestResponse>();
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(tracerProvider);
+        var middleware = serviceProvider.GetOpenTelemetryTracerNoEvent<TestResponse>();
         var nextDelegate = Substitute.For<LambdaInvocationDelegate>();
         var wrappedDelegate = middleware(nextDelegate);
 
         var testResponse = new TestResponse();
-        var mocks = CreateMocks();
 
-        mocks.EventFeature.GetEvent(mocks.Context).Returns(new object());
-        mocks.ResponseFeature.GetResponse().Returns(testResponse);
+        context.Features.Returns(features);
+        features.Get<IEventFeature>().Returns(eventFeature);
+        features.Get<IResponseFeature>().Returns(responseFeature);
+        eventFeature.GetEvent(context).Returns(new object());
+        responseFeature.GetResponse().Returns(testResponse);
 
         nextDelegate(Arg.Any<ILambdaHostContext>()).Returns(Task.CompletedTask);
 
         // Act
-        await wrappedDelegate(mocks.Context);
+        await wrappedDelegate(context);
 
         // Assert
         await nextDelegate.Received(1)(Arg.Any<ILambdaHostContext>());
     }
-
-    #endregion
-
-    #region GetOpenTelemetryTracerNoResponse<TEvent>
 
     [Fact]
     public void GetOpenTelemetryTracerNoResponse_WithNullServiceProvider_ThrowsArgumentNullException()
@@ -219,76 +276,103 @@ public class LambdaOpenTelemetryServiceProviderExtensionsTests
         action.Should().ThrowExactly<ArgumentNullException>();
     }
 
-    [Fact]
-    public void GetOpenTelemetryTracerNoResponse_WithoutTracerProvider_ThrowsInvalidOperationException()
+    [Theory]
+    [AutoNSubstituteData]
+    public void GetOpenTelemetryTracerNoResponse_WithoutTracerProvider_ThrowsInvalidOperationException(
+        [Frozen] IServiceProvider serviceProvider
+    )
     {
         // Arrange
-        _serviceProvider.GetService(typeof(TracerProvider)).Returns(null);
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(null);
 
         // Act
-        var action = () => _serviceProvider.GetOpenTelemetryTracerNoResponse<TestEvent>();
+        var action = () => serviceProvider.GetOpenTelemetryTracerNoResponse<TestEvent>();
 
         // Assert
         action.Should().ThrowExactly<InvalidOperationException>();
     }
 
-    [Fact]
-    public void GetOpenTelemetryTracerNoResponse_ReturnsMiddlewareFunction()
+    [Theory]
+    [AutoNSubstituteData]
+    public void GetOpenTelemetryTracerNoResponse_ReturnsMiddlewareFunction(
+        [Frozen] IServiceProvider serviceProvider,
+        TracerProvider tracerProvider
+    )
     {
+        // Arrange
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(tracerProvider);
+
         // Act
-        var middleware = _serviceProvider.GetOpenTelemetryTracerNoResponse<TestEvent>();
+        var middleware = serviceProvider.GetOpenTelemetryTracerNoResponse<TestEvent>();
 
         // Assert
         middleware.Should().NotBeNull();
         middleware.Should().BeOfType<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>>();
     }
 
-    [Fact]
-    public async Task GetOpenTelemetryTracerNoResponse_WithIncorrectEventType_ThrowsInvalidOperationException()
+    [Theory]
+    [AutoNSubstituteData]
+    public async Task GetOpenTelemetryTracerNoResponse_WithIncorrectEventType_ThrowsInvalidOperationException(
+        [Frozen] IServiceProvider serviceProvider,
+        TracerProvider tracerProvider,
+        ILambdaHostContext context,
+        IFeatureCollection features,
+        IEventFeature eventFeature,
+        IResponseFeature responseFeature
+    )
     {
         // Arrange
-        var middleware = _serviceProvider.GetOpenTelemetryTracerNoResponse<TestEvent>();
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(tracerProvider);
+        var middleware = serviceProvider.GetOpenTelemetryTracerNoResponse<TestEvent>();
         var nextDelegate = Substitute.For<LambdaInvocationDelegate>();
         var wrappedDelegate = middleware(nextDelegate);
 
-        var mocks = CreateMocks();
-
-        mocks.EventFeature.GetEvent(mocks.Context).Returns(new object()); // Wrong type
-        mocks.ResponseFeature.GetResponse().Returns(new object());
+        context.Features.Returns(features);
+        features.Get<IEventFeature>().Returns(eventFeature);
+        features.Get<IResponseFeature>().Returns(responseFeature);
+        eventFeature.GetEvent(context).Returns(new object()); // Wrong type
+        responseFeature.GetResponse().Returns(new object());
 
         // Act
-        var action = async () => await wrappedDelegate(mocks.Context);
+        var action = async () => await wrappedDelegate(context);
 
         // Assert
         await action.Should().ThrowAsync<InvalidOperationException>();
     }
 
-    [Fact]
-    public async Task GetOpenTelemetryTracerNoResponse_WithValidEvent_CallsNextDelegate()
+    [Theory]
+    [AutoNSubstituteData]
+    public async Task GetOpenTelemetryTracerNoResponse_WithValidEvent_CallsNextDelegate(
+        [Frozen] IServiceProvider serviceProvider,
+        TracerProvider tracerProvider,
+        ILambdaHostContext context,
+        IFeatureCollection features,
+        IEventFeature eventFeature,
+        IResponseFeature responseFeature
+    )
     {
         // Arrange
-        var middleware = _serviceProvider.GetOpenTelemetryTracerNoResponse<TestEvent>();
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(tracerProvider);
+        var middleware = serviceProvider.GetOpenTelemetryTracerNoResponse<TestEvent>();
         var nextDelegate = Substitute.For<LambdaInvocationDelegate>();
         var wrappedDelegate = middleware(nextDelegate);
 
         var testEvent = new TestEvent();
-        var mocks = CreateMocks();
 
-        mocks.EventFeature.GetEvent(mocks.Context).Returns(testEvent);
-        mocks.ResponseFeature.GetResponse().Returns(new object());
+        context.Features.Returns(features);
+        features.Get<IEventFeature>().Returns(eventFeature);
+        features.Get<IResponseFeature>().Returns(responseFeature);
+        eventFeature.GetEvent(context).Returns(testEvent);
+        responseFeature.GetResponse().Returns(new object());
 
         nextDelegate(Arg.Any<ILambdaHostContext>()).Returns(Task.CompletedTask);
 
         // Act
-        await wrappedDelegate(mocks.Context);
+        await wrappedDelegate(context);
 
         // Assert
         await nextDelegate.Received(1)(Arg.Any<ILambdaHostContext>());
     }
-
-    #endregion
-
-    #region GetOpenTelemetryTracerNoEventNoResponse
 
     [Fact]
     public void GetOpenTelemetryTracerNoEventNoResponse_WithNullServiceProvider_ThrowsArgumentNullException()
@@ -303,81 +387,73 @@ public class LambdaOpenTelemetryServiceProviderExtensionsTests
         action.Should().ThrowExactly<ArgumentNullException>();
     }
 
-    [Fact]
-    public void GetOpenTelemetryTracerNoEventNoResponse_WithoutTracerProvider_ThrowsInvalidOperationException()
+    [Theory]
+    [AutoNSubstituteData]
+    public void GetOpenTelemetryTracerNoEventNoResponse_WithoutTracerProvider_ThrowsInvalidOperationException(
+        [Frozen] IServiceProvider serviceProvider
+    )
     {
         // Arrange
-        _serviceProvider.GetService(typeof(TracerProvider)).Returns(null);
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(null);
 
         // Act
-        var action = () => _serviceProvider.GetOpenTelemetryTracerNoEventNoResponse();
+        var action = () => serviceProvider.GetOpenTelemetryTracerNoEventNoResponse();
 
         // Assert
         action.Should().ThrowExactly<InvalidOperationException>();
     }
 
-    [Fact]
-    public void GetOpenTelemetryTracerNoEventNoResponse_ReturnsMiddlewareFunction()
+    [Theory]
+    [AutoNSubstituteData]
+    public void GetOpenTelemetryTracerNoEventNoResponse_ReturnsMiddlewareFunction(
+        [Frozen] IServiceProvider serviceProvider,
+        TracerProvider tracerProvider
+    )
     {
+        // Arrange
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(tracerProvider);
+
         // Act
-        var middleware = _serviceProvider.GetOpenTelemetryTracerNoEventNoResponse();
+        var middleware = serviceProvider.GetOpenTelemetryTracerNoEventNoResponse();
 
         // Assert
         middleware.Should().NotBeNull();
         middleware.Should().BeOfType<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>>();
     }
 
-    [Fact]
-    public async Task GetOpenTelemetryTracerNoEventNoResponse_WithAnyEventAndResponse_CallsNextDelegate()
+    [Theory]
+    [AutoNSubstituteData]
+    public async Task GetOpenTelemetryTracerNoEventNoResponse_WithAnyEventAndResponse_CallsNextDelegate(
+        [Frozen] IServiceProvider serviceProvider,
+        TracerProvider tracerProvider,
+        ILambdaHostContext context,
+        IFeatureCollection features,
+        IEventFeature eventFeature,
+        IResponseFeature responseFeature
+    )
     {
         // Arrange
-        var middleware = _serviceProvider.GetOpenTelemetryTracerNoEventNoResponse();
+        serviceProvider.GetService(typeof(TracerProvider)).Returns(tracerProvider);
+        var middleware = serviceProvider.GetOpenTelemetryTracerNoEventNoResponse();
         var nextDelegate = Substitute.For<LambdaInvocationDelegate>();
         var wrappedDelegate = middleware(nextDelegate);
 
-        var mocks = CreateMocks();
-
-        mocks.EventFeature.GetEvent(mocks.Context).Returns(new object());
-        mocks.ResponseFeature.GetResponse().Returns(new object());
+        context.Features.Returns(features);
+        features.Get<IEventFeature>().Returns(eventFeature);
+        features.Get<IResponseFeature>().Returns(responseFeature);
+        eventFeature.GetEvent(context).Returns(new object());
+        responseFeature.GetResponse().Returns(new object());
 
         nextDelegate(Arg.Any<ILambdaHostContext>()).Returns(Task.CompletedTask);
 
         // Act
-        await wrappedDelegate(mocks.Context);
+        await wrappedDelegate(context);
 
         // Assert
         await nextDelegate.Received(1)(Arg.Any<ILambdaHostContext>());
     }
 
-    #endregion
-
-    #region Test Helpers
-
-    private record Mocks(
-        ILambdaHostContext Context,
-        IFeatureCollection Features,
-        IEventFeature EventFeature,
-        IResponseFeature ResponseFeature
-    );
-
-    private Mocks CreateMocks()
-    {
-        var context = Substitute.For<ILambdaHostContext>();
-        var features = Substitute.For<IFeatureCollection>();
-        var eventFeature = Substitute.For<IEventFeature>();
-        var responseFeature = Substitute.For<IResponseFeature>();
-
-        context.Features.Returns(features);
-
-        features.Get<IEventFeature>().Returns(eventFeature);
-        features.Get<IResponseFeature>().Returns(responseFeature);
-
-        return new Mocks(context, features, eventFeature, responseFeature);
-    }
-
     private class TestEvent { }
 
     private class TestResponse { }
-
-    #endregion
 }

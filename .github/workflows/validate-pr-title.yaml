@@ -39,6 +39,7 @@ jobs:
             build
             ci
             github
+            core
           requireScope: false
           subjectPattern: ^[a-z].*
           subjectPatternError: Subject must start with lowercase letter
