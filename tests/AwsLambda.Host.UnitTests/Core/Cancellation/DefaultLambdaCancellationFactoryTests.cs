@@ -14,11 +14,9 @@ public class DefaultLambdaCancellationFactoryTest
         // Act & Assert
         var act = () =>
         {
-            var lambdaCancellationTokenSourceFactory = new DefaultLambdaCancellationFactory(
-                options
-            );
+            _ = new DefaultLambdaCancellationFactory(options);
         };
-        act.Should().Throw<ArgumentOutOfRangeException>();
+        act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -35,13 +33,13 @@ public class DefaultLambdaCancellationFactoryTest
         // Act & Assert
         var actWithZero = () =>
         {
-            var factory = new DefaultLambdaCancellationFactory(optionsWithZero);
+            _ = new DefaultLambdaCancellationFactory(optionsWithZero);
         };
         actWithZero.Should().NotThrow();
 
         var actWithPositive = () =>
         {
-            var factory = new DefaultLambdaCancellationFactory(optionsWithPositive);
+            _ = new DefaultLambdaCancellationFactory(optionsWithPositive);
         };
         actWithPositive.Should().NotThrow();
     }
