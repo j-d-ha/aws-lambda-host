@@ -16,4 +16,5 @@ comment:
 ignore:
   - "tests/**"
   - "examples/**"
+  - "benchmarks/**"
   - "**/Program.cs"

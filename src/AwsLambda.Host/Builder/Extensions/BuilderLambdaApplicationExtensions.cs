@@ -106,8 +106,8 @@ public static class BuilderLambdaApplicationExtensions
         ///         <item><description>load app <see cref="IConfiguration" /> from supplied command line args</description></item>
         ///         <item>
         ///             <description>
-        ///                 configure the <see cref="ILoggerFactory" /> to log to console, debug,
-        ///                 and event source output
+        ///                 configure the <see cref="ILoggerFactory" /> to log to console, debug, and
+        ///                 event source output
         ///             </description>
         ///         </item>
         ///         <item>
