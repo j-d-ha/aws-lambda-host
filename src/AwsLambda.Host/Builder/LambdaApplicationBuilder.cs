@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
@@ -109,16 +110,78 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
         configuration.AddEnvironmentVariables("DOTNET_");
         configuration.AddEnvironmentVariables("AWS_");
 
+        var settings = new HostApplicationBuilderSettings
+        {
+            ApplicationName = configuration["LAMBDA_FUNCTION_NAME"] ?? "aws-lambda-host",
+            Configuration = configuration,
+        };
+
         var hostApplicationBuilder =
-            Microsoft.Extensions.Hosting.Host.CreateEmptyApplicationBuilder(
-                new HostApplicationBuilderSettings
-                {
-                    ApplicationName = configuration["LAMBDA_FUNCTION_NAME"] ?? "aws-lambda-host",
-                    Configuration = configuration,
-                }
-            );
+            Microsoft.Extensions.Hosting.Host.CreateEmptyApplicationBuilder(settings);
+
+        ApplyDefaultConfiguration(hostApplicationBuilder.Environment, configuration);
+
+        if (settings.ContentRootPath is null && configuration[HostDefaults.ContentRootKey] is null)
+            SetDefaultContentRoot(configuration);
 
         return hostApplicationBuilder;
+    }
+
+    private static void ApplyDefaultConfiguration(
+        IHostEnvironment environment,
+        ConfigurationManager configuration
+    )
+    {
+        // Add appsettings.json and appsettings.{EnvironmentName}.json
+        configuration
+            .AddJsonFile("appsettings.json", true, false)
+            .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", true, false);
+
+        // add user secrets if in development environment
+        if (!environment.IsDevelopment())
+            try
+            {
+                configuration.AddUserSecrets(Assembly.GetExecutingAssembly(), true, false);
+            }
+            catch
+            {
+                // ignored
+            }
+
+        // add the rest of the environment variables
+        configuration.AddEnvironmentVariables();
+    }
+
+    private static void SetDefaultContentRoot(ConfigurationManager configuration)
+    {
+        // Borowed from:
+        // https://github.com/dotnet/dotnet/blob/main/src/runtime/src/libraries/Microsoft.Extensions.Hosting/src/HostingHostBuilderExtensions.cs
+        // If we're running anywhere other than C:\Windows\system32, we default to using the CWD for
+        // the ContentRoot.
+        // However, since many things like Windows services and MSIX installers have
+        // C:\Windows\system32 as there CWD which is not likely
+        // to really be the home for things like appsettings.json, we skip changing the ContentRoot
+        // in that case. The non-"default" initial
+        // value for ContentRoot is AppContext.BaseDirectory (e.g. the executable path) which
+        // probably makes more sense than the system32.
+
+        // In my testing, both Environment.CurrentDirectory and Environment.SystemDirectory return
+        // the path without
+        // any trailing directory separator characters. I'm not even sure the casing can ever be
+        // different from these APIs, but I think it makes sense to
+        // ignore case for Windows path comparisons given the file system is usually (always?) going
+        // to be case insensitive for the system path.
+        var cwd = System.Environment.CurrentDirectory;
+        if (
+            !string.Equals(
+                cwd,
+                System.Environment.SystemDirectory,
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+            configuration.AddInMemoryCollection([
+                new KeyValuePair<string, string?>(HostDefaults.ContentRootKey, cwd),
+            ]);
     }
 
     /// <summary>Builds the Lambda application with the configured services and settings.</summary>
