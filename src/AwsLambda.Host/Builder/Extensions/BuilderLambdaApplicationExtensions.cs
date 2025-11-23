@@ -143,5 +143,7 @@ public static class BuilderLambdaApplicationExtensions
         public static LambdaApplicationBuilder CreateEmptyBuilder(
             HostApplicationBuilderSettings settings
         ) => new(settings, true);
+
+        public static LambdaApplicationBuilder CreateSlimBuilder() => new(true);
     }
 }

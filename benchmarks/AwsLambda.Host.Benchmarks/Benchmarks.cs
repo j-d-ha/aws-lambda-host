@@ -19,4 +19,11 @@ public class CreateBuilderBenchmarks
         var builder = LambdaApplication.CreateEmptyBuilder(new HostApplicationBuilderSettings());
         builder.Build();
     }
+
+    [Benchmark]
+    public void CreateSlimBuilder()
+    {
+        var builder = LambdaApplication.CreateSlimBuilder();
+        builder.Build();
+    }
 }

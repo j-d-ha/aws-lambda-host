@@ -74,6 +74,9 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
                 : new HostApplicationBuilder(settings)
         ) { }
 
+    internal LambdaApplicationBuilder(bool slim)
+        : this(CreateSlimBuilder()) { }
+
     /// <inheritdoc />
     public IDictionary<object, object> Properties =>
         ((IHostApplicationBuilder)_hostBuilder).Properties;
@@ -99,6 +102,24 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
         Action<TContainerBuilder>? configure = null
     )
         where TContainerBuilder : notnull => _hostBuilder.ConfigureContainer(factory, configure);
+
+    private static HostApplicationBuilder CreateSlimBuilder()
+    {
+        var configuration = new ConfigurationManager();
+        configuration.AddEnvironmentVariables("DOTNET_");
+        configuration.AddEnvironmentVariables("AWS_");
+
+        var hostApplicationBuilder =
+            Microsoft.Extensions.Hosting.Host.CreateEmptyApplicationBuilder(
+                new HostApplicationBuilderSettings
+                {
+                    ApplicationName = configuration["LAMBDA_FUNCTION_NAME"] ?? "aws-lambda-host",
+                    Configuration = configuration,
+                }
+            );
+
+        return hostApplicationBuilder;
+    }
 
     /// <summary>Builds the Lambda application with the configured services and settings.</summary>
     /// <remarks>
