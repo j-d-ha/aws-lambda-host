@@ -19,10 +19,13 @@ public class LambdaApplicationBuilderTests
     }
 
     [Fact]
-    public void CreateBuilder_WithArgs_ReturnsValidLambdaApplicationBuilder()
+    public void CreateBuilder_WithOptions_ReturnsValidLambdaApplicationBuilder()
     {
+        // Arrange
+        var options = new LambdaApplicationOptions();
+
         // Act
-        var builder = LambdaApplication.CreateBuilder(Array.Empty<string>());
+        var builder = LambdaApplication.CreateBuilder(options);
 
         // Assert
         builder.Should().NotBeNull();
@@ -103,31 +106,18 @@ public class LambdaApplicationBuilderTests
     }
 
     [Fact]
-    public void CreateBuilder_WithHostApplicationBuilderSettings_ReturnsValidBuilder()
+    public void CreateBuilder_WithApplicationName_ReturnsValidBuilder()
     {
         // Arrange
-        var settings = new HostApplicationBuilderSettings();
+        var options = new LambdaApplicationOptions { ApplicationName = "TestApp" };
 
         // Act
-        var builder = LambdaApplication.CreateBuilder(settings);
+        var builder = LambdaApplication.CreateBuilder(options);
 
         // Assert
         builder.Should().NotBeNull();
         builder.Should().BeAssignableTo<IHostApplicationBuilder>();
-    }
-
-    [Fact]
-    public void CreateEmptyBuilder_WithHostApplicationBuilderSettings_ReturnsValidBuilder()
-    {
-        // Arrange
-        var settings = new HostApplicationBuilderSettings();
-
-        // Act
-        var builder = LambdaApplication.CreateEmptyBuilder(settings);
-
-        // Assert
-        builder.Should().NotBeNull();
-        builder.Should().BeAssignableTo<IHostApplicationBuilder>();
+        builder.Environment.ApplicationName.Should().Be("TestApp");
     }
 
     [Fact]
@@ -295,8 +285,7 @@ public class LambdaApplicationBuilderTests
     public void Build_ConfigureOnInitBuilderCallback_AppliesClearLambdaOutputFormattingWhenEnabled()
     {
         // Arrange
-        var builderSettings = new HostApplicationBuilderSettings();
-        var builder = LambdaApplication.CreateBuilder(builderSettings);
+        var builder = LambdaApplication.CreateBuilder();
 
         // Configure to enable ClearLambdaOutputFormatting via appsettings
         builder.Configuration["AwsLambdaHost:ClearLambdaOutputFormatting"] = "true";
