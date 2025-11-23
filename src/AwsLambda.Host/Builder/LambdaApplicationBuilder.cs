@@ -1,3 +1,11 @@
+// Portions of this file are derived from azure-functions-dotnet-worker
+// Source:
+// https://github.com/dotnet/aspnetcore/blob/v10.0.0/src/DefaultBuilder/src/WebApplicationBuilder.cs
+// Copyright (c) .NET Foundation
+// Licensed under the MIT License
+// See THIRD-PARTY-LICENSES.txt file in the project root or visit
+// https://github.com/Azure/azure-functions-dotnet-worker/blob/2.51.0/LICENSE
+
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
@@ -44,14 +52,17 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
     {
         settings ??= new LambdaApplicationOptions();
 
-        settings.Configuration ??= new ConfigurationManager();
-        settings.Configuration.AddEnvironmentVariables("AWS_");
+        if (!settings.DisableDefaults)
+        {
+            settings.Configuration ??= new ConfigurationManager();
+            settings.Configuration.AddEnvironmentVariables("AWS_");
 
-        settings.ApplicationName ??= settings.Configuration["LAMBDA_FUNCTION_NAME"];
+            settings.ApplicationName ??= settings.Configuration["LAMBDA_FUNCTION_NAME"];
 
-        SetDefaultContentRoot(settings);
+            SetDefaultContentRoot(settings);
 
-        settings.Configuration.AddEnvironmentVariables("DOTNET_");
+            settings.Configuration.AddEnvironmentVariables("DOTNET_");
+        }
 
         _hostBuilder = Microsoft.Extensions.Hosting.Host.CreateEmptyApplicationBuilder(
             new HostApplicationBuilderSettings
@@ -65,13 +76,16 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
             }
         );
 
-        ApplyDefaultConfiguration();
-        AddDefaultServices();
+        if (!settings.DisableDefaults)
+        {
+            ApplyDefaultConfiguration();
+            AddDefaultServices();
 
-        // Configure LambdaHostSettings from appsettings.json
-        Services.Configure<LambdaHostOptions>(
-            Configuration.GetSection(LambdaHostAppSettingsSectionName)
-        );
+            // Configure LambdaHostSettings from appsettings.json
+            Services.Configure<LambdaHostOptions>(
+                Configuration.GetSection(LambdaHostAppSettingsSectionName)
+            );
+        }
 
         // Configure LambdaHostedServiceOptions with callbacks
         Services.Configure<LambdaHostedServiceOptions>(options =>
