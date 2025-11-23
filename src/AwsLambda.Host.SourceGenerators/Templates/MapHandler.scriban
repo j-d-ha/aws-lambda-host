@@ -1,22 +1,26 @@
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System;
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using Amazon.Lambda.Core;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     using Microsoft.Extensions.DependencyInjection;
-
+    
     file static class MapHandlerLambdaApplicationExtensions
     {
         // Location: {{ location.display_location }}
         [InterceptsLocation({{ location.version }}, "{{ location.data }}")]
-        internal static ILambdaApplication MapHandlerInterceptor(
-            this ILambdaApplication application,
+        internal static ILambdaInvocationBuilder MapHandlerInterceptor(
+            this ILambdaInvocationBuilder application,
             Delegate handler
         )
         {
             var castHandler = ({{ handler_signature }})handler;
+
+            return application.Handle(InvocationDelegate);
 
             {{ if should_await ~}} async {{ end ~}}Task InvocationDelegate(ILambdaHostContext context)
             {
@@ -30,63 +34,38 @@ namespace AwsLambda.Host
                 // {{ handler_arg.string }}
                 var arg{{ for.index }} = {{ handler_arg.assignment }};
                 {{~ end ~}}
-                {{ if output_response != null; ~}} context.Response = {{ end }}{{ if should_await ~}} await {{ end ~}} castHandler.Invoke({{ for arg in handler_args }}arg{{ for.index }}{{ if !for.last }}, {{ end }}{{ end }});
+                {{ if output_response != null; ~}} var response = {{ end }}{{ if should_await ~}} await {{ end ~}} castHandler.Invoke({{ for arg in handler_args }}arg{{ for.index }}{{ if !for.last }}, {{ end }}{{ end }});
+                {{~ if output_response != null; ~}}
+                {{~ if output_response.response_is_stream ~}}
+                context.RawInvocationData.Response = response;
+                {{~ else ~}}
+                if (context.Features.Get<IResponseFeature>() is not IResponseFeature<{{ output_response.response_type }}> responseFeature)
+                {
+                    throw new InvalidOperationException($"Response feature for type '{{ output_response.response_type }}' is not available in the collection.");
+                }
+                responseFeature.SetResponse(response);
+                {{~ end ~}}
+                {{~ end ~}}
                 {{~ if !should_await ~}}
                 return Task.CompletedTask; 
                 {{~ end ~}}
             }
-            
-            Task Deserializer(ILambdaHostContext context, ILambdaSerializer serializer, Stream eventStream)
-            {
-                {{~ if input_event != null ~}}
-                {{~ if input_event.is_stream ~}}
-                context.Event = eventStream;
-                {{~ else ~}}
-                context.Event = serializer.Deserialize<{{~ input_event.type ~}}>(eventStream);
-                {{~ end ~}}
-                {{~ end ~}}
-                return Task.CompletedTask;
-            }
-            
-            Task<Stream> Serializer(ILambdaHostContext context, ILambdaSerializer serializer)
-            {
-                {{~ if output_response != null ~}}
-                var response = context.GetResponseT<{{ output_response.response_type }}>();
-                {{~ if output_response.response_is_stream ~}}
-                return Task.FromResult(response);
-                {{~ else ~}}
-                var outputStream = new MemoryStream();
-                outputStream.SetLength(0L);
-                serializer.Serialize<{{ output_response.response_type }}>(response, outputStream);
-                outputStream.Position = 0L;
-                return Task.FromResult<Stream>(outputStream);
-                {{~ end ~}}
-                {{~ else ~}}
-                return Task.FromResult<Stream>(new MemoryStream(0));
-                {{~ end ~}}
-            }
-
-            return application.MapHandler(InvocationDelegate, Deserializer, Serializer);
         }
-
-        private static T GetEventT<T>(this ILambdaHostContext context)
+        {{~ if builders.size >= 1 ~}}
+        
+        {{~ for builder in builders ~}}
+        [InterceptsLocation({{ builder.version }}, "{{ builder.data }}")] // Location: {{ builder.display_location }}
+        {{~ end ~}}
+        internal static LambdaApplication BuildInterceptor(this LambdaApplicationBuilder builder)
         {
-            if (!context.TryGetEvent<T>(out var eventT))
-            {
-                throw new InvalidOperationException($"Lambda event of type '{typeof(T).FullName}' is not available in the context.");
-            }
-            
-            return eventT!;
+            {{~ if input_event != null && !input_event.is_stream ~}}
+            builder.Services.AddSingleton<IFeatureProvider, DefaultEventFeatureProvider<{{ input_event.type }}>>();
+            {{~ end ~}}
+            {{~ if output_response != null && !output_response.response_is_stream ~}}
+            builder.Services.AddSingleton<IFeatureProvider, DefaultResponseFeatureProvider<{{ output_response.response_type }}>>();
+            {{~ end ~}}
+            return builder.Build();
         }
-
-        private static T GetResponseT<T>(this ILambdaHostContext context)
-        {
-            if (!context.TryGetResponse<T>(out var responseT))
-            {
-                throw new InvalidOperationException($"Lambda response of type '{typeof(T).FullName}' is not available in the context.");
-            }
-            
-            return responseT!;
-        }
+        {{~ end ~}}
     }
 }

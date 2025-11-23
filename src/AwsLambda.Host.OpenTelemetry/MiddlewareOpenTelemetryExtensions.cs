@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using OpenTelemetry.Trace;
 
-namespace AwsLambda.Host;
+namespace AwsLambda.Host.Builder;
 
 /// <summary>
 ///     Provides extension methods for enabling OpenTelemetry tracing in the Lambda invocation
@@ -50,8 +50,8 @@ public static class MiddlewareOpenTelemetryExtensions
     ///         startup.
     ///     </para>
     /// </remarks>
-    /// <param name="application">The <see cref="ILambdaApplication" /> instance.</param>
-    /// <returns>The same <see cref="ILambdaApplication" /> instance for method chaining.</returns>
+    /// <param name="application">The <see cref="ILambdaInvocationBuilder" /> instance.</param>
+    /// <returns>The same <see cref="ILambdaInvocationBuilder" /> instance for method chaining.</returns>
     /// <example>
     ///     <para>
     ///         First, register OpenTelemetry in the dependency injection container using AWS Lambda
@@ -80,7 +80,9 @@ public static class MiddlewareOpenTelemetryExtensions
     ///     record Response(string Message);
     ///     </code>
     /// </example>
-    public static ILambdaApplication UseOpenTelemetryTracing(this ILambdaApplication application)
+    public static ILambdaInvocationBuilder UseOpenTelemetryTracing(
+        this ILambdaInvocationBuilder application
+    )
     {
         Debug.Fail("This method should have been intercepted at compile time!");
         throw new InvalidOperationException("This method is replaced at compile time.");

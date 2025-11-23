@@ -1,5 +1,6 @@
 using Amazon.Lambda.Core;
 using AwsLambda.Host;
+using AwsLambda.Host.Core;
 using OpenTelemetry.Instrumentation.AWSLambda;
 using OpenTelemetry.Trace;
 
@@ -64,7 +65,10 @@ public static class LambdaOpenTelemetryServiceProviderExtensions
             {
                 return async context =>
                 {
-                    if (context.Event is not TEvent inputEvent)
+                    if (
+                        context.Features.Get<IEventFeature>()?.GetEvent(context)
+                        is not TEvent eventT
+                    )
                         throw new InvalidOperationException(
                             $"Lambda event of type '{typeof(TEvent).FullName}' is not available in the context."
                         );
@@ -75,14 +79,17 @@ public static class LambdaOpenTelemetryServiceProviderExtensions
                         {
                             await next(context);
 
-                            if (context.Response is not TResponse result)
+                            if (
+                                context.Features.Get<IResponseFeature>()?.GetResponse()
+                                is not TResponse responseT
+                            )
                                 throw new InvalidOperationException(
                                     $"Lambda response of type '{typeof(TResponse).FullName}' is not available in the context."
                                 );
 
-                            return result;
+                            return responseT;
                         },
-                        inputEvent,
+                        eventT,
                         context
                     );
                 };
@@ -119,12 +126,15 @@ public static class LambdaOpenTelemetryServiceProviderExtensions
                         {
                             await next(context);
 
-                            if (context.Response is not TResponse result)
+                            if (
+                                context.Features.Get<IResponseFeature>()?.GetResponse()
+                                is not TResponse responseT
+                            )
                                 throw new InvalidOperationException(
                                     $"Lambda response of type '{typeof(TResponse).FullName}' is not available in the context."
                                 );
 
-                            return result;
+                            return responseT;
                         },
                         null,
                         context
@@ -157,7 +167,10 @@ public static class LambdaOpenTelemetryServiceProviderExtensions
             {
                 return async context =>
                 {
-                    if (context.Event is not TEvent inputEvent)
+                    if (
+                        context.Features.Get<IEventFeature>()?.GetEvent(context)
+                        is not TEvent eventT
+                    )
                         throw new InvalidOperationException(
                             $"Lambda event of type '{typeof(TEvent).FullName}' is not available in the context."
                         );
@@ -165,7 +178,7 @@ public static class LambdaOpenTelemetryServiceProviderExtensions
                     await AWSLambdaWrapper.TraceAsync(
                         tracerProvider,
                         async Task (_, _) => await next(context),
-                        inputEvent,
+                        eventT,
                         context
                     );
                 };

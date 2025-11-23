@@ -1,18 +1,20 @@
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System;
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     
     file static class {{ name }}LambdaApplicationExtensions
     {
         {{~ for call in calls ~}}
         // Location: {{ call.location.display_location }}
         [InterceptsLocation({{ call.location.version }}, "{{ call.location.data }}")]
-        internal static ILambdaApplication {{ name }}Interceptor{{ for.index }}{{ call.generic_parameters }}(
-            this ILambdaApplication application,
+        internal static {{ call.target_type }} {{ name }}Interceptor{{ for.index }}{{ call.generic_parameters }}(
+            this {{ call.target_type }} application,
             Delegate handler
         )
         {

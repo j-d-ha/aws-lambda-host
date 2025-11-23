@@ -1,3 +1,5 @@
+using AwsLambda.Host.Builder;
+
 namespace AwsLambda.Host.Example.OpenTelemetry;
 
 internal static class Function

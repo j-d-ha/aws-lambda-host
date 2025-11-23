@@ -6,7 +6,8 @@ public class OnInitVerifyTests
     public async Task Test_OnInit_BaseMethodCall() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -21,8 +22,7 @@ public class OnInitVerifyTests
             );
 
             await lambda.RunAsync();
-            """,
-            0
+            """
         );
 
     [Fact]
@@ -30,7 +30,8 @@ public class OnInitVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -51,7 +52,8 @@ public class OnInitVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -69,7 +71,8 @@ public class OnInitVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -87,7 +90,8 @@ public class OnInitVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -105,7 +109,8 @@ public class OnInitVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -123,7 +128,8 @@ public class OnInitVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -141,7 +147,8 @@ public class OnInitVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -159,7 +166,8 @@ public class OnInitVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -177,7 +185,8 @@ public class OnInitVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -200,7 +209,8 @@ public class OnInitVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -229,7 +239,8 @@ public class OnInitVerifyTests
             """
             using System.Threading;
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
@@ -264,7 +275,8 @@ public class OnInitVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -304,7 +316,8 @@ public class OnInitVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -330,7 +343,8 @@ public class OnInitVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -361,7 +375,8 @@ public class OnInitVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();

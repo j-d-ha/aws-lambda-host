@@ -23,73 +23,52 @@ namespace System.Runtime.CompilerServices
     }
 }
 
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System;
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using Amazon.Lambda.Core;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     using Microsoft.Extensions.DependencyInjection;
-
+    
     file static class MapHandlerLambdaApplicationExtensions
     {
-        // Location: InputFile.cs(8,8)
-        [InterceptsLocation(1, "y3YjupFy8zlpGiubrrDYOrAAAABJbnB1dEZpbGUuY3M=")]
-        internal static ILambdaApplication MapHandlerInterceptor(
-            this ILambdaApplication application,
+        // Location: InputFile.cs(9,8)
+        [InterceptsLocation(1, "kmm35a5GJaoqey+0CeV8vdMAAABJbnB1dEZpbGUuY3M=")]
+        internal static ILambdaInvocationBuilder MapHandlerInterceptor(
+            this ILambdaInvocationBuilder application,
             Delegate handler
         )
         {
             var castHandler = (global::System.Func<string, global::IService, global::IService>)handler;
 
+            return application.Handle(InvocationDelegate);
+
             Task InvocationDelegate(ILambdaHostContext context)
             {
                 // ParameterInfo { Type = string, Name = input, Source = Event, IsNullable = False, IsOptional = False}
-                var arg0 = context.GetEventT<string>();
+                var arg0 = context.GetRequiredEvent<string>();
                 // ParameterInfo { Type = global::IService, Name = service, Source = Service, IsNullable = False, IsOptional = False}
                 var arg1 = context.ServiceProvider.GetRequiredService<global::IService>();
-                context.Response = castHandler.Invoke(arg0, arg1);
+                var response = castHandler.Invoke(arg0, arg1);
+                if (context.Features.Get<IResponseFeature>() is not IResponseFeature<global::IService> responseFeature)
+                {
+                    throw new InvalidOperationException($"Response feature for type 'global::IService' is not available in the collection.");
+                }
+                responseFeature.SetResponse(response);
                 return Task.CompletedTask; 
             }
-            
-            Task Deserializer(ILambdaHostContext context, ILambdaSerializer serializer, Stream eventStream)
-            {
-                context.Event = serializer.Deserialize<string>(eventStream);
-                return Task.CompletedTask;
-            }
-            
-            Task<Stream> Serializer(ILambdaHostContext context, ILambdaSerializer serializer)
-            {
-                var response = context.GetResponseT<global::IService>();
-                var outputStream = new MemoryStream();
-                outputStream.SetLength(0L);
-                serializer.Serialize<global::IService>(response, outputStream);
-                outputStream.Position = 0L;
-                return Task.FromResult<Stream>(outputStream);
-            }
-
-            return application.MapHandler(InvocationDelegate, Deserializer, Serializer);
         }
-
-        private static T GetEventT<T>(this ILambdaHostContext context)
+        
+        [InterceptsLocation(1, "kmm35a5GJaoqey+0CeV8vcIAAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(7,22)
+        internal static LambdaApplication BuildInterceptor(this LambdaApplicationBuilder builder)
         {
-            if (!context.TryGetEvent<T>(out var eventT))
-            {
-                throw new InvalidOperationException($"Lambda event of type '{typeof(T).FullName}' is not available in the context.");
-            }
-            
-            return eventT!;
-        }
-
-        private static T GetResponseT<T>(this ILambdaHostContext context)
-        {
-            if (!context.TryGetResponse<T>(out var responseT))
-            {
-                throw new InvalidOperationException($"Lambda response of type '{typeof(T).FullName}' is not available in the context.");
-            }
-            
-            return responseT!;
+            builder.Services.AddSingleton<IFeatureProvider, DefaultEventFeatureProvider<string>>();
+            builder.Services.AddSingleton<IFeatureProvider, DefaultResponseFeatureProvider<global::IService>>();
+            return builder.Build();
         }
     }
 }

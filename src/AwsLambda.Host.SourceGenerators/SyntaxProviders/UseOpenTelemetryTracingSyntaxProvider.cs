@@ -13,7 +13,7 @@ internal static class UseOpenTelemetryTracingSyntaxProvider
         node.TryGetMethodName(out var name)
         && name == GeneratorConstants.UseOpenTelemetryTracingMethodName;
 
-    internal static UseOpenTelemetryTracingInfo? Transformer(
+    internal static SimpleMethodInfo? Transformer(
         GeneratorSyntaxContext context,
         CancellationToken cancellationToken
     )
@@ -26,9 +26,13 @@ internal static class UseOpenTelemetryTracingSyntaxProvider
                 {
                     TargetMethod.ContainingNamespace:
                     {
-                        Name: "Host",
+                        Name: "Builder",
                         ContainingNamespace:
-                        { Name: "AwsLambda", ContainingNamespace.IsGlobalNamespace: true },
+                        {
+                            Name: "Host",
+                            ContainingNamespace:
+                            { Name: "AwsLambda", ContainingNamespace.IsGlobalNamespace: true },
+                        },
                     },
                 } targetOperation
             && targetOperation.TargetMethod.ContainingAssembly.Name
@@ -40,7 +44,8 @@ internal static class UseOpenTelemetryTracingSyntaxProvider
                 cancellationToken
             )!;
 
-            return new UseOpenTelemetryTracingInfo(
+            return new SimpleMethodInfo(
+                targetOperation.TargetMethod.Name,
                 LocationInfo.CreateFrom(context.Node),
                 InterceptableLocationInfo.CreateFrom(interceptableLocation)
             );

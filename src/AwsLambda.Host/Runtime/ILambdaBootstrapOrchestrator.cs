@@ -1,7 +1,6 @@
 using Amazon.Lambda.Core;
-using Amazon.Lambda.RuntimeSupport;
 
-namespace AwsLambda.Host;
+namespace AwsLambda.Host.Runtime;
 
 /// <summary>
 ///     Responsible for orchestrating the AWS Lambda bootstrap. Abstracts away AWS SDK complexity
@@ -25,7 +24,7 @@ internal interface ILambdaBootstrapOrchestrator
     /// <returns>A task representing the asynchronous bootstrap execution.</returns>
     Task RunAsync(
         Func<Stream, ILambdaContext, Task<Stream>> handler,
-        LambdaBootstrapInitializer? initializer,
+        Func<CancellationToken, Task<bool>>? initializer,
         CancellationToken stoppingToken
     );
 }

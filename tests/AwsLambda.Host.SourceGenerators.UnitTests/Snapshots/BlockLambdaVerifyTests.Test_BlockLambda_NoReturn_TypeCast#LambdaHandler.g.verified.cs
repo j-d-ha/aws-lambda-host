@@ -23,68 +23,46 @@ namespace System.Runtime.CompilerServices
     }
 }
 
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System;
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using Amazon.Lambda.Core;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     using Microsoft.Extensions.DependencyInjection;
-
+    
     file static class MapHandlerLambdaApplicationExtensions
     {
-        // Location: InputFile.cs(9,8)
-        [InterceptsLocation(1, "NzqSbOGKJo+Tth5rfZuYJb4AAABJbnB1dEZpbGUuY3M=")]
-        internal static ILambdaApplication MapHandlerInterceptor(
-            this ILambdaApplication application,
+        // Location: InputFile.cs(10,8)
+        [InterceptsLocation(1, "24NtoO22UPa+/C0ogM3RV+EAAABJbnB1dEZpbGUuY3M=")]
+        internal static ILambdaInvocationBuilder MapHandlerInterceptor(
+            this ILambdaInvocationBuilder application,
             Delegate handler
         )
         {
             var castHandler = (global::System.Action<string, global::IService>)handler;
 
+            return application.Handle(InvocationDelegate);
+
             Task InvocationDelegate(ILambdaHostContext context)
             {
                 // ParameterInfo { Type = string, Name = input, Source = Event, IsNullable = False, IsOptional = False}
-                var arg0 = context.GetEventT<string>();
+                var arg0 = context.GetRequiredEvent<string>();
                 // ParameterInfo { Type = global::IService, Name = service, Source = Service, IsNullable = False, IsOptional = False}
                 var arg1 = context.ServiceProvider.GetRequiredService<global::IService>();
                 castHandler.Invoke(arg0, arg1);
                 return Task.CompletedTask; 
             }
-            
-            Task Deserializer(ILambdaHostContext context, ILambdaSerializer serializer, Stream eventStream)
-            {
-                context.Event = serializer.Deserialize<string>(eventStream);
-                return Task.CompletedTask;
-            }
-            
-            Task<Stream> Serializer(ILambdaHostContext context, ILambdaSerializer serializer)
-            {
-                return Task.FromResult<Stream>(new MemoryStream(0));
-            }
-
-            return application.MapHandler(InvocationDelegate, Deserializer, Serializer);
         }
-
-        private static T GetEventT<T>(this ILambdaHostContext context)
+        
+        [InterceptsLocation(1, "24NtoO22UPa+/C0ogM3RV9AAAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(8,22)
+        internal static LambdaApplication BuildInterceptor(this LambdaApplicationBuilder builder)
         {
-            if (!context.TryGetEvent<T>(out var eventT))
-            {
-                throw new InvalidOperationException($"Lambda event of type '{typeof(T).FullName}' is not available in the context.");
-            }
-            
-            return eventT!;
-        }
-
-        private static T GetResponseT<T>(this ILambdaHostContext context)
-        {
-            if (!context.TryGetResponse<T>(out var responseT))
-            {
-                throw new InvalidOperationException($"Lambda response of type '{typeof(T).FullName}' is not available in the context.");
-            }
-            
-            return responseT!;
+            builder.Services.AddSingleton<IFeatureProvider, DefaultEventFeatureProvider<string>>();
+            return builder.Build();
         }
     }
 }

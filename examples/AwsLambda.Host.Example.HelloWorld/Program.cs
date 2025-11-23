@@ -1,4 +1,6 @@
-﻿using AwsLambda.Host;
+﻿using System;
+using System.Text.Json.Serialization;
+using AwsLambda.Host.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -8,7 +10,14 @@ builder.Services.AddSingleton<IService, Service>();
 
 var lambda = builder.Build();
 
-lambda.UseClearLambdaOutputFormatting();
+lambda.UseMiddleware(
+    async (context, next) =>
+    {
+        Console.WriteLine("[Middleware 1]: Before");
+        await next(context);
+        Console.WriteLine("[Middleware 1]: After");
+    }
+);
 
 lambda.MapHandler(
     ([Event] Request request, IService service) => new Response(service.GetMessage(request.Name))
@@ -16,9 +25,9 @@ lambda.MapHandler(
 
 await lambda.RunAsync();
 
-internal record Response(string Message);
+internal record Response([property: JsonPropertyName("message")] string Message);
 
-internal record Request(string Name);
+internal record Request([property: JsonPropertyName("name")] string Name);
 
 internal interface IService
 {

@@ -1,113 +1,57 @@
 using Amazon.Lambda.Core;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
-namespace AwsLambda.Host;
+namespace AwsLambda.Host.Runtime;
 
-/// <summary>
-///     Composes the Lambda handler with middleware and handles request processing. Responsible
-///     for building middleware pipelines and creating request handlers with serialization,
-///     deserialization, and context management.
-/// </summary>
+/// <summary>Builds and composes the Lambda invocation pipeline into a request handler.</summary>
 internal sealed class LambdaHandlerComposer : ILambdaHandlerFactory
 {
-    private readonly ILambdaCancellationTokenSourceFactory _cancellationTokenSourceFactory;
-    private readonly DelegateHolder _delegateHolder;
-    private readonly ILambdaSerializer _lambdaSerializer;
+    private readonly ILambdaCancellationFactory _cancellationFactory;
+    private readonly IFeatureCollectionFactory _featureCollectionFactory;
+    private readonly ILambdaInvocationBuilderFactory _lambdaInvocationBuilderFactory;
+    private readonly LambdaHostedServiceOptions _options;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    /// <summary>Initializes a new instance of the <see cref="LambdaHandlerComposer" /> class.</summary>
-    /// <param name="delegateHolder">
-    ///     The holder containing the user-defined handler, middleware, and
-    ///     serialization delegates.
-    /// </param>
-    /// <param name="cancellationTokenSourceFactory">
-    ///     The factory for creating cancellation token sources
-    ///     tied to Lambda invocation timeouts.
-    /// </param>
-    /// <param name="serviceScopeFactory">
-    ///     The factory for creating dependency injection scopes for each
-    ///     Lambda invocation.
-    /// </param>
-    /// <param name="lambdaSerializer">
-    ///     The serializer for handling Lambda request and response
-    ///     serialization.
-    /// </param>
-    /// <exception cref="ArgumentNullException">Thrown when any of the parameters are null.</exception>
-    /// <exception cref="InvalidOperationException">
-    ///     Thrown when the handler is not set in the
-    ///     <paramref name="delegateHolder" />.
-    /// </exception>
     public LambdaHandlerComposer(
-        DelegateHolder delegateHolder,
-        ILambdaCancellationTokenSourceFactory cancellationTokenSourceFactory,
-        IServiceScopeFactory serviceScopeFactory,
-        ILambdaSerializer lambdaSerializer
+        IFeatureCollectionFactory featureCollectionFactory,
+        ILambdaInvocationBuilderFactory lambdaInvocationBuilderFactory,
+        ILambdaCancellationFactory cancellationFactory,
+        IServiceScopeFactory scopeFactory,
+        IOptions<LambdaHostedServiceOptions> options
     )
     {
-        ArgumentNullException.ThrowIfNull(delegateHolder);
-        ArgumentNullException.ThrowIfNull(cancellationTokenSourceFactory);
-        ArgumentNullException.ThrowIfNull(serviceScopeFactory);
-        ArgumentNullException.ThrowIfNull(lambdaSerializer);
+        ArgumentNullException.ThrowIfNull(cancellationFactory);
+        ArgumentNullException.ThrowIfNull(featureCollectionFactory);
+        ArgumentNullException.ThrowIfNull(lambdaInvocationBuilderFactory);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(scopeFactory);
 
-        if (!delegateHolder.IsHandlerSet)
-            throw new InvalidOperationException("Lambda Handler is not set");
-
-        _delegateHolder = delegateHolder;
-        _cancellationTokenSourceFactory = cancellationTokenSourceFactory;
-        _scopeFactory = serviceScopeFactory;
-        _lambdaSerializer = lambdaSerializer;
+        _cancellationFactory = cancellationFactory;
+        _featureCollectionFactory = featureCollectionFactory;
+        _lambdaInvocationBuilderFactory = lambdaInvocationBuilderFactory;
+        _options = options.Value;
+        _scopeFactory = scopeFactory;
     }
 
-    /// <summary>
-    ///     Creates a fully composed Lambda handler that includes middleware pipeline composition and
-    ///     request processing. This composes BuildMiddlewarePipeline and CreateRequestHandler into a
-    ///     single operation. The handler and middleware are obtained from the injected DelegateHolder.
-    /// </summary>
+    /// <summary>Creates a wrapper that invokes the middleware pipeline for each Lambda invocation.</summary>
     public Func<Stream, ILambdaContext, Task<Stream>> CreateHandler(CancellationToken stoppingToken)
     {
-        var composedHandler = BuildMiddlewarePipeline(
-            _delegateHolder.Middlewares,
-            _delegateHolder.Handler!
-        );
-        return CreateRequestHandler(composedHandler, stoppingToken);
-    }
+        var builder = _lambdaInvocationBuilderFactory.CreateBuilder();
 
-    /// <summary>
-    ///     Builds a middleware pipeline by reversing the middleware list and aggregating them around
-    ///     the core handler.
-    /// </summary>
-    /// <remarks>
-    ///     Middleware is applied in reverse order so that the first middleware in the list is the
-    ///     outermost (first to execute), ensuring intuitive ordering.
-    /// </remarks>
-    /// <param name="middlewares">Ordered list of middleware components to compose.</param>
-    /// <param name="handler">The core handler to wrap with middleware.</param>
-    /// <returns>A composed handler with all middleware applied.</returns>
-    private static LambdaInvocationDelegate BuildMiddlewarePipeline(
-        List<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>> middlewares,
-        LambdaInvocationDelegate handler
-    ) =>
-        middlewares
-            .Reverse<Func<LambdaInvocationDelegate, LambdaInvocationDelegate>>()
-            .Aggregate(handler, (next, middleware) => middleware(next));
+        _options.ConfigureHandlerBuilder?.Invoke(builder);
 
-    /// <summary>
-    ///     Creates a handler function that processes a single Lambda invocation. Handles cancellation
-    ///     coordination, context creation, and serialization.
-    /// </summary>
-    /// <param name="handler">The handler to wrap with request processing logic.</param>
-    /// <param name="stoppingToken">Cancellation token for service shutdown.</param>
-    /// <returns>A handler function that accepts input stream and Lambda context.</returns>
-    private Func<Stream, ILambdaContext, Task<Stream>> CreateRequestHandler(
-        LambdaInvocationDelegate handler,
-        CancellationToken stoppingToken
-    ) =>
-        async Task<Stream> (inputStream, lambdaContext) =>
+        var handler = builder.Build();
+
+        return CreateRequestHandler;
+
+        async Task<Stream> CreateRequestHandler(Stream inputStream, ILambdaContext lambdaContext)
         {
             // Create a base cancellation token source using the provided token source factory.
             // This allows cancellation when the maximum lifetime of the lambda has been reached.
-            using var cancellationTokenSource =
-                _cancellationTokenSourceFactory.NewCancellationTokenSource(lambdaContext);
+            using var cancellationTokenSource = _cancellationFactory.NewCancellationTokenSource(
+                lambdaContext
+            );
 
             // Combine the base cancellation token source with the stoppingToken.
             // This allows for cancellation when either:
@@ -118,30 +62,32 @@ internal sealed class LambdaHandlerComposer : ILambdaHandlerFactory
                 cancellationTokenSource.Token
             );
 
+            var featureCollection = _featureCollectionFactory.Create();
+            var rawData = new RawInvocationData
+            {
+                Event = inputStream,
+                Response = new MemoryStream(),
+            };
+
             // Create a new lambda host context. This will also create a new service scope
             // the first time that the service container is accessed.
-            await using var lambdaHostContext = new LambdaHostContext(
+            await using var lambdaHostContext = new DefaultLambdaHostContext(
                 lambdaContext,
                 _scopeFactory,
+                builder.Properties,
+                featureCollection,
+                rawData,
                 linkedTokenSource.Token
             );
 
-            // Deserialize the request if a deserializer is provided.
-            if (_delegateHolder.Deserializer is not null)
-                await _delegateHolder.Deserializer(
-                    lambdaHostContext,
-                    _lambdaSerializer,
-                    inputStream
-                );
-
             // Invoke the handler wrapped in the middleware pipeline.
-            await handler(lambdaHostContext);
+            await handler.Invoke(lambdaHostContext);
 
-            // Serialize the response if a serializer is provided.
-            if (_delegateHolder.Serializer is not null)
-                return await _delegateHolder.Serializer(lambdaHostContext, _lambdaSerializer);
+            if (lambdaHostContext.Features.TryGet<IResponseFeature>(out var responseFeature))
+                responseFeature.SerializeToStream(lambdaHostContext);
 
             // If no serializer is provided, return an empty stream.
-            return new MemoryStream(0);
-        };
+            return lambdaHostContext.RawInvocationData.Response;
+        }
+    }
 }

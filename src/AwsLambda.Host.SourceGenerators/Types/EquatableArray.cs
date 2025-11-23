@@ -25,13 +25,13 @@ internal readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnu
     /// <param name="array">The input <see cref="ImmutableArray" /> to wrap.</param>
     public EquatableArray(T[] array) => _array = array;
 
-    /// <sinheritdoc />
+    /// <inheritdoc />
     public bool Equals(EquatableArray<T> array) => AsSpan().SequenceEqual(array.AsSpan());
 
-    /// <sinheritdoc />
+    /// <inheritdoc />
     public override bool Equals(object? obj) => obj is EquatableArray<T> array && Equals(array);
 
-    /// <sinheritdoc />
+    /// <inheritdoc />
     public override int GetHashCode()
     {
         if (_array is not T[] array)
@@ -52,11 +52,11 @@ internal readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnu
     /// <summary>Gets the underlying array if there is one</summary>
     public T[]? GetArray() => _array;
 
-    /// <sinheritdoc />
+    /// <inheritdoc />
     IEnumerator<T> IEnumerable<T>.GetEnumerator() =>
         ((IEnumerable<T>)(_array ?? [])).GetEnumerator();
 
-    /// <sinheritdoc />
+    /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<T>)(_array ?? [])).GetEnumerator();
 
     public int Count => _array?.Length ?? 0;

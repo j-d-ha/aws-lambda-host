@@ -23,25 +23,29 @@ namespace System.Runtime.CompilerServices
     }
 }
 
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System;
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using Amazon.Lambda.Core;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     using Microsoft.Extensions.DependencyInjection;
-
+    
     file static class MapHandlerLambdaApplicationExtensions
     {
-        // Location: InputFile.cs(13,8)
-        [InterceptsLocation(1, "tcgIkMWvnCYF2LFqsYCnnR8BAABJbnB1dEZpbGUuY3M=")]
-        internal static ILambdaApplication MapHandlerInterceptor(
-            this ILambdaApplication application,
+        // Location: InputFile.cs(14,8)
+        [InterceptsLocation(1, "wCxh64raLv7JZxUcekz6bkIBAABJbnB1dEZpbGUuY3M=")]
+        internal static ILambdaInvocationBuilder MapHandlerInterceptor(
+            this ILambdaInvocationBuilder application,
             Delegate handler
         )
         {
             var castHandler = (global::System.Action<string, global::Amazon.Lambda.Core.ILambdaContext, global::System.Threading.CancellationToken, global::IService, global::IService?, global::IService, global::IService?>)handler;
+
+            return application.Handle(InvocationDelegate);
 
             Task InvocationDelegate(ILambdaHostContext context)
             {
@@ -50,7 +54,7 @@ namespace AwsLambda.Host
                     throw new InvalidOperationException($"Unable to resolve service referenced by {nameof(FromKeyedServicesAttribute)}. The service provider doesn't support keyed services.");
                 }
                 // ParameterInfo { Type = string, Name = request, Source = Event, IsNullable = False, IsOptional = False}
-                var arg0 = context.GetEventT<string>();
+                var arg0 = context.GetRequiredEvent<string>();
                 // ParameterInfo { Type = global::Amazon.Lambda.Core.ILambdaContext, Name = context, Source = Context, IsNullable = False, IsOptional = False}
                 var arg1 = context;
                 // ParameterInfo { Type = global::System.Threading.CancellationToken, Name = cancellationToken, Source = CancellationToken, IsNullable = False, IsOptional = False}
@@ -66,39 +70,13 @@ namespace AwsLambda.Host
                 castHandler.Invoke(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
                 return Task.CompletedTask; 
             }
-            
-            Task Deserializer(ILambdaHostContext context, ILambdaSerializer serializer, Stream eventStream)
-            {
-                context.Event = serializer.Deserialize<string>(eventStream);
-                return Task.CompletedTask;
-            }
-            
-            Task<Stream> Serializer(ILambdaHostContext context, ILambdaSerializer serializer)
-            {
-                return Task.FromResult<Stream>(new MemoryStream(0));
-            }
-
-            return application.MapHandler(InvocationDelegate, Deserializer, Serializer);
         }
-
-        private static T GetEventT<T>(this ILambdaHostContext context)
+        
+        [InterceptsLocation(1, "wCxh64raLv7JZxUcekz6bgcBAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(10,22)
+        internal static LambdaApplication BuildInterceptor(this LambdaApplicationBuilder builder)
         {
-            if (!context.TryGetEvent<T>(out var eventT))
-            {
-                throw new InvalidOperationException($"Lambda event of type '{typeof(T).FullName}' is not available in the context.");
-            }
-            
-            return eventT!;
-        }
-
-        private static T GetResponseT<T>(this ILambdaHostContext context)
-        {
-            if (!context.TryGetResponse<T>(out var responseT))
-            {
-                throw new InvalidOperationException($"Lambda response of type '{typeof(T).FullName}' is not available in the context.");
-            }
-            
-            return responseT!;
+            builder.Services.AddSingleton<IFeatureProvider, DefaultEventFeatureProvider<string>>();
+            return builder.Build();
         }
     }
 }

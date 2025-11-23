@@ -6,7 +6,8 @@ public class OtelEnabledVerifyTests
     public async Task Test_OtelEnabled_EventAndResponse() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -29,7 +30,8 @@ public class OtelEnabledVerifyTests
     public async Task Test_OtelEnabled_OnlyResponse() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -50,7 +52,8 @@ public class OtelEnabledVerifyTests
     public async Task Test_OtelEnabled_OnlyEvent() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -71,7 +74,8 @@ public class OtelEnabledVerifyTests
     public async Task Test_OtelEnabled_NoEventNoResponse() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -91,7 +95,8 @@ public class OtelEnabledVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host;
+            using AwsLambda.Host.Core;
+            using AwsLambda.Host.Builder;
             using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 

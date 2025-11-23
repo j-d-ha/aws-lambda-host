@@ -19,27 +19,42 @@ directly via `record.BodyContent`.
 Define your message type and handler:
 
 ```csharp
-using AwsLambda.Host;
+using Amazon.Lambda.SQSEvents;
+using AwsLambda.Host.Builder;
 using AwsLambda.Host.Envelopes.Sqs;
-
-// Your message payload - will be deserialized from SQS message body
-record Message(string Name);
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 var builder = LambdaApplication.CreateBuilder();
 var lambda = builder.Build();
 
 // SqsEnvelope<Message> provides access to the SQS event and deserialized Message payloads
-lambda.MapHandler(([Event] SqsEnvelope<Message> envelope, ILogger<Program> logger) =>
-{
-    foreach (var record in envelope.Records)
+lambda.MapHandler(
+    ([Event] SqsEnvelope<Message> envelope, ILogger<Program> logger) =>
     {
-        logger.LogInformation("Message: {Name}", record.BodyContent?.Name);
+        // Inorder to handle any errors or unprocessed messages, you must return a SQSBatchResponse
+        var batchResponse = new SQSBatchResponse();
+
+        foreach (var record in envelope.Records)
+        {
+            // For this example, we'll add a failure to the batch response if the message body is null
+            if (record.BodyContent is null)
+                batchResponse.BatchItemFailures.Add(
+                    new SQSBatchResponse.BatchItemFailure { ItemIdentifier = record.MessageId }
+                );
+
+            logger.LogInformation("Message: {Name}", record.BodyContent?.Name);
+        }
+
+        // Return the batch response regardless of whether there were any failures
+        return batchResponse;
     }
-});
+);
 
 await lambda.RunAsync();
 
-record Message(string Name);
+// Your message payload - will be deserialized from SQS message body
+internal record Message(string Name);
 ```
 
 ## AOT Support

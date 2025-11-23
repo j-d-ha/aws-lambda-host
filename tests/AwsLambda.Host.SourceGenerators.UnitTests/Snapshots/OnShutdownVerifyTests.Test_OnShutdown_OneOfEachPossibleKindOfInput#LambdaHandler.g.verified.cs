@@ -23,20 +23,22 @@ namespace System.Runtime.CompilerServices
     }
 }
 
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System;
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     
     file static class OnShutdownLambdaApplicationExtensions
     {
-        // Location: InputFile.cs(11,8)
-        [InterceptsLocation(1, "AQrJxIlrC5Au0bNAiyl5s/kAAABJbnB1dEZpbGUuY3M=")]
-        internal static ILambdaApplication OnShutdownInterceptor0(
-            this ILambdaApplication application,
+        // Location: InputFile.cs(12,8)
+        [InterceptsLocation(1, "YiehluDLQPPtk+Ko8lbJChwBAABJbnB1dEZpbGUuY3M=")]
+        internal static ILambdaOnShutdownBuilder OnShutdownInterceptor0(
+            this ILambdaOnShutdownBuilder application,
             Delegate handler
         )
         {

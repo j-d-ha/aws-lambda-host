@@ -54,7 +54,8 @@ Ensure your project uses C# 11 or later:
 Create a simple Lambda handler:
 
 ```csharp
-using AwsLambda.Host;
+using AwsLambda.Host.Builder;
+using Microsoft.Extensions.Hosting;
 
 var builder = LambdaApplication.CreateBuilder();
 var lambda = builder.Build();
@@ -77,10 +78,10 @@ lambda.MapHandler(([Event] Order order, IOrderService service) =>
 Add middleware for cross-cutting concerns:
 
 ```csharp
-lambda.Use(async (context, next) =>
+lambda.UseMiddleware(async (context, next) =>
 {
     Console.WriteLine("Before handler");
-    await next();
+    await next(context);
     Console.WriteLine("After handler");
 });
 ```
@@ -88,15 +89,31 @@ lambda.Use(async (context, next) =>
 Use `OnInit()` for setup and `OnShutdown()` for cleanup:
 
 ```csharp
+// Service can be injected into the Init handler
+lambda.OnInit(ICache cache =>
+{
+    // Runs once at startup - perfect for setting up resources
+    cache.Warm();
+});
+
+// Handlers can also control if the Init phase should be continued or not
 lambda.OnInit(async (services, token) =>
 {
-    // Runs once - perfect for initializing resources
+    // Returns false to abort startup
     return true;
 });
 
+// Runs once at shutdown - cleanup resources
 lambda.OnShutdown(async (services, token) =>
 {
-    // Runs once at shutdown - cleanup resources
+    // ...
+});
+
+// Service can be injected into the shutdown handler too handler
+lambda.OnShutdown(ITelemetryService telemetryService =>
+{
+    // Runs once at shutdown - great for cleaning up resources
+    telemetryService.ForceFlush();
 });
 ```
 
@@ -136,14 +153,14 @@ compose into a pipeline:
 lambda.UseMiddleware(async (context, next) =>
 {
     // Pre-handler logic
-    await next();
+    await next(context);
     // Post-handler logic
 });
 
 lambda.UseMiddleware(async (context, next) =>
 {
     // Another middleware layer
-    await next();
+    await next(context);
 });
 ```
 
@@ -242,10 +259,9 @@ builder.Services.ConfigureLambdaHostOptions(options =>
 {
     options.InitTimeout = TimeSpan.FromSeconds(10);
     options.InvocationCancellationBuffer = TimeSpan.FromSeconds(5);
-
-    // Customize JSON serialization
-    options.JsonSerializerOptions.Converters.Add(myCustomConverter);
-    options.JsonWriterOptions.Indented = true;
+    options.ShutdownDuration = ShutdownDuration.ExternalExtensions;
+    options.ShutdownDurationBuffer = TimeSpan.FromMilliseconds(100);
+    options.ClearLambdaOutputFormatting = true;
 });
 ```
 

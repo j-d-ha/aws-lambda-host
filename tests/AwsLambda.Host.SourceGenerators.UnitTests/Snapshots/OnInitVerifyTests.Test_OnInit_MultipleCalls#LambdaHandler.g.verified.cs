@@ -23,20 +23,22 @@ namespace System.Runtime.CompilerServices
     }
 }
 
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System;
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     
     file static class OnInitLambdaApplicationExtensions
     {
-        // Location: InputFile.cs(9,8)
-        [InterceptsLocation(1, "IxmLrkjFMZnwZoGab4k9X7EAAABJbnB1dEZpbGUuY3M=")]
-        internal static ILambdaApplication OnInitInterceptor0(
-            this ILambdaApplication application,
+        // Location: InputFile.cs(10,8)
+        [InterceptsLocation(1, "WS5xwmfdbttlkCDwmVN/4dQAAABJbnB1dEZpbGUuY3M=")]
+        internal static ILambdaOnInitBuilder OnInitInterceptor0(
+            this ILambdaOnInitBuilder application,
             Delegate handler
         )
         {
@@ -51,10 +53,10 @@ namespace AwsLambda.Host
             }
         }
         
-        // Location: InputFile.cs(14,8)
-        [InterceptsLocation(1, "IxmLrkjFMZnwZoGab4k9X/kAAABJbnB1dEZpbGUuY3M=")]
-        internal static ILambdaApplication OnInitInterceptor1(
-            this ILambdaApplication application,
+        // Location: InputFile.cs(15,8)
+        [InterceptsLocation(1, "WS5xwmfdbttlkCDwmVN/4RwBAABJbnB1dEZpbGUuY3M=")]
+        internal static ILambdaOnInitBuilder OnInitInterceptor1(
+            this ILambdaOnInitBuilder application,
             Delegate handler
         )
         {
@@ -73,10 +75,10 @@ namespace AwsLambda.Host
             }
         }
         
-        // Location: InputFile.cs(21,8)
-        [InterceptsLocation(1, "IxmLrkjFMZnwZoGab4k9X14BAABJbnB1dEZpbGUuY3M=")]
-        internal static ILambdaApplication OnInitInterceptor2(
-            this ILambdaApplication application,
+        // Location: InputFile.cs(22,8)
+        [InterceptsLocation(1, "WS5xwmfdbttlkCDwmVN/4YEBAABJbnB1dEZpbGUuY3M=")]
+        internal static ILambdaOnInitBuilder OnInitInterceptor2(
+            this ILambdaOnInitBuilder application,
             Delegate handler
         )
         {

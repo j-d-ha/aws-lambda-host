@@ -23,74 +23,53 @@ namespace System.Runtime.CompilerServices
     }
 }
 
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System;
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using Amazon.Lambda.Core;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     using Microsoft.Extensions.DependencyInjection;
-
+    
     file static class MapHandlerLambdaApplicationExtensions
     {
-        // Location: InputFile.cs(9,8)
-        [InterceptsLocation(1, "sQyIxrhlQMBj91fO5urMMMoAAABJbnB1dEZpbGUuY3M=")]
-        internal static ILambdaApplication MapHandlerInterceptor(
-            this ILambdaApplication application,
+        // Location: InputFile.cs(10,8)
+        [InterceptsLocation(1, "YAIayk0naS2HI+NqiUzlmO0AAABJbnB1dEZpbGUuY3M=")]
+        internal static ILambdaInvocationBuilder MapHandlerInterceptor(
+            this ILambdaInvocationBuilder application,
             Delegate handler
         )
         {
             var castHandler = (global::System.Func<global::CustomRequest, global::IService, global::Amazon.Lambda.Core.ILambdaContext, global::System.Threading.Tasks.Task<global::CustomResponse>>)handler;
 
+            return application.Handle(InvocationDelegate);
+
             async Task InvocationDelegate(ILambdaHostContext context)
             {
                 // ParameterInfo { Type = global::CustomRequest, Name = request, Source = Event, IsNullable = False, IsOptional = False}
-                var arg0 = context.GetEventT<global::CustomRequest>();
+                var arg0 = context.GetRequiredEvent<global::CustomRequest>();
                 // ParameterInfo { Type = global::IService, Name = service, Source = Service, IsNullable = False, IsOptional = False}
                 var arg1 = context.ServiceProvider.GetRequiredService<global::IService>();
                 // ParameterInfo { Type = global::Amazon.Lambda.Core.ILambdaContext, Name = context, Source = Context, IsNullable = False, IsOptional = False}
                 var arg2 = context;
-                context.Response = await castHandler.Invoke(arg0, arg1, arg2);
+                var response = await castHandler.Invoke(arg0, arg1, arg2);
+                if (context.Features.Get<IResponseFeature>() is not IResponseFeature<global::CustomResponse> responseFeature)
+                {
+                    throw new InvalidOperationException($"Response feature for type 'global::CustomResponse' is not available in the collection.");
+                }
+                responseFeature.SetResponse(response);
             }
-            
-            Task Deserializer(ILambdaHostContext context, ILambdaSerializer serializer, Stream eventStream)
-            {
-                context.Event = serializer.Deserialize<global::CustomRequest>(eventStream);
-                return Task.CompletedTask;
-            }
-            
-            Task<Stream> Serializer(ILambdaHostContext context, ILambdaSerializer serializer)
-            {
-                var response = context.GetResponseT<global::CustomResponse>();
-                var outputStream = new MemoryStream();
-                outputStream.SetLength(0L);
-                serializer.Serialize<global::CustomResponse>(response, outputStream);
-                outputStream.Position = 0L;
-                return Task.FromResult<Stream>(outputStream);
-            }
-
-            return application.MapHandler(InvocationDelegate, Deserializer, Serializer);
         }
-
-        private static T GetEventT<T>(this ILambdaHostContext context)
+        
+        [InterceptsLocation(1, "YAIayk0naS2HI+NqiUzlmNwAAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(8,22)
+        internal static LambdaApplication BuildInterceptor(this LambdaApplicationBuilder builder)
         {
-            if (!context.TryGetEvent<T>(out var eventT))
-            {
-                throw new InvalidOperationException($"Lambda event of type '{typeof(T).FullName}' is not available in the context.");
-            }
-            
-            return eventT!;
-        }
-
-        private static T GetResponseT<T>(this ILambdaHostContext context)
-        {
-            if (!context.TryGetResponse<T>(out var responseT))
-            {
-                throw new InvalidOperationException($"Lambda response of type '{typeof(T).FullName}' is not available in the context.");
-            }
-            
-            return responseT!;
+            builder.Services.AddSingleton<IFeatureProvider, DefaultEventFeatureProvider<global::CustomRequest>>();
+            builder.Services.AddSingleton<IFeatureProvider, DefaultResponseFeatureProvider<global::CustomResponse>>();
+            return builder.Build();
         }
     }
 }

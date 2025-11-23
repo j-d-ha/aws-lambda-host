@@ -1,13 +1,9 @@
 using System.Diagnostics;
-using AwesomeAssertions;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using Xunit;
 
 namespace AwsLambda.Host.OpenTelemetry.UnitTests;
 
@@ -20,7 +16,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
     public void OnShutdownFlushTracer_ThrowsOnNullILambdaApplication()
     {
         // Arrange
-        ILambdaApplication mockApp = null!;
+        ILambdaOnShutdownBuilder mockApp = null!;
 
         // Act
         Action act = () => mockApp.OnShutdownFlushTracer();
@@ -33,7 +29,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
     public void OnShutdownFlushTracer_ThrowsOnNoTracerProviderRegistered()
     {
         // Arrange
-        var mockApp = Substitute.For<ILambdaApplication>();
+        var mockApp = Substitute.For<ILambdaOnShutdownBuilder>();
         var mockServiceProvider = Substitute.For<IServiceProvider>();
         mockServiceProvider.GetService(typeof(TracerProvider)).Returns(null);
         mockApp.Services.Returns(mockServiceProvider);
@@ -53,7 +49,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
     public void OnShutdownFlushTracer_ShouldNotThrowOnNoILoggerFactoryRegistered()
     {
         // Arrange
-        var mockApp = Substitute.For<ILambdaApplication>();
+        var mockApp = Substitute.For<ILambdaOnShutdownBuilder>();
         var mockServiceProvider = Substitute.For<IServiceProvider>();
         mockServiceProvider
             .GetService(typeof(TracerProvider))
@@ -178,7 +174,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
     public void OnShutdownFlushMeter_ThrowsOnNullILambdaApplication()
     {
         // Arrange
-        ILambdaApplication mockApp = null!;
+        ILambdaOnShutdownBuilder mockApp = null!;
 
         // Act
         Action act = () => mockApp.OnShutdownFlushMeter();
@@ -191,7 +187,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
     public void OnShutdownFlushMeter_ThrowsOnNoMeterProviderRegistered()
     {
         // Arrange
-        var mockApp = Substitute.For<ILambdaApplication>();
+        var mockApp = Substitute.For<ILambdaOnShutdownBuilder>();
         var mockServiceProvider = Substitute.For<IServiceProvider>();
         mockServiceProvider.GetService(typeof(MeterProvider)).Returns(null);
         mockApp.Services.Returns(mockServiceProvider);
@@ -211,7 +207,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
     public void OnShutdownFlushMeter_ShouldNotThrowOnNoILoggerFactoryRegistered()
     {
         // Arrange
-        var mockApp = Substitute.For<ILambdaApplication>();
+        var mockApp = Substitute.For<ILambdaOnShutdownBuilder>();
         var mockServiceProvider = Substitute.For<IServiceProvider>();
         mockServiceProvider
             .GetService(typeof(MeterProvider))
@@ -336,7 +332,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
     public void OnShutdownFlushOpenTelemetry_ThrowsOnNullILambdaApplication()
     {
         // Arrange
-        ILambdaApplication mockApp = null!;
+        ILambdaOnShutdownBuilder mockApp = null!;
 
         // Act
         Action act = () => mockApp.OnShutdownFlushOpenTelemetry();
@@ -564,7 +560,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
 
     #region Test Helpers
 
-    private static ILambdaApplication CreateMockApp(
+    private static ILambdaOnShutdownBuilder CreateMockApp(
         Action<LambdaShutdownDelegate> onShutdown,
         Action<MockOptions>? configureOptions = null
     )
@@ -572,7 +568,7 @@ public class OnShutdownOpenTelemetryExtensionsTests
         var options = new MockOptions();
         configureOptions?.Invoke(options);
 
-        var mockApp = Substitute.For<ILambdaApplication>();
+        var mockApp = Substitute.For<ILambdaOnShutdownBuilder>();
 
         mockApp.OnShutdown(Arg.Do(onShutdown)).Returns(mockApp);
 
@@ -607,10 +603,10 @@ public class OnShutdownOpenTelemetryExtensionsTests
 
     private class MockOptions
     {
-        public TimeSpan TracerDelay { get; set; } = TimeSpan.Zero;
-        public bool TracerShouldSucceed { get; set; } = true;
         public TimeSpan MeterDelay { get; set; } = TimeSpan.Zero;
         public bool MeterShouldSucceed { get; set; } = true;
+        public TimeSpan TracerDelay { get; set; } = TimeSpan.Zero;
+        public bool TracerShouldSucceed { get; set; } = true;
     }
 
     private class MockProcessor<T>(TimeSpan delay, bool shouldSucceed) : BaseProcessor<T>

@@ -23,86 +23,67 @@ namespace System.Runtime.CompilerServices
     }
 }
 
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System;
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using Amazon.Lambda.Core;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     using Microsoft.Extensions.DependencyInjection;
-
+    
     file static class MapHandlerLambdaApplicationExtensions
     {
-        // Location: InputFile.cs(12,8)
-        [InterceptsLocation(1, "NO8BH5ccNgWMTtTeKT9P5QQBAABJbnB1dEZpbGUuY3M=")]
-        internal static ILambdaApplication MapHandlerInterceptor(
-            this ILambdaApplication application,
+        // Location: InputFile.cs(13,8)
+        [InterceptsLocation(1, "mX/YeIwGYTTDQe0umNPm4ScBAABJbnB1dEZpbGUuY3M=")]
+        internal static ILambdaInvocationBuilder MapHandlerInterceptor(
+            this ILambdaInvocationBuilder application,
             Delegate handler
         )
         {
             var castHandler = (global::System.Func<string, global::IService, global::System.Threading.Tasks.Task<string>>)handler;
 
+            return application.Handle(InvocationDelegate);
+
             async Task InvocationDelegate(ILambdaHostContext context)
             {
                 // ParameterInfo { Type = string, Name = input, Source = Event, IsNullable = False, IsOptional = False}
-                var arg0 = context.GetEventT<string>();
+                var arg0 = context.GetRequiredEvent<string>();
                 // ParameterInfo { Type = global::IService, Name = service, Source = Service, IsNullable = False, IsOptional = False}
                 var arg1 = context.ServiceProvider.GetRequiredService<global::IService>();
-                context.Response = await castHandler.Invoke(arg0, arg1);
+                var response = await castHandler.Invoke(arg0, arg1);
+                if (context.Features.Get<IResponseFeature>() is not IResponseFeature<string> responseFeature)
+                {
+                    throw new InvalidOperationException($"Response feature for type 'string' is not available in the collection.");
+                }
+                responseFeature.SetResponse(response);
             }
-            
-            Task Deserializer(ILambdaHostContext context, ILambdaSerializer serializer, Stream eventStream)
-            {
-                context.Event = serializer.Deserialize<string>(eventStream);
-                return Task.CompletedTask;
-            }
-            
-            Task<Stream> Serializer(ILambdaHostContext context, ILambdaSerializer serializer)
-            {
-                var response = context.GetResponseT<string>();
-                var outputStream = new MemoryStream();
-                outputStream.SetLength(0L);
-                serializer.Serialize<string>(response, outputStream);
-                outputStream.Position = 0L;
-                return Task.FromResult<Stream>(outputStream);
-            }
-
-            return application.MapHandler(InvocationDelegate, Deserializer, Serializer);
         }
-
-        private static T GetEventT<T>(this ILambdaHostContext context)
+        
+        [InterceptsLocation(1, "mX/YeIwGYTTDQe0umNPm4fMAAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(9,22)
+        internal static LambdaApplication BuildInterceptor(this LambdaApplicationBuilder builder)
         {
-            if (!context.TryGetEvent<T>(out var eventT))
-            {
-                throw new InvalidOperationException($"Lambda event of type '{typeof(T).FullName}' is not available in the context.");
-            }
-            
-            return eventT!;
-        }
-
-        private static T GetResponseT<T>(this ILambdaHostContext context)
-        {
-            if (!context.TryGetResponse<T>(out var responseT))
-            {
-                throw new InvalidOperationException($"Lambda response of type '{typeof(T).FullName}' is not available in the context.");
-            }
-            
-            return responseT!;
+            builder.Services.AddSingleton<IFeatureProvider, DefaultEventFeatureProvider<string>>();
+            builder.Services.AddSingleton<IFeatureProvider, DefaultResponseFeatureProvider<string>>();
+            return builder.Build();
         }
     }
 }
 
-namespace AwsLambda.Host
+namespace AwsLambda.Host.Core.Generated
 {
     using System.Runtime.CompilerServices;
     using Microsoft.Extensions.DependencyInjection;
+    using AwsLambda.Host.Builder;
+    using AwsLambda.Host.Core;
     
     file static class OpenTelemetryLambdaApplicationExtensions
     {
-        [InterceptsLocation(1, "NO8BH5ccNgWMTtTeKT9P5eEAAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(10,8)
-        internal static ILambdaApplication UseOpenTelemetryTracingInterceptor(
-            this ILambdaApplication application
+        [InterceptsLocation(1, "mX/YeIwGYTTDQe0umNPm4QQBAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(11,8)
+        internal static ILambdaInvocationBuilder UseOpenTelemetryTracingInterceptor(
+            this ILambdaInvocationBuilder application
         )
         {
             return application.Use(application.Services.GetOpenTelemetryTracer<string, string>());

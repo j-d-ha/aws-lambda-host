@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
-namespace AwsLambda.Host;
+namespace AwsLambda.Host.Builder;
 
 /// <summary>
 ///     Extension methods for configuring OpenTelemetry force flush behavior during Lambda
@@ -14,7 +14,7 @@ public static class OnShutdownOpenTelemetryExtensions
 {
     private const string LogCategory = "AwsLambda.Host.OpenTelemetry";
 
-    extension(ILambdaApplication application)
+    extension(ILambdaOnShutdownBuilder application)
     {
         /// <summary>
         ///     Registers shutdown handlers to force flush both OpenTelemetry tracers and meters on Lambda
@@ -24,7 +24,7 @@ public static class OnShutdownOpenTelemetryExtensions
         ///     The timeout in milliseconds for flush operations. Defaults to
         ///     <see cref="Timeout.Infinite" />.
         /// </param>
-        /// <returns>The same <see cref="ILambdaApplication" /> instance for method chaining.</returns>
+        /// <returns>The same <see cref="ILambdaOnShutdownBuilder" /> instance for method chaining.</returns>
         /// <remarks>
         ///     <para>
         ///         This method registers shutdown handlers that force flush both tracer and meter providers
@@ -35,15 +35,15 @@ public static class OnShutdownOpenTelemetryExtensions
         ///         complete within the allocated shutdown time.
         ///     </para>
         /// </remarks>
-        public ILambdaApplication OnShutdownFlushOpenTelemetry(
+        public ILambdaOnShutdownBuilder OnShutdownFlushOpenTelemetry(
             int timeoutMilliseconds = Timeout.Infinite
         )
         {
             ArgumentNullException.ThrowIfNull(application);
 
-            application.OnShutdownFlushMeter(timeoutMilliseconds);
-
             application.OnShutdownFlushTracer(timeoutMilliseconds);
+
+            application.OnShutdownFlushMeter(timeoutMilliseconds);
 
             return application;
         }
@@ -56,7 +56,7 @@ public static class OnShutdownOpenTelemetryExtensions
         ///     The timeout in milliseconds for the flush operation. Defaults to
         ///     <see cref="Timeout.Infinite" />.
         /// </param>
-        /// <returns>The same <see cref="ILambdaApplication" /> instance for method chaining.</returns>
+        /// <returns>The same <see cref="ILambdaOnShutdownBuilder" /> instance for method chaining.</returns>
         /// <remarks>
         ///     <para>
         ///         This method registers a shutdown handler that force flushes the tracer provider to ensure
@@ -67,7 +67,9 @@ public static class OnShutdownOpenTelemetryExtensions
         ///         this method safely returns without error.
         ///     </para>
         /// </remarks>
-        public ILambdaApplication OnShutdownFlushTracer(int timeoutMilliseconds = Timeout.Infinite)
+        public ILambdaOnShutdownBuilder OnShutdownFlushTracer(
+            int timeoutMilliseconds = Timeout.Infinite
+        )
         {
             ArgumentNullException.ThrowIfNull(application);
 
@@ -98,7 +100,7 @@ public static class OnShutdownOpenTelemetryExtensions
         ///     The timeout in milliseconds for the flush operation. Defaults to
         ///     <see cref="Timeout.Infinite" />.
         /// </param>
-        /// <returns>The same <see cref="ILambdaApplication" /> instance for method chaining.</returns>
+        /// <returns>The same <see cref="ILambdaOnShutdownBuilder" /> instance for method chaining.</returns>
         /// <remarks>
         ///     <para>
         ///         This method registers a shutdown handler that force flushes the meter provider to ensure
@@ -109,7 +111,9 @@ public static class OnShutdownOpenTelemetryExtensions
         ///         this method safely returns without error.
         ///     </para>
         /// </remarks>
-        public ILambdaApplication OnShutdownFlushMeter(int timeoutMilliseconds = Timeout.Infinite)
+        public ILambdaOnShutdownBuilder OnShutdownFlushMeter(
+            int timeoutMilliseconds = Timeout.Infinite
+        )
         {
             ArgumentNullException.ThrowIfNull(application);
 

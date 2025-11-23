@@ -21,11 +21,13 @@ internal static class LambdaHostOutputGenerator
 
         // if MapHandler calls found, generate the source code. Will always be 0 or 1 at this point.
         // Anything that needs to know types from the handler must be generated here.
-        if (compilationInfo.MapHandlerInvocationInfos.Count == 1)
+        if (compilationInfo.MapHandlerInvocationInfos.Count(x => x.Name != "Handle") == 1)
         {
             var mapHandlerInvocationInfo = compilationInfo.MapHandlerInvocationInfos.First();
 
-            outputs.Add(MapHandlerSources.Generate(mapHandlerInvocationInfo));
+            outputs.Add(
+                MapHandlerSources.Generate(mapHandlerInvocationInfo, compilationInfo.BuilderInfos)
+            );
 
             // if UseOpenTelemetryTracing calls found, generate the source code.
             if (compilationInfo.UseOpenTelemetryTracingInfos.Count >= 1)
@@ -44,7 +46,8 @@ internal static class LambdaHostOutputGenerator
                     compilationInfo.OnShutdownInvocationInfos,
                     "OnShutdown",
                     null,
-                    null
+                    null,
+                    "ILambdaOnShutdownBuilder"
                 )
             );
 
@@ -55,7 +58,8 @@ internal static class LambdaHostOutputGenerator
                     compilationInfo.OnInitInvocationInfos,
                     "OnInit",
                     "bool",
-                    "true"
+                    "true",
+                    "ILambdaOnInitBuilder"
                 )
             );
 
