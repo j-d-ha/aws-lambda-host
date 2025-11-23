@@ -26,7 +26,7 @@ public class LambdaApplicationTests
         var act = () => new LambdaApplication(null!);
 
         // Assert
-        act.Should().ThrowExactly<ArgumentNullException>().WithParameterName("Host");
+        act.Should().ThrowExactly<ArgumentNullException>().WithParameterName("host");
     }
 
     [Fact]
