@@ -895,9 +895,15 @@ public class DefaultLambdaHostContextTests
             CancellationToken.None
         );
 
-        // Act & Assert
-        await context.DisposeAsync();
-        await context.DisposeAsync(); // Should not throw
+        // Act
+        var act = async () =>
+        {
+            await context.DisposeAsync();
+            await context.DisposeAsync(); // Should not throw
+        };
+
+        // Assert
+        await act.Should().NotThrowAsync();
     }
 
     [Theory]
