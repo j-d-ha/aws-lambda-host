@@ -8,7 +8,8 @@ internal static class OpenTelemetrySources
 {
     internal static string Generate(
         EquatableArray<SimpleMethodInfo> useOpenTelemetryTracingInfos,
-        DelegateInfo delegateInfo
+        DelegateInfo delegateInfo,
+        string generatedCodeAttribute
     )
     {
         // get the handler input event type
@@ -27,6 +28,7 @@ internal static class OpenTelemetrySources
             Locations = locations,
             EventType = eventType,
             ResponseType = responseType,
+            GeneratedCodeAttribute = generatedCodeAttribute,
         };
 
         var template = TemplateHelper.LoadTemplate(

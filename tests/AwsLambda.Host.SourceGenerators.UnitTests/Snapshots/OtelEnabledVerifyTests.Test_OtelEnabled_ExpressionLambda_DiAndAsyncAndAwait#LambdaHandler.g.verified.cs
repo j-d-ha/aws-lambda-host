@@ -14,6 +14,9 @@
 
 namespace System.Runtime.CompilerServices
 {
+    using System.CodeDom.Compiler;
+ 
+    [GeneratedCode("AwsLambda.Host.SourceGenerators", "0.0.0")]   
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     file sealed class InterceptsLocationAttribute : Attribute
     {
@@ -26,6 +29,7 @@ namespace System.Runtime.CompilerServices
 namespace AwsLambda.Host.Core.Generated
 {
     using System;
+    using System.CodeDom.Compiler;
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
@@ -34,6 +38,7 @@ namespace AwsLambda.Host.Core.Generated
     using AwsLambda.Host.Core;
     using Microsoft.Extensions.DependencyInjection;
     
+    [GeneratedCode("AwsLambda.Host.SourceGenerators", "0.0.0")]
     file static class MapHandlerLambdaApplicationExtensions
     {
         // Location: InputFile.cs(13,8)
@@ -74,11 +79,13 @@ namespace AwsLambda.Host.Core.Generated
 
 namespace AwsLambda.Host.Core.Generated
 {
+    using System.CodeDom.Compiler;
     using System.Runtime.CompilerServices;
     using Microsoft.Extensions.DependencyInjection;
     using AwsLambda.Host.Builder;
     using AwsLambda.Host.Core;
     
+    [GeneratedCode("AwsLambda.Host.SourceGenerators", "0.0.0")]
     file static class OpenTelemetryLambdaApplicationExtensions
     {
         [InterceptsLocation(1, "mX/YeIwGYTTDQe0umNPm4QQBAABJbnB1dEZpbGUuY3M=")] // Location: InputFile.cs(11,8)

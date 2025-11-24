@@ -14,6 +14,9 @@
 
 namespace System.Runtime.CompilerServices
 {
+    using System.CodeDom.Compiler;
+ 
+    [GeneratedCode("AwsLambda.Host.SourceGenerators", "0.0.0")]   
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     file sealed class InterceptsLocationAttribute : Attribute
     {
@@ -26,6 +29,7 @@ namespace System.Runtime.CompilerServices
 namespace AwsLambda.Host.Core.Generated
 {
     using System;
+    using System.CodeDom.Compiler;
     using System.IO;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
@@ -34,6 +38,7 @@ namespace AwsLambda.Host.Core.Generated
     using AwsLambda.Host.Core;
     using Microsoft.Extensions.DependencyInjection;
     
+    [GeneratedCode("AwsLambda.Host.SourceGenerators", "0.0.0")]
     file static class MapHandlerLambdaApplicationExtensions
     {
         // Location: InputFile.cs(10,8)

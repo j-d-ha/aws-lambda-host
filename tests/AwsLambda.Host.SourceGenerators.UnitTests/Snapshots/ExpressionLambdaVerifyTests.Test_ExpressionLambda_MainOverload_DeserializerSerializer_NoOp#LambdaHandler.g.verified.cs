@@ -14,6 +14,9 @@
 
 namespace System.Runtime.CompilerServices
 {
+    using System.CodeDom.Compiler;
+ 
+    [GeneratedCode("AwsLambda.Host.SourceGenerators", "0.0.0")]   
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     file sealed class InterceptsLocationAttribute : Attribute
     {
