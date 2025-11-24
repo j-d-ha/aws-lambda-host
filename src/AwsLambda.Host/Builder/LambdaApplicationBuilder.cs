@@ -125,8 +125,7 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
     )
         where TContainerBuilder : notnull => _hostBuilder.ConfigureContainer(factory, configure);
 
-    private void AddDefaultServices()
-    {
+    private void AddDefaultServices() =>
         Services.AddLogging(logging =>
         {
             logging.AddConfiguration(Configuration.GetSection("Logging"));
@@ -140,7 +139,6 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
                     | ActivityTrackingOptions.ParentId;
             });
         });
-    }
 
     private DefaultServiceProviderFactory GetServiceProviderFactory() =>
         Environment.IsDevelopment()
