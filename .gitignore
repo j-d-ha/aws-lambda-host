@@ -76,3 +76,4 @@ nunit-*.xml
 
 **/node_modules/
 /benchmarks/AwsLambda.Host.Benchmarks/BenchmarkDotNet.Artifacts/
+/nupkg/
