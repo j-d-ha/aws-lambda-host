@@ -110,7 +110,10 @@ internal static class GeneratorTestHelpers
             compilationOptions
         );
 
-        var generator = new MapHandlerIncrementalGenerator().AsSourceGenerator();
+        var generator = new MapHandlerIncrementalGenerator(
+            "AwsLambda.Host.SourceGenerators",
+            "0.0.0"
+        ).AsSourceGenerator();
 
         var driver = CSharpGeneratorDriver.Create(generator);
         var updatedDriver = driver.RunGenerators(compilation, CancellationToken.None);
