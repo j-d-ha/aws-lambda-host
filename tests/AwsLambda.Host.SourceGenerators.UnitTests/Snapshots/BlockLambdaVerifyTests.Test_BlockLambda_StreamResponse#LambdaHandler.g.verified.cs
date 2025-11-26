@@ -55,7 +55,7 @@ namespace AwsLambda.Host.Core.Generated
             Task InvocationDelegate(ILambdaHostContext context)
             {
                 var response = castHandler.Invoke();
-                context.RawInvocationData.Response = response;
+                context.Features.GetRequired<IInvocationDataFeature>().ResponseStream = response;
                 return Task.CompletedTask; 
             }
         }

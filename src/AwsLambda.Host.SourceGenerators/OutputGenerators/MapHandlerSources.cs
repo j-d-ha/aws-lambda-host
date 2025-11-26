@@ -73,7 +73,7 @@ internal static class MapHandlerSources
                     // Event -> deserialize to type
                     ParameterSource.Event
                         when param.TypeInfo.FullyQualifiedType == TypeConstants.Stream =>
-                        "context.RawInvocationData.Event",
+                        "context.Features.GetRequired<IInvocationDataFeature>().EventStream",
 
                     ParameterSource.Event =>
                         $"context.GetRequiredEvent<{param.TypeInfo.FullyQualifiedType}>()",

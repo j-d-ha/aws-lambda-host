@@ -40,6 +40,7 @@ public class LambdaHandlerComposerTests
             CancellationFactory = Substitute.For<ILambdaCancellationFactory>();
             Options = Microsoft.Extensions.Options.Options.Create(new LambdaHostedServiceOptions());
             LambdaHostContextFactory = Substitute.For<ILambdaHostContextFactory>();
+            InvocationDataFeatureFactory = Substitute.For<IInvocationDataFeatureFactory>();
 
             InvocationBuilder = Substitute.For<ILambdaInvocationBuilder>();
             CancellationTokenSource = new CancellationTokenSource();
@@ -53,6 +54,7 @@ public class LambdaHandlerComposerTests
         public ILambdaCancellationFactory CancellationFactory { get; }
         public CancellationTokenSource CancellationTokenSource { get; }
         public ILambdaInvocationBuilder InvocationBuilder { get; }
+        public IInvocationDataFeatureFactory InvocationDataFeatureFactory { get; }
         public ILambdaContext LambdaContext { get; }
         public ILambdaHostContext LambdaHostContext { get; }
         public ILambdaHostContextFactory LambdaHostContextFactory { get; }
@@ -75,19 +77,23 @@ public class LambdaHandlerComposerTests
             var mockFeatures = Substitute.For<IFeatureCollection>();
             mockFeatures.Get<IResponseFeature>().Returns(ResponseFeature);
 
+            // Create a mock invocation data feature with response stream
+            var mockInvocationDataFeature = Substitute.For<IInvocationDataFeature>();
+            mockInvocationDataFeature.ResponseStream.Returns(new MemoryStream());
+            InvocationDataFeatureFactory
+                .Create(Arg.Any<Stream>())
+                .Returns(mockInvocationDataFeature);
+
             // Set up the context factory to return a mock context for any Create call
             LambdaHostContextFactory
                 .Create(
                     Arg.Any<ILambdaContext>(),
                     Arg.Any<IDictionary<string, object?>>(),
-                    Arg.Any<RawInvocationData>(),
                     Arg.Any<CancellationToken>()
                 )
                 .Returns(info =>
                 {
                     // Create a new mock context for each call
-                    // The RawInvocationData passed to Create should be returned
-                    LambdaHostContext.RawInvocationData.Returns(info.Arg<RawInvocationData>());
                     LambdaHostContext.Features.Returns(mockFeatures);
                     ((IAsyncDisposable)LambdaHostContext)
                         .DisposeAsync()
@@ -102,7 +108,8 @@ public class LambdaHandlerComposerTests
                 LambdaInvocationBuilderFactory,
                 CancellationFactory,
                 Options,
-                LambdaHostContextFactory
+                LambdaHostContextFactory,
+                InvocationDataFeatureFactory
             );
 
         /// <summary>Sets the invocation handler that will be built by the builder.</summary>
@@ -127,6 +134,7 @@ public class LambdaHandlerComposerTests
     [InlineData(1)] // CancellationFactory
     [InlineData(2)] // Options
     [InlineData(3)] // LambdaHostContextFactory
+    [InlineData(4)] // InvocationDataFeatureFactory
     public void Constructor_WithNullParameter_ThrowsArgumentNullException(int parameterIndex)
     {
         // Arrange
@@ -135,6 +143,8 @@ public class LambdaHandlerComposerTests
         var cancellationFactory = parameterIndex == 1 ? null : _fixture.CancellationFactory;
         var options = parameterIndex == 2 ? null : _fixture.Options;
         var contextFactory = parameterIndex == 3 ? null : _fixture.LambdaHostContextFactory;
+        var invocationDataFeatureFactory =
+            parameterIndex == 4 ? null : _fixture.InvocationDataFeatureFactory;
 
         // Act & Assert
         var act = () =>
@@ -142,7 +152,8 @@ public class LambdaHandlerComposerTests
                 invocationBuilderFactory!,
                 cancellationFactory!,
                 options!,
-                contextFactory!
+                contextFactory!,
+                invocationDataFeatureFactory!
             );
         act.Should().ThrowExactly<ArgumentNullException>();
     }
@@ -221,7 +232,8 @@ public class LambdaHandlerComposerTests
             _fixture.LambdaInvocationBuilderFactory,
             _fixture.CancellationFactory,
             options,
-            _fixture.LambdaHostContextFactory
+            _fixture.LambdaHostContextFactory,
+            _fixture.InvocationDataFeatureFactory
         );
 
         // Act

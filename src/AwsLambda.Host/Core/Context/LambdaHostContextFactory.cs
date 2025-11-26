@@ -26,7 +26,6 @@ internal class LambdaHostContextFactory : ILambdaHostContextFactory
     public ILambdaHostContext Create(
         ILambdaContext lambdaContext,
         IDictionary<string, object?> properties,
-        RawInvocationData rawData,
         CancellationToken cancellationToken
     )
     {
@@ -35,7 +34,6 @@ internal class LambdaHostContextFactory : ILambdaHostContextFactory
             _serviceScopeFactory,
             properties,
             _featureCollectionFactory.Create(),
-            rawData,
             cancellationToken
         );
 

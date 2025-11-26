@@ -60,15 +60,14 @@ public class LambdaHostContextFactoryTests
         [Frozen] IFeatureCollectionFactory featureCollectionFactory,
         IServiceScopeFactory serviceScopeFactory,
         ILambdaContext lambdaContext,
-        IDictionary<string, object?> properties,
-        RawInvocationData rawData
+        IDictionary<string, object?> properties
     )
     {
         // Arrange
         var factory = new LambdaHostContextFactory(serviceScopeFactory, featureCollectionFactory);
 
         // Act
-        _ = factory.Create(lambdaContext, properties, rawData, CancellationToken.None);
+        _ = factory.Create(lambdaContext, properties, CancellationToken.None);
 
         // Assert
         featureCollectionFactory.Received(1).Create();
@@ -81,8 +80,7 @@ public class LambdaHostContextFactoryTests
         IServiceScopeFactory serviceScopeFactory,
         IFeatureCollectionFactory featureCollectionFactory,
         ILambdaContext lambdaContext,
-        IDictionary<string, object?> properties,
-        RawInvocationData rawData
+        IDictionary<string, object?> properties
     )
     {
         // Arrange
@@ -93,7 +91,7 @@ public class LambdaHostContextFactoryTests
         );
 
         // Act
-        _ = factory.Create(lambdaContext, properties, rawData, CancellationToken.None);
+        _ = factory.Create(lambdaContext, properties, CancellationToken.None);
 
         // Assert
         contextAccessor!.LambdaHostContext.Should().NotBeNull();

@@ -137,20 +137,21 @@ public class DefaultResponseFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void SerializeToStream_WhenResponseIsSet_CallsSerializer(
+        [Frozen] Stream responseStream,
         [Frozen] ILambdaSerializer serializer,
         DefaultResponseFeature<string> feature,
-        ILambdaHostContext context
+        ILambdaHostContext context,
+        string testData
     )
     {
         // Arrange
-        const string response = "test-response";
-        feature.SetResponse(response);
+        feature.SetResponse(testData);
 
         // Act
         feature.SerializeToStream(context);
 
         // Assert
-        serializer.Received(1).Serialize(response, context.RawInvocationData.Response);
+        serializer.Received(1).Serialize(testData, responseStream);
     }
 
     [Theory]
@@ -171,14 +172,14 @@ public class DefaultResponseFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void SerializeToStream_WhenResponseIsSet_ClearsResponseStream(
+        [Frozen] Stream responseStream,
         DefaultResponseFeature<string> feature,
-        ILambdaHostContext context
+        ILambdaHostContext context,
+        string testData
     )
     {
         // Arrange
-        const string response = "test-response";
-        feature.SetResponse(response);
-        var responseStream = context.RawInvocationData.Response;
+        feature.SetResponse(testData);
 
         // Act
         feature.SerializeToStream(context);
@@ -190,14 +191,14 @@ public class DefaultResponseFeatureTests
     [Theory]
     [AutoNSubstituteData]
     internal void SerializeToStream_WhenResponseIsSet_ResetsStreamPosition(
+        [Frozen] Stream responseStream,
         DefaultResponseFeature<string> feature,
-        ILambdaHostContext context
+        ILambdaHostContext context,
+        string testData
     )
     {
         // Arrange
-        const string response = "test-response";
-        feature.SetResponse(response);
-        var responseStream = context.RawInvocationData.Response;
+        feature.SetResponse(testData);
 
         // Act
         feature.SerializeToStream(context);
