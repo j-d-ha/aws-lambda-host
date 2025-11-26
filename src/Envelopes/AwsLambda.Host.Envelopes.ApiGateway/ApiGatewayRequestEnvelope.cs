@@ -9,9 +9,10 @@ namespace AwsLambda.Host.Envelopes.ApiGateway;
 ///     <see cref="System.Text.Json.JsonSerializer" /> with the configured
 ///     <see cref="EnvelopeOptions.JsonOptions" />.
 /// </remarks>
-public class ApiGatewayRequestEnvelope<T> : ApiGatewayRequestEnvelopeBase<T>
+public sealed class ApiGatewayRequestEnvelope<T> : ApiGatewayRequestEnvelopeBase<T>
 {
     /// <inheritdoc cref="IRequestEnvelope" />
+    /// <remarks>This implementation deserializes the request body from JSON.</remarks>
     public override void ExtractPayload(EnvelopeOptions options) =>
         BodyContent = JsonSerializer.Deserialize<T>(Body, options.JsonOptions);
 }
