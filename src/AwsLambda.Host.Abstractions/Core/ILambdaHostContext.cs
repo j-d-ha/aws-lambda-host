@@ -34,12 +34,6 @@ public interface ILambdaHostContext : ILambdaContext
     IDictionary<string, object?> Properties { get; }
 
     /// <summary>
-    ///     Gets the <see cref="RawInvocationData" /> containing the raw request and context
-    ///     information for the Lambda invocation.
-    /// </summary>
-    RawInvocationData RawInvocationData { get; }
-
-    /// <summary>
     ///     Gets or sets the <see cref="IServiceProvider" /> that provides access to the invocation's
     ///     service container.
     /// </summary>
