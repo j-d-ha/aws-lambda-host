@@ -28,6 +28,7 @@ public static class ServiceCollectionExtensions
                 DefaultLambdaOnShutdownBuilderFactory
             >();
             services.AddSingleton<IFeatureCollectionFactory, DefaultFeatureCollectionFactory>();
+            services.AddSingleton<ILambdaHostContextFactory, LambdaHostContextFactory>();
 
             // Register internal Lambda execution components
             services.AddSingleton<ILambdaHandlerFactory, LambdaHandlerComposer>();
@@ -59,6 +60,15 @@ public static class ServiceCollectionExtensions
                 ILambdaCancellationFactory,
                 DefaultLambdaCancellationFactory
             >();
+
+            return services;
+        }
+
+        public IServiceCollection AddLambdaHostContextAccessor()
+        {
+            ArgumentNullException.ThrowIfNull(services);
+
+            services.AddSingleton<ILambdaHostContextAccessor, LambdaHostContextAccessor>();
 
             return services;
         }
