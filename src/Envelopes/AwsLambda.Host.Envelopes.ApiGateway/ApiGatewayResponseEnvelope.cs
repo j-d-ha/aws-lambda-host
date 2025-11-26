@@ -1,23 +1,18 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using Amazon.Lambda.APIGatewayEvents;
 using AwsLambda.Host.Options;
 
 namespace AwsLambda.Host.Envelopes.ApiGateway;
 
-/// <inheritdoc cref="Amazon.Lambda.APIGatewayEvents.APIGatewayProxyResponse" />
+/// <inheritdoc cref="ApiGatewayResponseEnvelopeBase{T}" />
 /// <remarks>
-///     This class extends <see cref="Amazon.Lambda.APIGatewayEvents.APIGatewayProxyResponse" />
-///     and adds a strongly typed <see cref="BodyContent" /> property for easier serialization and
-///     deserialization of response payloads.
+///     Provides the default implementation for serializing response payloads using
+///     <see cref="System.Text.Json.JsonSerializer" /> with the configured
+///     <see cref="EnvelopeOptions.JsonOptions" />.
 /// </remarks>
-public class ApiGatewayResponseEnvelope<T> : APIGatewayProxyResponse, IResponseEnvelope
+public sealed class ApiGatewayResponseEnvelope<T> : ApiGatewayResponseEnvelopeBase<T>
 {
-    /// <summary>The deserialized content of the <see cref="APIGatewayProxyResponse.Body" /></summary>
-    [JsonIgnore]
-    public T? BodyContent { get; set; }
-
-    /// <inheritdoc />
-    public void PackPayload(EnvelopeOptions options) =>
+    /// <inheritdoc cref="IResponseEnvelope" />
+    /// <remarks>This implementation serializes the response body to JSON.</remarks>
+    public override void PackPayload(EnvelopeOptions options) =>
         Body = JsonSerializer.Serialize(BodyContent, options.JsonOptions);
 }
