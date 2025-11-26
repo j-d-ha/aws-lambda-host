@@ -24,7 +24,8 @@ internal class DefaultEventFeature<T> : IEventFeature<T>
     {
         if (!_isDeserialized)
         {
-            _data = _lambdaSerializer.Deserialize<T>(context.RawInvocationData.Event);
+            var invocationDataFeature = context.Features.GetRequired<IInvocationDataFeature>();
+            _data = _lambdaSerializer.Deserialize<T>(invocationDataFeature.EventStream);
             _isDeserialized = true;
         }
 

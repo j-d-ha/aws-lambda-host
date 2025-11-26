@@ -15,7 +15,6 @@ internal class DefaultLambdaHostContext : ILambdaHostContext, IAsyncDisposable
         IServiceScopeFactory serviceScopeFactory,
         IDictionary<string, object?> properties,
         IFeatureCollection featuresCollection,
-        RawInvocationData rawData,
         CancellationToken cancellationToken
     )
     {
@@ -30,7 +29,6 @@ internal class DefaultLambdaHostContext : ILambdaHostContext, IAsyncDisposable
         CancellationToken = cancellationToken;
         Properties = properties;
         Features = featuresCollection;
-        RawInvocationData = rawData;
     }
 
     public async ValueTask DisposeAsync()
@@ -39,9 +37,6 @@ internal class DefaultLambdaHostContext : ILambdaHostContext, IAsyncDisposable
             await instanceServicesScopeAsyncDisposable.DisposeAsync();
 
         _instanceServicesScope?.Dispose();
-
-        // ReSharper disable once MethodHasAsyncOverload
-        RawInvocationData.Event.Dispose();
 
         _instanceServicesScope = null;
         ServiceProvider = null!;
@@ -100,6 +95,4 @@ internal class DefaultLambdaHostContext : ILambdaHostContext, IAsyncDisposable
     public CancellationToken CancellationToken { get; }
 
     public IFeatureCollection Features { get; }
-
-    public RawInvocationData RawInvocationData { get; }
 }
