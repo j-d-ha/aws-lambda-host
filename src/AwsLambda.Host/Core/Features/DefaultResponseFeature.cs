@@ -35,8 +35,9 @@ internal class DefaultResponseFeature<T> : IResponseFeature<T>
         if (!_isSet)
             return;
 
-        context.RawInvocationData.Response.SetLength(0L);
-        _lambdaSerializer.Serialize<T>(_response, context.RawInvocationData.Response);
-        context.RawInvocationData.Response.Position = 0L;
+        var invocationDataFeature = context.Features.GetRequired<IInvocationDataFeature>();
+        invocationDataFeature.ResponseStream.SetLength(0L);
+        _lambdaSerializer.Serialize(_response, invocationDataFeature.ResponseStream);
+        invocationDataFeature.ResponseStream.Position = 0L;
     }
 }

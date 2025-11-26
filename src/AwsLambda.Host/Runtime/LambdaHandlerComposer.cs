@@ -8,6 +8,7 @@ internal sealed class LambdaHandlerComposer : ILambdaHandlerFactory
 {
     private readonly ILambdaCancellationFactory _cancellationFactory;
     private readonly ILambdaHostContextFactory _contextFactory;
+    private readonly IInvocationDataFeatureFactory _invocationDataFeatureFactory;
     private readonly ILambdaInvocationBuilderFactory _lambdaInvocationBuilderFactory;
     private readonly LambdaHostedServiceOptions _options;
 
@@ -15,18 +16,21 @@ internal sealed class LambdaHandlerComposer : ILambdaHandlerFactory
         ILambdaInvocationBuilderFactory lambdaInvocationBuilderFactory,
         ILambdaCancellationFactory cancellationFactory,
         IOptions<LambdaHostedServiceOptions> options,
-        ILambdaHostContextFactory contextFactory
+        ILambdaHostContextFactory contextFactory,
+        IInvocationDataFeatureFactory invocationDataFeatureFactory
     )
     {
         ArgumentNullException.ThrowIfNull(cancellationFactory);
         ArgumentNullException.ThrowIfNull(lambdaInvocationBuilderFactory);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(contextFactory);
+        ArgumentNullException.ThrowIfNull(invocationDataFeatureFactory);
 
         _cancellationFactory = cancellationFactory;
         _lambdaInvocationBuilderFactory = lambdaInvocationBuilderFactory;
         _options = options.Value;
         _contextFactory = contextFactory;
+        _invocationDataFeatureFactory = invocationDataFeatureFactory;
     }
 
     /// <summary>Creates a wrapper that invokes the middleware pipeline for each Lambda invocation.</summary>
@@ -57,31 +61,27 @@ internal sealed class LambdaHandlerComposer : ILambdaHandlerFactory
                 cancellationTokenSource.Token
             );
 
-            var rawData = new RawInvocationData
-            {
-                Event = inputStream,
-                Response = new MemoryStream(),
-            };
-
             // Create a new lambda host context. This will also create a new service scope
             // the first time that the service container is accessed.
             var lambdaHostContext = _contextFactory.Create(
                 lambdaContext,
                 builder.Properties,
-                rawData,
                 linkedTokenSource.Token
             );
 
             await using (lambdaHostContext as IAsyncDisposable)
             {
+                using var invocationDataFeature = _invocationDataFeatureFactory.Create(inputStream);
+                lambdaHostContext.Features.Set(invocationDataFeature);
+
                 // Invoke the handler wrapped in the middleware pipeline.
-                await handler.Invoke(lambdaHostContext);
+                await handler.Invoke(lambdaHostContext).ConfigureAwait(false);
 
                 if (lambdaHostContext.Features.TryGet<IResponseFeature>(out var responseFeature))
                     responseFeature.SerializeToStream(lambdaHostContext);
 
                 // If no serializer is provided, return an empty stream.
-                return lambdaHostContext.RawInvocationData.Response;
+                return invocationDataFeature.ResponseStream;
             }
         }
     }

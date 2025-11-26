@@ -30,8 +30,9 @@ public class ServiceCollectionExtensionsTests
         result.Should().BeSameAs(serviceCollection);
     }
 
-    [Fact]
-    public void AddLambdaHostCoreServices_RegistersExactlyEightServices()
+    [Theory]
+    [InlineData(10)]
+    public void AddLambdaHostCoreServices_RegistersExactlyNServices(int servicesCount)
     {
         // Arrange
         var serviceCollection = new ServiceCollection();
@@ -40,8 +41,7 @@ public class ServiceCollectionExtensionsTests
         serviceCollection.AddLambdaHostCoreServices();
 
         // Assert
-        // Should register exactly 8 services (with hosted service being the 8th)
-        serviceCollection.Should().HaveCount(9);
+        serviceCollection.Should().HaveCount(servicesCount);
     }
 
     [Fact]
