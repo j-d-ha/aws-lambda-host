@@ -11,18 +11,23 @@ public class DefaultEventFeatureTests
     [AutoNSubstituteData]
     internal void GetEvent_PassesRawEventStreamToSerializer(
         [Frozen] ILambdaSerializer serializer,
+        [Frozen] IFeatureCollection features,
+        [Frozen] IInvocationDataFeature dataFeature,
+        [Frozen] Stream stream,
         DefaultEventFeature<string> feature,
         ILambdaHostContext context
     )
     {
         // Arrange
+        features.Get<IInvocationDataFeature>().Returns(dataFeature);
+        dataFeature.EventStream.Returns(stream);
         serializer.Deserialize<string>(Arg.Any<Stream>()).Returns("result");
 
         // Act
         _ = feature.GetEvent(context);
 
         // Assert
-        serializer.Received(1).Deserialize<string>(context.RawInvocationData.Event);
+        serializer.Received(1).Deserialize<string>(stream);
     }
 
     #endregion
