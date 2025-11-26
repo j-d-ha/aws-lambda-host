@@ -39,7 +39,7 @@ namespace AwsLambda.Host.Core.Generated
                 {{ if output_response != null; ~}} var response = {{ end }}{{ if should_await ~}} await {{ end ~}} castHandler.Invoke({{ for arg in handler_args }}arg{{ for.index }}{{ if !for.last }}, {{ end }}{{ end }});
                 {{~ if output_response != null; ~}}
                 {{~ if output_response.response_is_stream ~}}
-                context.RawInvocationData.Response = response;
+                context.Features.GetRequired<IInvocationDataFeature>().ResponseStream = response;
                 {{~ else ~}}
                 if (context.Features.Get<IResponseFeature>() is not IResponseFeature<{{ output_response.response_type }}> responseFeature)
                 {
