@@ -4,20 +4,22 @@ Strongly-typed Application Load Balancer event handling for the AwsLambda.Host f
 
 ## Overview
 
-This package provides strongly-typed envelopes for handling Application Load Balancer (ALB) events in Lambda functions.
+This package provides strongly-typed envelopes for handling Application Load Balancer (ALB) events
+in Lambda functions.
 It contains classes that can be used as input and output types for Lambda functions that process
 requests from an AWS Application Load Balancer.
 
 The envelopes extend the base [
-`ApplicationLoadBalancerRequest`](https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amazon.Lambda.ApplicationLoadBalancerEvents) and [
+`ApplicationLoadBalancerRequest`](https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amazon.Lambda.ApplicationLoadBalancerEvents)
+and [
 `ApplicationLoadBalancerResponse`](https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amazon.Lambda.ApplicationLoadBalancerEvents)
 with strongly-typed `BodyContent` properties for easier request/response
 serialization:
 
-| Envelope Class               | Base Class                       | Use Case                                                             |
-|------------------------------|----------------------------------|----------------------------------------------------------------------|
-| `AlbRequestEnvelope<T>`      | `ApplicationLoadBalancerRequest` | ALB requests with deserialized body content                          |
-| `AlbResponseEnvelope<T>`     | `ApplicationLoadBalancerResponse`| ALB responses with typed body content                                |
+| Envelope Class           | Base Class                        | Use Case                                    |
+|--------------------------|-----------------------------------|---------------------------------------------|
+| `AlbRequestEnvelope<T>`  | `ApplicationLoadBalancerRequest`  | ALB requests with deserialized body content |
+| `AlbResponseEnvelope<T>` | `ApplicationLoadBalancerResponse` | ALB responses with typed body content       |
 
 ## Quick Start
 
@@ -125,10 +127,10 @@ working example.
 
 ## Related Packages
 
-| Package                                                                       | NuGet                                                                                                                                    | Downloads                                                                                                                                      |
-|-------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| Package                                                                                     | NuGet                                                                                                                                                  | Downloads                                                                                                                                                    |
+|---------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [**AwsLambda.Host.Envelopes.ApiGateway**](../AwsLambda.Host.Envelopes.ApiGateway/README.md) | [![NuGet](https://img.shields.io/nuget/v/AwsLambda.Host.Envelopes.ApiGateway.svg)](https://www.nuget.org/packages/AwsLambda.Host.Envelopes.ApiGateway) | [![Downloads](https://img.shields.io/nuget/dt/AwsLambda.Host.Envelopes.ApiGateway.svg)](https://www.nuget.org/packages/AwsLambda.Host.Envelopes.ApiGateway/) |
-| [**AwsLambda.Host.Envelopes.Sqs**](../AwsLambda.Host.Envelopes.Sqs/README.md) | [![NuGet](https://img.shields.io/nuget/v/AwsLambda.Host.Envelopes.Sqs.svg)](https://www.nuget.org/packages/AwsLambda.Host.Envelopes.Sqs) | [![Downloads](https://img.shields.io/nuget/dt/AwsLambda.Host.Envelopes.Sqs.svg)](https://www.nuget.org/packages/AwsLambda.Host.Envelopes.Sqs/) |
+| [**AwsLambda.Host.Envelopes.Sqs**](../AwsLambda.Host.Envelopes.Sqs/README.md)               | [![NuGet](https://img.shields.io/nuget/v/AwsLambda.Host.Envelopes.Sqs.svg)](https://www.nuget.org/packages/AwsLambda.Host.Envelopes.Sqs)               | [![Downloads](https://img.shields.io/nuget/dt/AwsLambda.Host.Envelopes.Sqs.svg)](https://www.nuget.org/packages/AwsLambda.Host.Envelopes.Sqs/)               |
 
 ## License
 
