@@ -63,6 +63,41 @@ internal record Response(string Message, DateTime TimestampUtc);
 For HTTP API v2, use `ApiGatewayV2RequestEnvelope<T>` and `ApiGatewayV2ResponseEnvelope<T>` in the
 same way.
 
+## Custom Envelopes
+
+To implement custom deserialization logic, extend the appropriate base class and override the
+payload handling method:
+
+```csharp
+// Example: Custom XML deserialization for requests
+public sealed class XmlApiGatewayXmlRequestEnvelope<T> : ApiGatewayRequestEnvelopeBase<T>
+{
+    public override void ExtractPayload(EnvelopeOptions options)
+    {
+        using var stringReader = new StringReader(Body);
+        using var xmlReader = XmlReader.Create(stringReader, options.XmlReaderSettings);
+        var serializer = new XmlSerializer(typeof(T));
+        BodyContent = (T)serializer.Deserialize(xmlReader)!;
+    }
+}
+
+// Example: Custom XML serialization for responses
+public sealed class XmlApiGatewayXmlResponseEnvelope<T> : ApiGatewayResponseEnvelopeBase<T>
+{
+    public override void PackPayload(EnvelopeOptions options)
+    {
+        using var stringWriter = new StringWriter();
+        using var xmlWriter = XmlWriter.Create(stringWriter, options.XmlWriterSettings);
+        var serializer = new XmlSerializer(typeof(T));
+        serializer.Serialize(xmlWriter, BodyContent);
+        Body = stringWriter.ToString();
+    }
+}
+```
+
+This pattern allows you to support multiple serialization formats while maintaining the same
+envelope interface.
+
 ## AOT Support
 
 When using .NET Native AOT, register all envelope and payload types in your `JsonSerializerContext`:
@@ -93,11 +128,11 @@ builder.Services.ConfigureEnvelopeOptions(options =>
 See the [example project](../../examples/AwsLambda.Host.Example.Events/Program.cs) for a complete
 working example.
 
-## Related Resources
+## Related Packages
 
-- [Amazon.Lambda.APIGatewayEvents](https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amazon.Lambda.APIGatewayEvents) –
-  Base API Gateway event types
-- [AwsLambda.Host](../AwsLambda.Host/README.md) – Core framework documentation
+| Package                                                                       | NuGet                                                                                                                                    | Downloads                                                                                                                                      |
+|-------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| [**AwsLambda.Host.Envelopes.Sqs**](../AwsLambda.Host.Envelopes.Sqs/README.md) | [![NuGet](https://img.shields.io/nuget/v/AwsLambda.Host.Envelopes.Sqs.svg)](https://www.nuget.org/packages/AwsLambda.Host.Envelopes.Sqs) | [![Downloads](https://img.shields.io/nuget/dt/AwsLambda.Host.Envelopes.Sqs.svg)](https://www.nuget.org/packages/AwsLambda.Host.Envelopes.Sqs/) |
 
 ## License
 

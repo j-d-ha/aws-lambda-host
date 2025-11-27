@@ -57,6 +57,32 @@ await lambda.RunAsync();
 internal record Message(string Name);
 ```
 
+## Custom Envelopes
+
+To implement custom deserialization logic, extend `SqsEnvelopeBase<T>` and override the
+`ExtractPayload` method:
+
+```csharp
+// Example: Custom XML deserialization
+public sealed class SqsXmlEnvelope<T> : SqsEnvelopeBase<T>
+{
+    private static readonly XmlSerializer Serializer = new(typeof(T));
+
+    public override void ExtractPayload(EnvelopeOptions options)
+    {
+        foreach (var record in Records)
+        {
+            using var stringReader = new StringReader(record.Body);
+            using var xmlReader = XmlReader.Create(stringReader, options.XmlReaderSettings);
+            record.BodyContent = (T)Serializer.Deserialize(xmlReader)!;
+        }
+    }
+}
+```
+
+This pattern allows you to support multiple serialization formats while maintaining the same
+envelope interface.
+
 ## AOT Support
 
 When using .NET Native AOT, register both the envelope and payload types in your
@@ -86,11 +112,11 @@ builder.Services.ConfigureEnvelopeOptions(options =>
 See the [example project](../../examples/AwsLambda.Host.Example.Events/Program.cs) for a complete
 working example.
 
-## Related Resources
+## Related Packages
 
-- [Amazon.Lambda.SQSEvents](https://github.com/aws/aws-lambda-dotnet/blob/master/Libraries/src/Amazon.Lambda.SQSEvents/README.md) –
-  Base SQS event types
-- [AwsLambda.Host](../AwsLambda.Host/README.md) – Core framework documentation
+| Package                                                                                     | NuGet                                                                                                                                                  | Downloads                                                                                                                                                    |
+|---------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [**AwsLambda.Host.Envelopes.ApiGateway**](../AwsLambda.Host.Envelopes.ApiGateway/README.md) | [![NuGet](https://img.shields.io/nuget/v/AwsLambda.Host.Envelopes.ApiGateway.svg)](https://www.nuget.org/packages/AwsLambda.Host.Envelopes.ApiGateway) | [![Downloads](https://img.shields.io/nuget/dt/AwsLambda.Host.Envelopes.ApiGateway.svg)](https://www.nuget.org/packages/AwsLambda.Host.Envelopes.ApiGateway/) |
 
 ## License
 

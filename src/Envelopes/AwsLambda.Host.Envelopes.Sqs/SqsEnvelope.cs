@@ -1,33 +1,21 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using Amazon.Lambda.SQSEvents;
 using AwsLambda.Host.Options;
 
 namespace AwsLambda.Host.Envelopes.Sqs;
 
-/// <inheritdoc cref="SQSEvent" />
+/// <inheritdoc cref="SqsEnvelopeBase{T}" />
 /// <remarks>
-///     This class extends <see cref="SQSEvent" /> and adds strongly typed
-///     <see cref="SqsMessageEnvelope" /> records for easier serialization and deserialization of SQS
-///     message payloads.
+///     Provides the default implementation for deserializing SQS message payloads using
+///     <see cref="System.Text.Json.JsonSerializer" /> with the configured
+///     <see cref="EnvelopeOptions.JsonOptions" />.
 /// </remarks>
-public class SqsEnvelope<T> : SQSEvent, IRequestEnvelope
+public sealed class SqsEnvelope<T> : SqsEnvelopeBase<T>
 {
-    /// <inheritdoc cref="SQSEvent.Records" />
-    public new required List<SqsMessageEnvelope> Records { get; set; }
-
-    /// <inheritdoc />
-    public void ExtractPayload(EnvelopeOptions options)
+    /// <inheritdoc cref="IRequestEnvelope" />
+    /// <remarks>This implementation deserializes each message body from JSON.</remarks>
+    public override void ExtractPayload(EnvelopeOptions options)
     {
         foreach (var record in Records)
             record.BodyContent = JsonSerializer.Deserialize<T>(record.Body, options.JsonOptions);
-    }
-
-    /// <inheritdoc />
-    public class SqsMessageEnvelope : SQSMessage
-    {
-        /// <summary>Get and sets the deserialized <see cref="SQSEvent.SQSMessage.Body" /></summary>
-        [JsonIgnore]
-        public T? BodyContent { get; set; }
     }
 }
