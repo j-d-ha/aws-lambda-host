@@ -6,9 +6,9 @@ Strongly-typed SNS event handling for the AwsLambda.Host framework.
 
 This package provides `SnsEnvelope<T>`, which extends the base [
 `SNSEvent`](https://github.com/aws/aws-lambda-dotnet/blob/master/Libraries/src/Amazon.Lambda.SNSEvents/README.md)
-class with a generic `Records` collection that deserializes message bodies into strongly-typed
+class with strongly-typed `Records` collection that deserializes message bodies into strongly-typed
 objects. Instead of manually parsing JSON from `record.Sns.Message`, you access deserialized
-payloads directly via `record.BodyContent`.
+payloads directly via `record.Sns.MessageContent`.
 
 | Envelope Class   | Base Class | Use Case                                   |
 |------------------|------------|--------------------------------------------|
@@ -34,7 +34,7 @@ lambda.MapHandler(
     {
         foreach (var record in envelope.Records)
         {
-            logger.LogInformation("Message: {Content}", record.BodyContent?.Content);
+            logger.LogInformation("Message: {Content}", record.Sns.MessageContent?.Content);
         }
     }
 );
@@ -62,7 +62,7 @@ public sealed class SnsXmlEnvelope<T> : SnsEnvelopeBase<T>
         {
             using var stringReader = new StringReader(record.Sns.Message);
             using var xmlReader = XmlReader.Create(stringReader, options.XmlReaderSettings);
-            record.BodyContent = (T)Serializer.Deserialize(xmlReader)!;
+            record.Sns.MessageContent = (T)Serializer.Deserialize(xmlReader)!;
         }
     }
 }
@@ -70,6 +70,24 @@ public sealed class SnsXmlEnvelope<T> : SnsEnvelopeBase<T>
 
 This pattern allows you to support multiple serialization formats while maintaining the same
 envelope interface.
+
+## Type Architecture
+
+`SnsEnvelope<T>` uses nested types to provide strongly-typed record and message access:
+
+| Type                | Parent             | Purpose |
+|---------------------|-------------------|---------|
+| `SnsEnvelope<T>`    | `SnsEnvelopeBase<T>` | Default JSON deserialization implementation |
+| `SnsRecordEnvelope` | `SnsEnvelopeBase<T>` | Strongly-typed SNS record with `Sns` property of type `SnsMessageEnvalope` |
+| `SnsMessageEnvalope`| `SnsEnvelopeBase<T>` | Extended `SNSMessage` with `MessageContent` property for deserialized payload |
+
+Access the deserialized message content via:
+```csharp
+foreach (var record in envelope.Records)  // Records is List<SnsRecordEnvelope>
+{
+    var message = record.Sns.MessageContent;  // T? containing deserialized payload
+}
+```
 
 ## AOT Support
 
