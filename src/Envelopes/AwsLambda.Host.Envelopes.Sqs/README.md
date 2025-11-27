@@ -112,11 +112,11 @@ builder.Services.ConfigureEnvelopeOptions(options =>
 See the [example project](../../examples/AwsLambda.Host.Example.Events/Program.cs) for a complete
 working example.
 
-## Related Resources
+## Related Packages
 
-- [Amazon.Lambda.SQSEvents](https://github.com/aws/aws-lambda-dotnet/blob/master/Libraries/src/Amazon.Lambda.SQSEvents/README.md) –
-  Base SQS event types
-- [AwsLambda.Host](../AwsLambda.Host/README.md) – Core framework documentation
+| Package                                                                                     | NuGet                                                                                                                                                  | Downloads                                                                                                                                                    |
+|---------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [**AwsLambda.Host.Envelopes.ApiGateway**](../AwsLambda.Host.Envelopes.ApiGateway/README.md) | [![NuGet](https://img.shields.io/nuget/v/AwsLambda.Host.Envelopes.ApiGateway.svg)](https://www.nuget.org/packages/AwsLambda.Host.Envelopes.ApiGateway) | [![Downloads](https://img.shields.io/nuget/dt/AwsLambda.Host.Envelopes.ApiGateway.svg)](https://www.nuget.org/packages/AwsLambda.Host.Envelopes.ApiGateway/) |
 
 ## License
 
