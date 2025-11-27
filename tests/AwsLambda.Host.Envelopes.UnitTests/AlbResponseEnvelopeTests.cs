@@ -20,10 +20,7 @@ public class AlbResponseEnvelopeTests
     {
         // Arrange
         var responseData = _fixture.Create<ResponsePayload>();
-        var envelope = new AlbResponseEnvelope<ResponsePayload>
-        {
-            BodyContent = responseData,
-        };
+        var envelope = new AlbResponseEnvelope<ResponsePayload> { BodyContent = responseData };
         var options = new EnvelopeOptions();
 
         // Act
@@ -45,10 +42,7 @@ public class AlbResponseEnvelopeTests
     {
         // Arrange
         var responseData = new ResponsePayload("test", 42);
-        var envelope = new AlbResponseEnvelope<ResponsePayload>
-        {
-            BodyContent = responseData,
-        };
+        var envelope = new AlbResponseEnvelope<ResponsePayload> { BodyContent = responseData };
         var options = new EnvelopeOptions
         {
             JsonOptions = new JsonSerializerOptions
@@ -114,10 +108,7 @@ public class AlbResponseEnvelopeTests
     {
         // Arrange
         var responseData = _fixture.Create<ResponsePayload>();
-        var envelope = new AlbResponseEnvelope<ResponsePayload>
-        {
-            BodyContent = responseData,
-        };
+        var envelope = new AlbResponseEnvelope<ResponsePayload> { BodyContent = responseData };
         var options = new EnvelopeOptions();
 
         // Act
