@@ -8,8 +8,8 @@ namespace AwsLambda.Host.Envelopes.Kafka;
 /// <remarks>
 ///     This abstract class extends <see cref="KafkaEvent" /> and provides a foundation for
 ///     strongly typed Kafka record handling. Derived classes implement <see cref="ExtractPayload" />
-///     to deserialize the Kafka record values into strongly typed <see cref="KafkaEventRecordEnvelope" />
-///     records using their chosen deserialization strategy.
+///     to deserialize the Kafka record values into strongly typed
+///     <see cref="KafkaEventRecordEnvelope" /> records using their chosen deserialization strategy.
 /// </remarks>
 public abstract class KafkaEnvelopeBase<T> : KafkaEvent, IRequestEnvelope
 {
@@ -22,9 +22,7 @@ public abstract class KafkaEnvelopeBase<T> : KafkaEvent, IRequestEnvelope
     /// <inheritdoc cref="KafkaEvent.KafkaEventRecord" />
     public class KafkaEventRecordEnvelope : KafkaEventRecord
     {
-        /// <summary>
-        ///     Gets and sets the deserialized Kafka record value stream content
-        /// </summary>
+        /// <summary>Gets and sets the deserialized Kafka record value stream content</summary>
         [JsonIgnore]
         public T? ValueContent { get; set; }
     }

@@ -17,21 +17,12 @@ public sealed class KafkaEnvelope<T> : KafkaEnvelopeBase<T>
     public override void ExtractPayload(EnvelopeOptions options)
     {
         foreach (var topic in Records)
+        foreach (var record in topic.Value)
         {
-            foreach (var record in topic.Value)
-            {
-                using var reader = new StreamReader(
-                    record.Value,
-                    Encoding.UTF8,
-                    leaveOpen: true
-                );
-                var base64String = reader.ReadToEnd();
-                var jsonBytes = Convert.FromBase64String(base64String);
-                record.ValueContent = JsonSerializer.Deserialize<T>(
-                    jsonBytes,
-                    options.JsonOptions
-                );
-            }
+            using var reader = new StreamReader(record.Value, Encoding.UTF8, leaveOpen: true);
+            var base64String = reader.ReadToEnd();
+            var jsonBytes = Convert.FromBase64String(base64String);
+            record.ValueContent = JsonSerializer.Deserialize<T>(jsonBytes, options.JsonOptions);
         }
     }
 }
