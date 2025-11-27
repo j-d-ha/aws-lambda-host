@@ -23,7 +23,7 @@ public class SnsEnvelopeTests
         var json = JsonSerializer.Serialize(payload);
         var record = new SnsEnvelopeBase<MessagePayload>.SnsRecordEnvelope
         {
-            Sns = new SnsEnvelopeBase<MessagePayload>.SnsMessageEnvalope { Message = json },
+            Sns = new SnsEnvelopeBase<MessagePayload>.SnsMessageEnvelope { Message = json },
         };
         var envelope = new SnsEnvelope<MessagePayload> { Records = [record] };
         var options = new EnvelopeOptions();
@@ -50,15 +50,15 @@ public class SnsEnvelopeTests
 
         var record1 = new SnsEnvelopeBase<MessagePayload>.SnsRecordEnvelope
         {
-            Sns = new SnsEnvelopeBase<MessagePayload>.SnsMessageEnvalope { Message = json1 },
+            Sns = new SnsEnvelopeBase<MessagePayload>.SnsMessageEnvelope { Message = json1 },
         };
         var record2 = new SnsEnvelopeBase<MessagePayload>.SnsRecordEnvelope
         {
-            Sns = new SnsEnvelopeBase<MessagePayload>.SnsMessageEnvalope { Message = json2 },
+            Sns = new SnsEnvelopeBase<MessagePayload>.SnsMessageEnvelope { Message = json2 },
         };
         var record3 = new SnsEnvelopeBase<MessagePayload>.SnsRecordEnvelope
         {
-            Sns = new SnsEnvelopeBase<MessagePayload>.SnsMessageEnvalope { Message = json3 },
+            Sns = new SnsEnvelopeBase<MessagePayload>.SnsMessageEnvelope { Message = json3 },
         };
 
         var envelope = new SnsEnvelope<MessagePayload> { Records = [record1, record2, record3] };
@@ -101,7 +101,7 @@ public class SnsEnvelopeTests
         );
         var record = new SnsEnvelopeBase<MessagePayload>.SnsRecordEnvelope
         {
-            Sns = new SnsEnvelopeBase<MessagePayload>.SnsMessageEnvalope { Message = json },
+            Sns = new SnsEnvelopeBase<MessagePayload>.SnsMessageEnvelope { Message = json },
         };
         var envelope = new SnsEnvelope<MessagePayload> { Records = [record] };
         var options = new EnvelopeOptions
@@ -127,7 +127,7 @@ public class SnsEnvelopeTests
         // Arrange
         var record = new SnsEnvelopeBase<MessagePayload>.SnsRecordEnvelope
         {
-            Sns = new SnsEnvelopeBase<MessagePayload>.SnsMessageEnvalope { Message = null },
+            Sns = new SnsEnvelopeBase<MessagePayload>.SnsMessageEnvelope { Message = null },
         };
         var envelope = new SnsEnvelope<MessagePayload> { Records = [record] };
         var options = new EnvelopeOptions();
@@ -143,7 +143,7 @@ public class SnsEnvelopeTests
         // Arrange
         var record = new SnsEnvelopeBase<MessagePayload>.SnsRecordEnvelope
         {
-            Sns = new SnsEnvelopeBase<MessagePayload>.SnsMessageEnvalope { Message = string.Empty },
+            Sns = new SnsEnvelopeBase<MessagePayload>.SnsMessageEnvelope { Message = string.Empty },
         };
         var envelope = new SnsEnvelope<MessagePayload> { Records = [record] };
         var options = new EnvelopeOptions();
@@ -157,8 +157,8 @@ public class SnsEnvelopeTests
     public void SnsMessageEnvalope_MessageContent_HasJsonIgnoreAttribute()
     {
         // Arrange
-        var property = typeof(SnsEnvelopeBase<MessagePayload>.SnsMessageEnvalope).GetProperty(
-            nameof(SnsEnvelopeBase<MessagePayload>.SnsMessageEnvalope.MessageContent)
+        var property = typeof(SnsEnvelopeBase<MessagePayload>.SnsMessageEnvelope).GetProperty(
+            nameof(SnsEnvelopeBase<MessagePayload>.SnsMessageEnvelope.MessageContent)
         );
 
         // Act
