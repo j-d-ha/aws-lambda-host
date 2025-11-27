@@ -19,10 +19,13 @@ public abstract class KinesisFirehoseEventEnvelopeBase<T> : KinesisFirehoseEvent
     /// <inheritdoc />
     public abstract void ExtractPayload(EnvelopeOptions options);
 
-    /// <inheritdoc cref="FirehoseRecord" />
+    /// <inheritdoc cref="KinesisFirehoseEvent.FirehoseRecord" />
     public class FirehoseRecordEnvelope : FirehoseRecord
     {
-        /// <summary>Gets and sets the deserialized <see cref="FirehoseRecord.Base64EncodedData" /> content</summary>
+        /// <summary>
+        ///     Gets and sets the deserialized
+        ///     <see cref="KinesisFirehoseEvent.FirehoseRecord.Base64EncodedData" /> content
+        /// </summary>
         [JsonIgnore]
         public T? DataContent { get; set; }
     }

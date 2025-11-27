@@ -22,12 +22,12 @@ public abstract class KinesisFirehoseResponseEnvelopeBase<T>
     /// <inheritdoc />
     public abstract void PackPayload(EnvelopeOptions options);
 
-    /// <inheritdoc cref="FirehoseRecord" />
+    /// <inheritdoc cref=" KinesisFirehoseResponse.FirehoseRecord" />
     public class FirehoseRecordEnvelope : FirehoseRecord
     {
         /// <summary>
         ///     Gets and sets the data content to be serialized into
-        ///     <see cref="FirehoseRecord.Base64EncodedData" />
+        ///     <see cref=" KinesisFirehoseResponse.FirehoseRecord.Base64EncodedData" />
         /// </summary>
         [JsonIgnore]
         public T? DataContent { get; set; }
