@@ -14,7 +14,7 @@ namespace AwsLambda.Host.Envelopes.Kafka;
 public abstract class KafkaEnvelopeBase<T> : KafkaEvent, IRequestEnvelope
 {
     /// <inheritdoc cref="KafkaEvent.Records" />
-    public new required Dictionary<string, List<KafkaEventRecordEnvelope>> Records { get; set; }
+    public new required IDictionary<string, IList<KafkaEventRecordEnvelope>> Records { get; set; }
 
     /// <inheritdoc />
     public abstract void ExtractPayload(EnvelopeOptions options);
