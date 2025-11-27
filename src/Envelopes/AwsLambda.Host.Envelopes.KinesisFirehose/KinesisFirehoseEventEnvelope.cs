@@ -3,7 +3,7 @@ using AwsLambda.Host.Options;
 
 namespace AwsLambda.Host.Envelopes.KinesisFirehose;
 
-public sealed class KinesisFirehoseEnvelope<T> : KinesisFirehoseEnvelopeBase<T>
+public sealed class KinesisFirehoseEventEnvelope<T> : KinesisFirehoseEventEnvelopeBase<T>
 {
     public override void ExtractPayload(EnvelopeOptions options)
     {

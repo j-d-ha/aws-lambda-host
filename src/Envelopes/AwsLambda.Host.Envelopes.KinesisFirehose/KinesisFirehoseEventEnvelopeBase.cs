@@ -3,7 +3,7 @@ using AwsLambda.Host.Options;
 
 namespace AwsLambda.Host.Envelopes.KinesisFirehose;
 
-public abstract class KinesisFirehoseEnvelopeBase<T> : KinesisFirehoseEvent, IRequestEnvelope
+public abstract class KinesisFirehoseEventEnvelopeBase<T> : KinesisFirehoseEvent, IRequestEnvelope
 {
     public new required IList<FirehoseRecordEnvelope> Records { get; set; }
 
