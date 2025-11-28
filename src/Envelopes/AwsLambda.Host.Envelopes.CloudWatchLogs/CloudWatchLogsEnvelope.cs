@@ -1,24 +1,29 @@
-using System.Text.Json;
 using AwsLambda.Host.Options;
 
 namespace AwsLambda.Host.Envelopes.CloudWatchLogs;
 
-/// <inheritdoc cref="CloudWatchLogsEnvelopeBase{T}" />
+/// <summary>
+///     Processes CloudWatch Logs events where log messages are plain strings that do not require
+///     deserialization.
+/// </summary>
 /// <remarks>
-///     Provides the default implementation for deserializing CloudWatch Logs data payloads using
-///     <see cref="System.Text.Json.JsonSerializer" /> with the configured
-///     <see cref="EnvelopeOptions.JsonOptions" />.
+///     Use this envelope when working with string-based log messages. For structured log data that
+///     needs to be deserialized into typed objects, use <see cref="CloudWatchLogsEnvelope{T}" />
+///     instead.
 /// </remarks>
-public sealed class CloudWatchLogsEnvelope<T> : CloudWatchLogsEnvelopeBase<T>
+public sealed class CloudWatchLogsEnvelope : CloudWatchLogsEnvelopeBase<string>
 {
-    /// <inheritdoc cref="IRequestEnvelope" />
+    /// <inheritdoc />
     /// <remarks>
-    ///     This implementation deserializes the base64-decoded and decompressed CloudWatch Logs data
-    ///     from JSON.
+    ///     Sets each log event's <see cref="CloudWatchLogsEnvelopeBase{T}.LogEventEnvelope.MessageContent" />
+    ///     to the raw string <see cref="CloudWatchLogsEnvelopeBase{T}.LogEventEnvelope.Message" /> without
+    ///     performing any deserialization.
     /// </remarks>
-    public override void ExtractPayload(EnvelopeOptions options) =>
-        Awslogs.DataContent = JsonSerializer.Deserialize<T>(
-            Awslogs.DecodeData(),
-            options.JsonOptions
-        );
+    public override void ExtractPayload(EnvelopeOptions options)
+    {
+        base.ExtractPayload(options);
+
+        foreach (var logEvent in AwslogsContent!.LogEvents)
+            logEvent.MessageContent = logEvent.Message;
+    }
 }
