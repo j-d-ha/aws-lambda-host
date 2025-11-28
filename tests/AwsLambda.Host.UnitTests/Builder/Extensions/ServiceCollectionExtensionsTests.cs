@@ -31,7 +31,7 @@ public class ServiceCollectionExtensionsTests
     }
 
     [Theory]
-    [InlineData(10)]
+    [InlineData(11)]
     public void AddLambdaHostCoreServices_RegistersExactlyNServices(int servicesCount)
     {
         // Arrange
