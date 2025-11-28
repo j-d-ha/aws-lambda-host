@@ -4,16 +4,16 @@ Strongly-typed CloudWatch Logs event handling for the AwsLambda.Host framework.
 
 ## Overview
 
-This package provides `CloudWatchLogsEnvelope<T>`, which extends the base [
+This package provides envelope classes that extend the base [
 `CloudWatchLogsEvent`](https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amazon.Lambda.CloudWatchLogsEvents)
-class with a generic `Awslogs` property that deserializes the base64-encoded and gzip-compressed
-log data into a strongly-typed object. Instead of manually decoding and decompressing data from
-`Awslogs.EncodedData`, you access the deserialized payload directly via
-`envelope.Awslogs.DataContent`.
+with automatic base64 decoding, decompression, and deserialization of CloudWatch Logs data.
+Instead of manually decoding and decompressing data from `Awslogs.Data`, you access the
+deserialized payload directly via `envelope.AwslogsContent`.
 
-| Envelope Class              | Base Class            | Use Case                                          |
-|-----------------------------|-----------------------|---------------------------------------------------|
-| `CloudWatchLogsEnvelope<T>` | `CloudWatchLogsEvent` | CloudWatch Logs events with deserialized log data |
+| Envelope Class              | Base Class            | Use Case                                            |
+|-----------------------------|-----------------------|-----------------------------------------------------|
+| `CloudWatchLogsEnvelope`    | `CloudWatchLogsEvent` | CloudWatch Logs events with plain string log data   |
+| `CloudWatchLogsEnvelope<T>` | `CloudWatchLogsEvent` | CloudWatch Logs events with typed deserialized data |
 
 ## Quick Start
 
@@ -36,16 +36,16 @@ builder.Services.ConfigureEnvelopeOptions(options =>
 
 var lambda = builder.Build();
 
-// CloudWatchLogsEnvelope<LogData> provides access to the CloudWatch Logs event and deserialized log
-// data
+// CloudWatchLogsEnvelope<T> provides access to the CloudWatch Logs event with each log message
+// deserialized into type T
 lambda.MapHandler(
     ([Event] CloudWatchLogsEnvelope<Log> logs, ILogger<Program> logger) =>
     {
         foreach (var logEvent in logs.AwslogsContent!.LogEvents)
         {
-            logger.LogInformation("Log level: {Message}", logEvent.MessageContent?.Level);
+            logger.LogInformation("Log level: {Level}", logEvent.MessageContent?.Level);
             logger.LogInformation("Log message: {Message}", logEvent.MessageContent?.Message);
-            logger.LogInformation("Request ID: {Message}", logEvent.MessageContent?.RequestId);
+            logger.LogInformation("Request ID: {RequestId}", logEvent.MessageContent?.RequestId);
         }
     }
 );
@@ -56,16 +56,15 @@ public record Log(string Level, string Message, string RequestId);
 ```
 
 > [!TIP]
-> If the type of your log data is a string (not JSON data), use
-`CloudWatchLogsStringEnvelope`
-> instead of `CloudWatchLogsEnvelope<T>` to avoid the envalope from atempting to deserilize the log
-> message.
+> If your log messages are plain strings (not JSON data), use `CloudWatchLogsEnvelope` instead of
+> `CloudWatchLogsEnvelope<T>` to avoid deserialization errors. `CloudWatchLogsEnvelope` sets each
+> `MessageContent` to the raw string message without attempting deserialization.
 
 ## Custom Envelopes
 
 To implement custom deserialization logic, extend `CloudWatchLogsEnvelopeBase<T>`, override the
-`ExtractPayload` method, and call `base.ExtractPayload(options)` to deserilize the CloudWatch Log
-events, and then deserialize the log messages:
+`ExtractPayload` method, and call `base.ExtractPayload(options)` to deserialize the CloudWatch Logs
+envelope structure, then deserialize each log message:
 
 ```csharp
 // Example: Custom XML deserialization
