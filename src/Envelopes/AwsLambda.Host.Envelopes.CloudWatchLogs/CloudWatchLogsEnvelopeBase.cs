@@ -25,7 +25,7 @@ public abstract class CloudWatchLogsEnvelopeBase<T> : CloudWatchLogsEvent, IRequ
         AwslogsContent =
             JsonSerializer.Deserialize<AwsLogsEnvelope>(
                 decodedData,
-                EnvelopeOptions.LambdaDefaultJsonOptions.Value
+                options.LambdaDefaultJsonOptions.Value
             ) ?? throw new InvalidOperationException("Invalid CloudWatch Logs data.");
     }
 

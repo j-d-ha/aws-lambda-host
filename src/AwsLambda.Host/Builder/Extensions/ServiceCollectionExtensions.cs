@@ -43,6 +43,10 @@ public static class ServiceCollectionExtensions
                 IPostConfigureOptions<HostOptions>,
                 HostOptionsPostConfiguration
             >();
+            services.AddSingleton<
+                IPostConfigureOptions<EnvelopeOptions>,
+                EnvelopeOptionsPostConfiguration
+            >();
 
             return services;
         }
