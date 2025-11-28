@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Amazon.Lambda.CloudWatchLogsEvents;
 using AwsLambda.Host.Options;
 
@@ -23,9 +24,10 @@ public abstract class CloudWatchLogsEnvelopeBase<T> : CloudWatchLogsEvent, IRequ
     {
         /// <summary>
         ///     Gets and sets the deserialized
-        ///     <see cref="Amazon.Lambda.CloudWatchLogsEvents.CloudWatchLogsEvent.LogData.Data" /> content
-        ///     after base64 decoding and decompression
+        ///     <see cref="Amazon.Lambda.CloudWatchLogsEvents.CloudWatchLogsEvent.Log.EncodedData" />
+        ///     content after base64 decoding and decompression
         /// </summary>
+        [JsonIgnore]
         public T? DataContent { get; set; }
     }
 }
