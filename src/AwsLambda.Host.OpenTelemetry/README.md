@@ -136,13 +136,13 @@ How it works:
 This happens at compile time with zero runtime reflection overhead. The actual span creation is
 delegated to the AWS Lambda OpenTelemetry instrumentation package.
 
-> ⚠️ **Important:** A `TracerProvider` must be registered in the dependency injection container
+> [!IMPORTANT] A `TracerProvider` must be registered in the dependency injection container
 > before calling `UseOpenTelemetryTracing()`. If it's missing, an `InvalidOperationException` is
 > thrown at startup. See the Quick Start section above for configuration details.
 
-**Note:** This package creates the root invocation span automatically via the AWS instrumentation.
-If you want to instrument specific handlers, functions, or business logic within your Lambda, you
-create and manage those spans yourself using a custom `ActivitySource` (see below).
+> [!NOTE] This package creates the root invocation span automatically via the AWS instrumentation.
+> If you want to instrument specific handlers, functions, or business logic within your Lambda, you
+> create and manage those spans yourself using a custom `ActivitySource` (see below).
 
 ### Custom Instrumentation with ActivitySource
 

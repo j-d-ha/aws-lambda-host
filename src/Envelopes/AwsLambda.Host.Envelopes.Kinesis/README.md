@@ -106,7 +106,7 @@ builder.Services.ConfigureEnvelopeOptions(options =>
 });
 ```
 
-> **Note:** The context must be registered in both places because the Lambda event and payload are
+> [!NOTE] The context must be registered in both places because the Lambda event and payload are
 > deserialized at different steps: the Lambda serializer deserializes the raw Kinesis event, and the
 > envelope options deserialize the base64-encoded data streams into your payload type.
 

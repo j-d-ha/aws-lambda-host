@@ -42,7 +42,7 @@ Ensure your project uses C# 11 or later:
 </PropertyGroup>
 ```
 
-> **Note:** This package is typically included automatically when you use
+> [!NOTE] This package is typically included automatically when you use
 > [AwsLambda.Host](../AwsLambda.Host/README.md). Direct installation is only necessary when
 > building custom integrations or extensions.
 
