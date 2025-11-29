@@ -125,9 +125,6 @@ builder.Services.ConfigureEnvelopeOptions(options =>
 > deserialized at different steps: the Lambda serializer deserializes the API Gateway event, and the
 > envelope options deserialize the request body and serialize the response body.
 
-See the [example project](../../examples/AwsLambda.Host.Example.Events/Program.cs) for a complete
-working example.
-
 ## Other Packages
 
 Additional packages in the aws-lambda-host framework for abstractions, observability, and event

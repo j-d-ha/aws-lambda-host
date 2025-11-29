@@ -110,9 +110,6 @@ builder.Services.ConfigureEnvelopeOptions(options =>
 > deserialized at different steps: the Lambda serializer deserializes the raw Kinesis event, and the
 > envelope options deserialize the base64-encoded data streams into your payload type.
 
-See the [AwsLambda.Host documentation](https://github.com/j-d-ha/aws-lambda-host) for more details
-on AOT support.
-
 ## Other Packages
 
 Additional packages in the aws-lambda-host framework for abstractions, observability, and event

@@ -88,9 +88,6 @@ Register the serializer and configure envelope options to use the context:
 builder.Services.AddLambdaSerializerWithContext<SerializerContext>();
 ```
 
-See the [AwsLambda.Host documentation](https://github.com/j-d-ha/aws-lambda-host) for more details
-on AOT support.
-
 ## Other Packages
 
 Additional packages in the aws-lambda-host framework for abstractions, observability, and event

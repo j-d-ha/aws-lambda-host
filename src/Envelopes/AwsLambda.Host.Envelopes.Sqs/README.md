@@ -112,9 +112,6 @@ builder.Services.ConfigureEnvelopeOptions(options =>
 > deserialized at different steps: the Lambda serializer deserializes the raw SQS event, and the
 > envelope options deserialize the message bodies into your payload type.
 
-See the [example project](../../examples/AwsLambda.Host.Example.Events/Program.cs) for a complete
-working example.
-
 ## SqsSnsEnvelope - SNS-to-SQS Subscription Pattern
 
 This package also provides `SqsSnsEnvelope<T>` for handling SNS messages delivered via SQS queues

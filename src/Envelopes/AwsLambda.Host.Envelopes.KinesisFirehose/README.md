@@ -145,9 +145,6 @@ builder.Services.ConfigureEnvelopeOptions(options =>
 > deserialized at different steps: the Lambda serializer deserializes the Firehose event, and the
 > envelope options deserialize the record data and serialize the response data.
 
-See the [example project](../../examples/AwsLambda.Host.Example.Events/Program.cs) for a complete
-working example.
-
 ## Other Packages
 
 Additional packages in the aws-lambda-host framework for abstractions, observability, and event
