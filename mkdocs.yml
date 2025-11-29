@@ -1,6 +1,25 @@
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
 
-site_name: aws-lambda-host
+# https://github.com/mkdocs/catalog
+
+site_name: AWS Lambda Host
+site_description: A modern .NET framework for building AWS Lambda functions using familiar ASP.NET Core patterns.
+site_url: https://j-d-ha.github.io/aws-lambda-host/
+site_author: Jonas Ha
+
+repo_name: j-d-ha/aws-lambda-host
+repo_url: hhttps://github.com/j-d-ha/aws-lambda-host
+edit_uri: edit/main/docs/
 
 theme:
   name: material
+  
+watch:
+  - docs
+  - mkdocs.yml
+    
+nav:
+  - Home: index.md
+    
+plugins:
+  - search
