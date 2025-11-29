@@ -52,8 +52,9 @@ public class EnvelopeOptions
     ///         envelope payloads such as SNS to SQS and CloudWatch Logs.
     ///     </para>
     ///     <para>
-    ///         The <see cref="JsonSerializerOptions.TypeInfoResolver" /> from <see cref="JsonOptions" />
-    ///         will be added to these options during post-configuration.
+    ///         During post-configuration, the <see cref="JsonSerializerOptions.TypeInfoResolver" /> from
+    ///         <see cref="JsonOptions" /> will be copied to these options if <c>TypeInfoResolver</c> has
+    ///         not been explicitly configured.
     ///     </para>
     /// </remarks>
     public JsonSerializerOptions LambdaDefaultJsonOptions
