@@ -86,7 +86,18 @@ Register the serializer and configure envelope options to use the context:
 
 ```csharp
 builder.Services.AddLambdaSerializerWithContext<SerializerContext>();
+
+builder.Services.ConfigureEnvelopeOptions(options =>
+{
+    options.JsonOptions.TypeInfoResolver = SerializerContext.Default;
+});
 ```
+
+> [!NOTE]
+> The context must be registered as the type resolver for both the envelope options and the Lambda
+> serializer because the Lambda event and envelope payload are deserialized at different steps: the
+> Lambda serializer deserializes the raw event, and the envelope options deserialize the envelope
+> content into your payload type.
 
 ## Other Packages
 

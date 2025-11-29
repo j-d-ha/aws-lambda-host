@@ -122,9 +122,10 @@ builder.Services.ConfigureEnvelopeOptions(options =>
 ```
 
 > [!NOTE]
-> The context must be registered in both places because the Lambda event and payload are
-> deserialized at different steps: the Lambda serializer deserializes the API Gateway event, and the
-> envelope options deserialize the request body and serialize the response body.
+> The context must be registered as the type resolver for both the envelope options and the Lambda
+> serializer because the Lambda event and envelope payload are deserialized at different steps: the
+> Lambda serializer deserializes the raw event, and the envelope options deserialize the envelope
+> content into your payload type.
 
 ## Other Packages
 
