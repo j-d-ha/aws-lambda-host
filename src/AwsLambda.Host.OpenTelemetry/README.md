@@ -17,9 +17,10 @@ comprehensive observability integration. This package enables:
 - **Lifecycle Integration**: Seamless integration with Lambda cold starts, warm invocations, and
   error tracking
 
-**Note**: Requires AwsLambda.Host – this package extends that framework and cannot be used
-standalone. Configure exporters to send traces and metrics to your observability backend (e.g.,
-Datadog, New Relic, Jaeger, CloudWatch).
+> [!NOTE]
+> Requires AwsLambda.Host – this package extends that framework and cannot be used
+> standalone. Configure exporters to send traces and metrics to your observability backend (e.g.,
+> Datadog, New Relic, Jaeger, CloudWatch).
 
 ## Installation
 
@@ -136,7 +137,8 @@ How it works:
 This happens at compile time with zero runtime reflection overhead. The actual span creation is
 delegated to the AWS Lambda OpenTelemetry instrumentation package.
 
-> [!IMPORTANT] A `TracerProvider` must be registered in the dependency injection container
+> [!IMPORTANT]
+> A `TracerProvider` must be registered in the dependency injection container
 > before calling `UseOpenTelemetryTracing()`. If it's missing, an `InvalidOperationException` is
 > thrown at startup. See the Quick Start section above for configuration details.
 
