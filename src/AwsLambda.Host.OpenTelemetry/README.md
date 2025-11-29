@@ -140,7 +140,8 @@ delegated to the AWS Lambda OpenTelemetry instrumentation package.
 > before calling `UseOpenTelemetryTracing()`. If it's missing, an `InvalidOperationException` is
 > thrown at startup. See the Quick Start section above for configuration details.
 
-> [!NOTE] This package creates the root invocation span automatically via the AWS instrumentation.
+> [!NOTE]
+> This package creates the root invocation span automatically via the AWS instrumentation.
 > If you want to instrument specific handlers, functions, or business logic within your Lambda, you
 > create and manage those spans yourself using a custom `ActivitySource` (see below).
 
