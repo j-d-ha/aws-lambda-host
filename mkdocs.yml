@@ -38,7 +38,7 @@ theme:
     
     # Palette toggle for dark mode
     - scheme: slate
-      primary: orange
+      primary: black
       accent: orange
       toggle:
         icon: material/brightness-4
@@ -95,5 +95,5 @@ nav:
 plugins:
   - search
 
-#extra_css:
-#  - stylesheets/extra.css
+extra_css:
+  - stylesheets/extra.css
