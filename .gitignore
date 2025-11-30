@@ -79,3 +79,4 @@ nunit-*.xml
 /nupkg/
 /temp.md
 /.claude/
+/site/
