@@ -23,10 +23,11 @@ Stop writing boilerplate Lambda code. Start building features with patterns you 
     using Amazon.Lambda.Serialization.SystemTextJson;
     using Microsoft.Extensions.DependencyInjection;
     
-    // Manual DI container setup - must be done ONCE at startup
+    // Manual DI container setup
     var services = new ServiceCollection();
     services.AddScoped<IGreetingService, GreetingService>();
-    var rootProvider = services.BuildServiceProvider();
+
+    await using var rootProvider = services.BuildServiceProvider();
 
     // Manual bootstrap initialization
     await LambdaBootstrapBuilder
