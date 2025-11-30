@@ -100,17 +100,7 @@ nav:
       - Deployment: guides/deployment.md
   - Features:
       - features/index.md
-      - Envelopes:
-          - features/envelopes/index.md
-          - SQS: features/envelopes/sqs.md
-          - SNS: features/envelopes/sns.md
-          - API Gateway: features/envelopes/api-gateway.md
-          - Kinesis: features/envelopes/kinesis.md
-          - Kinesis Firehose: features/envelopes/kinesis-firehose.md
-          - Kafka: features/envelopes/kafka.md
-          - CloudWatch Logs: features/envelopes/cloudwatch-logs.md
-          - ALB: features/envelopes/alb.md
-          - Custom Envelopes: features/envelopes/custom-envelopes.md
+      - Envelopes: features/envelopes.md
       - OpenTelemetry: features/open_telemetry.md
 
 plugins:
