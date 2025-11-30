@@ -27,25 +27,25 @@ Stop writing boilerplate Lambda code. Start building features with patterns you 
     var services = new ServiceCollection();
     services.AddScoped<IGreetingService, GreetingService>();
     var rootProvider = services.BuildServiceProvider();
-    
-    // Capture service provider outside handler
-    // ⚠️ Problem: Can't create scopes per invocation easily
-    var service = rootProvider.GetRequiredService<IGreetingService>();
-    
+
     // Manual bootstrap initialization
     await LambdaBootstrapBuilder
         .Create<GreetingRequest, GreetingResponse>(
             async (request, context) =>
             {
+                // ⚠️ Manual scope creation for each invocation
+                using var scope = rootProvider.CreateScope();
+
+                // ⚠️ Manual service resolution from scope
+                var service = scope.ServiceProvider.GetRequiredService<IGreetingService>();
+
                 // ⚠️ Manual cancellation token creation from context
                 using var cts = new CancellationTokenSource(
                     context.RemainingTime - TimeSpan.FromMilliseconds(500)
                 );
-    
-                // ⚠️ Using singleton-scoped service for all invocations
-                // No proper scoped lifetime per invocation!
+
                 var greeting = await service.GreetAsync(request.Name, cts.Token);
-    
+
                 return new GreetingResponse(greeting, DateTime.UtcNow);
             },
             new DefaultLambdaJsonSerializer()
