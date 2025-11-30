@@ -5,7 +5,7 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=j-d-ha_aws-lambda-host&metric=alert_status&token=9fb519975d91379dcfbc6c13a4bd4207131af6e3)](https://sonarcloud.io/summary/new_code?id=j-d-ha_aws-lambda-host)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/j-d-ha/aws-lambda-host/blob/main/LICENSE)
 
-A modern .NET framework that brings familiar ASP.NET Core patterns to AWS Lambda - middleware, dependency injection, and async-first design.
+A modern .NET framework that brings familiar .NET Core patterns to AWS Lambda - middleware, dependency injection, lifecycle hooks, and async-first design.
 
 [Get Started](getting-started/){ .md-button .md-button--primary }
 [View Examples](examples/){ .md-button }
@@ -67,12 +67,12 @@ Stop writing boilerplate Lambda code. Start building features with patterns you 
 === "aws-lambda-host"
 
     ```csharp
-    // ✅ Familiar ASP.NET Core builder pattern
+    // ✅ Familiar .NET Core builder pattern
     var builder = LambdaApplication.CreateBuilder();
 
     builder.Services.AddScoped<IGreetingService, GreetingService>();
 
-    var lambda = builder.Build();
+    await using var lambda = builder.Build();
 
     lambda.MapHandler(
         async (
