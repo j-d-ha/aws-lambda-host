@@ -18,6 +18,14 @@ theme:
     - content.tabs.link
     - navigation.footer
     - navigation.top
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.expand
+    - navigation.path
+    - navigation.prune
+    - navigation.indexes
+    - toc.integrate
+    - navigation.top
     
   palette:
     # Palette toggle for light mode
