@@ -7,12 +7,16 @@ on:
       - 'docs/**'
       - 'mkdocs.yml'
       - '.github/workflows/docs.yaml'
+      - 'pyproject.toml'
+      - 'uv.lock'
   pull_request:
     branches: [ main ]
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
       - '.github/workflows/docs.yaml'
+      - 'pyproject.toml'
+      - 'uv.lock'
 
 permissions:
   contents: read
