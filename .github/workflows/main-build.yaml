@@ -6,6 +6,13 @@ name: Main Build
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yaml'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '**.md'
 
 concurrency:
   group: main-${{ github.ref }}
