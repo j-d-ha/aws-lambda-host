@@ -22,10 +22,15 @@ theme:
     - navigation.tabs.sticky
     - navigation.expand
     - navigation.path
-    - navigation.prune
     - navigation.indexes
-    - navigation.top
-    
+    - navigation.tracking
+    - toc.follow
+    - navigation.instant
+    - search.highlight
+    - search.share
+    - search.suggest
+
+
   palette:
     # Palette toggle for light mode
     - scheme: default
@@ -76,11 +81,11 @@ watch:
 nav:
   - Home: index.md
   - Getting Started:
-    - getting-started/index.md
-    - Installation: getting-started/installation.md
-    - Your First Lambda: getting-started/first-lambda.md
-    - Core Concepts: getting-started/core-concepts.md
-    - Project Structure: getting-started/project-structure.md
+      - getting-started/index.md
+      - Installation: getting-started/installation.md
+      - Your First Lambda: getting-started/first-lambda.md
+      - Core Concepts: getting-started/core-concepts.md
+      - Project Structure: getting-started/project-structure.md
   - Guides:
       - guides/index.md
       - Dependency Injection: guides/dependency-injection.md
