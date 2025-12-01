@@ -148,6 +148,30 @@ At runtime the stub `MapHandler` method would throw if invoked, but the intercep
 - Avoid resolving services manually from `IServiceProvider` unless absolutely necessary. Let the generator inject what you need, or expose a dedicated facade service.
 - Prefer referencing a static method on a static class when you want to exercise the handler logic outside of the Lambda host. Mapping a method group (`lambda.MapHandler(MyHandler.HandleAsync);`) makes it trivial to unit test the handler by invoking it directly.
 
+=== "Program.cs"
+
+    ```csharp linenums="1"
+    lambda.MapHandler(Handlers.HandleAsync);
+    ```
+
+=== "Handlers.cs"
+
+    ```csharp linenums="1"
+    namespace MyLambda;
+
+    static class Handlers
+    {
+        public static async Task<Response> HandleAsync(
+            [Event] Request request,
+            IService service,
+            CancellationToken ct
+        )
+        {
+            return await service.ProcessAsync(request, ct);
+        }
+    }
+    ```
+
 ## Troubleshooting
 
 **`LH0001: Multiple handlers registered`**
