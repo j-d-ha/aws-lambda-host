@@ -13,8 +13,6 @@ A greeting service Lambda function with:
 - ✅ Local testing
 - ✅ AWS deployment
 
-**Time to Complete**: ~20 minutes
-
 ## Prerequisites
 
 Before starting, ensure you've completed the [Installation](installation.md) guide and have:
@@ -98,6 +96,7 @@ Set up the Lambda application builder and register your services with dependency
 using AwsLambda.Host.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 // Create the Lambda application builder
 var builder = LambdaApplication.CreateBuilder();
@@ -118,19 +117,36 @@ Add middleware to log when requests are received and completed. Middleware runs 
 
 ```csharp title="Program.cs (continued)"
 // Add logging middleware
-lambda.UseMiddleware(async (context, next) =>
-{
-    Console.WriteLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] Request received");
+lambda.UseMiddleware(
+    async (context, next) =>
+    {
+        var logger = context.ServiceProvider.GetRequiredService<ILogger<GreetingService>>();
 
-    // Execute the next middleware/handler in the pipeline
-    await next(context);
-
-    Console.WriteLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] Request completed");
-});
+        logger.LogInformation("Request received at {Timestamp}", DateTime.UtcNow);
+        await next(context);
+        logger.LogInformation("Request completed at {Timestamp}", DateTime.UtcNow);
+    }
+);
 ```
 
 !!! tip "Middleware Use Cases"
     Middleware is perfect for cross-cutting concerns like logging, metrics, validation, error handling, and authentication.
+
+!!! note "Clear Lambda Output Formatting"
+    The .NET Lambda runtime captures standard output/error and re-wraps every line into its own structured log record.
+    If you're running locally or relying on a custom logger (Serilog, NLog, etc.), disable that extra formatting so your
+    log payloads stay untouched:
+
+    ```csharp title="Program.cs (continued)"
+    builder.Services.ConfigureLambdaHostOptions(options =>
+    {
+        options.ClearLambdaOutputFormatting = true;
+    });
+    ```
+
+    Prefer configuration files? Set `LambdaHostOptions:ClearLambdaOutputFormatting` to `true` in `appsettings.json` (or any
+    supported configuration source) for the same effect. See [Configuration → ClearLambdaOutputFormatting](../guides/configuration.md#clearlambdaoutputformatting)
+    for more details.
 
 ## Step 6: Register the Handler
 
@@ -138,18 +154,17 @@ Map your handler function with the `[Event]` attribute to mark the Lambda event 
 
 ```csharp title="Program.cs (continued)"
 // Register the handler with dependency injection
-lambda.MapHandler(([Event] GreetingRequest request, IGreetingService service) =>
-{
-    // Call the service to get the greeting
-    var message = service.GetGreeting(request.Name, request.Language);
-
-    // Return the response
-    return new GreetingResponse(message, DateTime.UtcNow);
-});
+lambda.MapHandler(
+    ([Event] GreetingRequest request, IGreetingService service) =>
+    {
+        var message = service.GetGreeting(request.Name, request.Language);
+        return new GreetingResponse(message, DateTime.UtcNow);
+    }
+);
 ```
 
 !!! warning "The [Event] Attribute"
-    The `[Event]` attribute is required on exactly one parameter. It tells the framework which parameter receives the deserialized Lambda event.
+    Add `[Event]` to at most one handler parameter to mark it as the deserialized Lambda event. If your handler does not accept an event payload (e.g., scheduled invocations or DI-only inputs), you can omit the attribute entirely.
 
 ## Step 7: Run the Lambda
 
@@ -171,6 +186,43 @@ using System.Text.Json.Serialization;
 using AwsLambda.Host.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+// Lambda application setup
+var builder = LambdaApplication.CreateBuilder();
+
+builder.Services.AddSingleton<IGreetingService, GreetingService>();
+
+builder.Services.ConfigureLambdaHostOptions(options =>
+{
+    options.ClearLambdaOutputFormatting = true;
+});
+
+var lambda = builder.Build();
+
+// Middleware
+lambda.UseMiddleware(
+    async (context, next) =>
+    {
+        var logger = context.ServiceProvider.GetRequiredService<ILogger<GreetingService>>();
+
+        logger.LogInformation("Request received at {Timestamp}", DateTime.UtcNow);
+        await next(context);
+        logger.LogInformation("Request completed at {Timestamp}", DateTime.UtcNow);
+    }
+);
+
+// Handler
+lambda.MapHandler(
+    ([Event] GreetingRequest request, IGreetingService service) =>
+    {
+        var message = service.GetGreeting(request.Name, request.Language);
+        return new GreetingResponse(message, DateTime.UtcNow);
+    }
+);
+
+// Run
+await lambda.RunAsync();
 
 // Request and Response models
 public record GreetingRequest(
@@ -199,7 +251,7 @@ public class GreetingService : IGreetingService
         { "fr", "Bonjour" },
         { "de", "Guten Tag" },
         { "it", "Ciao" },
-        { "ja", "こんにちは" }
+        { "ja", "こんにちは" },
     };
 
     public string GetGreeting(string name, string? language)
@@ -208,30 +260,6 @@ public class GreetingService : IGreetingService
         return $"{greeting}, {name}!";
     }
 }
-
-// Lambda application setup
-var builder = LambdaApplication.CreateBuilder();
-builder.Services.AddSingleton<IGreetingService, GreetingService>();
-
-var lambda = builder.Build();
-
-// Middleware
-lambda.UseMiddleware(async (context, next) =>
-{
-    Console.WriteLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] Request received");
-    await next(context);
-    Console.WriteLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] Request completed");
-});
-
-// Handler
-lambda.MapHandler(([Event] GreetingRequest request, IGreetingService service) =>
-{
-    var message = service.GetGreeting(request.Name, request.Language);
-    return new GreetingResponse(message, DateTime.UtcNow);
-});
-
-// Run
-await lambda.RunAsync();
 ```
 
 ## Testing Locally
@@ -317,11 +345,13 @@ Try different payloads:
 
 ### Check the Logs
 
-In the test tool output, you should see the middleware logs:
+Because middleware uses `ILogger`, the Lambda Test Tool (or CloudWatch Logs) will include entries similar to:
 
 ```
-[2025-11-29 12:34:56] Request received
-[2025-11-29 12:34:56] Request completed
+info: GreetingService[0]
+      Request received at 2018-03-14T09:26:53Z
+info: GreetingService[0]
+      Request completed at 2018-03-14T09:26:54Z
 ```
 
 ## Deploying to AWS
@@ -538,11 +568,7 @@ sequenceDiagram
 
 **Error**: `The [Event] attribute is not recognized`
 
-**Solution**: Ensure you have the `InterceptorsNamespaces` configuration in your `.csproj`:
-
-```xml
-<InterceptorsNamespaces>$(InterceptorsNamespaces);AwsLambda.Host</InterceptorsNamespaces>
-```
+**Solution**: Add `using AwsLambda.Host.Builder;` to the top of your file (or fully qualify `[AwsLambda.Host.Builder.Event]`). The attribute ships with the `AwsLambda.Host` package—no additional project configuration is required.
 
 ### Timeout Errors
 
