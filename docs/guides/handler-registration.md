@@ -1,687 +1,180 @@
 # Handler Registration
 
-Handler registration is the core of aws-lambda-host. The `MapHandler` method combined with the
-`[Event]` attribute provides type-safe, reflection-free handler registration with automatic
-dependency injection—all powered by compile-time source generation.
+`MapHandler` is the entry point for telling `AwsLambda.Host` which delegate should process events. The call looks like an ordinary lambda registration, but source generators intercept it at compile time to wire up serialization, dependency injection, and middleware without reflection.
 
-## Introduction
+## Registering a Handler
 
-Unlike traditional AWS Lambda handlers that rely on reflection and method naming conventions,
-aws-lambda-host uses source generators and interceptors to analyze your handler at compile time,
-generating optimized code with zero runtime overhead.
-
-**Benefits:**
-
-- ✅ **Zero reflection** – All parameter resolution happens at compile time
-- ✅ **Type-safe** – Compiler errors for missing services or incorrect signatures
-- ✅ **AOT ready** – Full support for Native AOT compilation
-- ✅ **Better trimming** – Only required dependencies are included
-- ✅ **Faster execution** – No reflection means faster cold starts
-
-## The MapHandler Method
-
-### Basic Handler
-
-The simplest handler takes an event parameter marked with `[Event]` and returns a response:
-
-```csharp title="Program.cs"
-using AwsLambda.Host;
-
-var builder = LambdaApplication.CreateBuilder();
-var lambda = builder.Build();
-
-lambda.MapHandler(([Event] string input) => $"Hello, {input}!");
-
-await lambda.RunAsync();
-```
-
-**How it works:**
-
-1. Source generator analyzes the handler signature
-2. Generates deserialization code for `string` input
-3. Generates serialization code for `string` output
-4. Creates invocation wrapper—all at compile time
-
-### Handler with Services
-
-Inject registered services alongside the event:
-
-```csharp title="Program.cs"
+```csharp title="Program.cs" linenums="1"
 using AwsLambda.Host;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = LambdaApplication.CreateBuilder();
 
-builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IGreetingService, GreetingService>();
 
 var lambda = builder.Build();
 
-lambda.MapHandler(([Event] Order order, IOrderService service) =>
-    service.Process(order)
+lambda.MapHandler(([Event] string name, IGreetingService greetings) =>
+    greetings.Greet(name)
 );
 
 await lambda.RunAsync();
+
+sealed record GreetingResponse(string Message);
+
+sealed class GreetingService : IGreetingService
+{
+    public GreetingResponse Greet(string name) => new($"Hello, {name}!");
+}
+
+interface IGreetingService
+{
+    GreetingResponse Greet(string name);
+}
 ```
 
-**Source generation resolves:**
+- Register middleware (via `lambda.Use(...)`) before calling `MapHandler`; the handler is always the last piece of the pipeline.
+- Only one handler can be mapped. If you call `MapHandler` twice, the generator emits error `LH0001` so you catch the issue before publishing.
+- The generated handler feeds into the normal invocation builder, so all middleware, features, and diagnostics apply equally to handlers created via `Handle` or `MapHandler`.
 
-- `[Event] Order order` → Deserialized from Lambda event
-- `IOrderService service` → Resolved from DI container
+## Handler Signatures and the `[Event]` Parameter
 
-### Async Handlers
+Handlers that receive an incoming payload must identify exactly one parameter with `[Event]`. The generator uses that marker to synthesize deserialization logic (JSON by default, or whatever envelope/serializer is active). If your Lambda does **not** expect input (e.g., scheduled jobs, health checks, etc.), you can omit the `[Event]` attribute entirely—just define a handler with no payload parameter and aws-lambda-host skips the event binding phase.
 
-Use `async` handlers for I/O-bound operations:
+- `[Event]` may appear on reference types, structs, records, collection types, or envelope types such as `ApiGatewayRequestEnvelope<T>`.
+- Handlers without payloads can simply omit `[Event]` by not declaring an event parameter at all.
+- When you do accept a payload, exactly one parameter must be annotated. Missing or duplicate `[Event]` attributes trigger compile-time diagnostics so you catch signature issues early.
 
-```csharp title="Program.cs"
-lambda.MapHandler(async ([Event] Order order, IOrderRepository repo) =>
+```csharp title="Program.cs" linenums="1"
+// No incoming event required
+lambda.MapHandler((ILogger<Program> logger) =>
 {
-    var result = await repo.SaveAsync(order);
-    return new OrderResponse(result.Id, true);
+    logger.LogInformation("Heartbeat fired at {Timestamp}", DateTimeOffset.UtcNow);
 });
 ```
 
-**Always prefer `async` for:**
+### Parameter Sources
 
-- Database operations
-- HTTP requests
-- File I/O
-- Any awaitable operation
+Handlers can mix lambda events with services, context objects, and cancellation tokens. This table shows what the generator knows how to supply:
 
-## The [Event] Attribute
+| Parameter                                        | Source                                                                                              |
+|--------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| `[Event] T event`                                | Deserialized from the Lambda payload (or envelope). Optional—only include when the handler expects an input. |
+| `IServiceType service`                           | Resolved from the DI container using the invocation scope.                                          |
+| `[FromKeyedServices("key")] IServiceType keyed`  | Resolves a keyed service registered with `AddKeyed*`. Keys must be constants supported by the BCL.  |
+| `ILambdaHostContext context`                     | Framework context that extends `ILambdaContext`, exposes scoped `ServiceProvider`, `Items`, `Features`, `Properties`, and the invocation `CancellationToken`. |
+| `ILambdaContext lambdaContext`                   | Raw AWS Lambda context for folks that prefer the SDK contract.                                      |
+| `CancellationToken cancellationToken`            | Cancels when `InvocationCancellationBuffer` elapses before the Lambda timeout.                      |
 
-The `[Event]` attribute marks the parameter that receives the deserialized Lambda event payload.
-
-### Purpose
-
-- **Identifies the event parameter** for source generation
-- **Triggers code generation** for deserialization
-- **Enables type-safe** event handling
-
-### Rules
-
-✅ **Required on exactly one parameter**
-
-```csharp
-// GOOD: One [Event] parameter
-lambda.MapHandler(([Event] Order order, IOrderService service) => ...);
-```
-
-❌ **Cannot be omitted**
-
-```csharp
-// BAD: Missing [Event] attribute
-lambda.MapHandler((Order order, IOrderService service) => ...);
-// Compiler error: No event parameter marked with [Event]
-```
-
-❌ **Cannot mark multiple parameters**
-
-```csharp
-// BAD: Multiple [Event] attributes
-lambda.MapHandler(([Event] Order order, [Event] string id) => ...);
-// Compiler error: Only one parameter can be marked with [Event]
-```
-
-### Valid Event Types
-
-The `[Event]` parameter can be any serializable type:
-
-```csharp
-// Primitive types
-lambda.MapHandler(([Event] string input) => ...);
-lambda.MapHandler(([Event] int number) => ...);
-
-// Complex types
-lambda.MapHandler(([Event] Order order) => ...);
-lambda.MapHandler(([Event] OrderRequest request) => ...);
-
-// Collections
-lambda.MapHandler(([Event] List<Order> orders) => ...);
-lambda.MapHandler(([Event] Dictionary<string, string> data) => ...);
-
-// Envelopes (with envelope packages)
-lambda.MapHandler(([Event] ApiGatewayRequestEnvelope<Order> request) => ...);
-lambda.MapHandler(([Event] SqsEventEnvelope<Order> sqsEvent) => ...);
-```
-
-## Injectable Parameters
-
-Handlers can inject multiple types of parameters.
-
-### All Injectable Types
-
-```csharp title="Program.cs"
-lambda.MapHandler(async (
-    [Event] Order order,                    // Lambda event (required)
-    IOrderService orderService,             // Registered service
-    ICache cache,                           // Another registered service
-    ILambdaHostContext context,            // Framework context
-    CancellationToken cancellationToken    // Timeout signal
-) =>
-{
-    // Access invocation metadata
-    var requestId = context.Items["RequestId"];
-
-    // Use cancellation token for timeout handling
-    var result = await orderService.ProcessAsync(order, cancellationToken);
-
-    return new OrderResponse(result.Id, true);
-});
-```
-
-### Parameter Resolution
-
-| Parameter Type       | Description          | Resolved From                           |
-|----------------------|----------------------|-----------------------------------------|
-| `[Event] T`          | Lambda event payload | Deserialized from event JSON            |
-| `IServiceType`       | Registered service   | DI container (scoped per invocation)    |
-| `ILambdaHostContext` | Invocation context   | Framework (provided per invocation)     |
-| `CancellationToken`  | Timeout signal       | Framework (fires before Lambda timeout) |
-
-### Parameter Order
-
-Parameter order doesn't matter—except `[Event]` must be present:
-
-```csharp
-// All valid - order doesn't matter
-lambda.MapHandler(([Event] Order order, IOrderService service, CancellationToken ct) => ...);
-lambda.MapHandler((IOrderService service, [Event] Order order, CancellationToken ct) => ...);
-lambda.MapHandler((CancellationToken ct, [Event] Order order, IOrderService service) => ...);
-```
-
-### Multiple Service Injection
-
-Inject as many services as needed:
-
-```csharp title="Program.cs"
+```csharp title="Program.cs" linenums="1"
 lambda.MapHandler(async (
     [Event] OrderRequest request,
-    IOrderService orderService,
-    IInventoryService inventoryService,
-    IPaymentService paymentService,
-    INotificationService notificationService,
+    [FromKeyedServices("primary")] IOrderProcessor orderProcessor,
+    ILambdaHostContext context,
+    CancellationToken ct
+) =>
+{
+    context.Items["RequestId"] = context.AwsRequestId;
+
+    var response = await orderProcessor.ProcessAsync(request, ct);
+    context.Properties["OrdersProcessed"] = (int)(context.Properties["OrdersProcessed"] ?? 0) + 1;
+
+    return response;
+});
+```
+
+`ILambdaHostContext.ServiceProvider` is lazily created for each invocation. Prefer constructor- or parameter-injected services because they participate in disposal automatically, but the scoped provider is available for advanced scenarios.
+
+## Return Values and Serialization
+
+The generator also emits serialization code for the delegate's return value. Supported shapes include:
+
+- Plain values (`T`), including records, arrays, `Stream`, or envelope types.
+- `Task<T>` and `ValueTask<T>` for asynchronous responses.
+- `Task` or `ValueTask` when no result should be written (Lambda receives `null`).
+
+By default responses are serialized through the configured `ILambdaSerializer` (System.Text.Json unless you swap it). Envelope packages often provide specialized features that capture the response inside an `IResponseFeature`, so the `ILambdaHostContext` can retrieve or mutate it later.
+
+## Invocation Scope and Context
+
+Each invocation receives its own dependency injection scope and `ILambdaHostContext`. Use it to share data across middleware and handlers without introducing service-locator patterns.
+
+```csharp title="Program.cs" linenums="1"
+lambda.MapHandler(async (
+    [Event] ApiGatewayRequestEnvelope<Order> request,
+    ILambdaHostContext context,
     ILogger<Program> logger,
     CancellationToken ct
 ) =>
 {
-    logger.LogInformation("Processing order {OrderId}", request.OrderId);
+    var order = request.Body ?? throw new InvalidOperationException("Missing body.");
 
-    var inventoryOk = await inventoryService.CheckAsync(request.Items, ct);
-    if (!inventoryOk) return new OrderResponse { Success = false, Reason = "Out of stock" };
+    if (context.TryGetEvent<ApiGatewayRequestEnvelope<Order>>(out var originalEnvelope))
+        logger.LogDebug("HTTP Method {Method}", originalEnvelope.RequestContext.Http.Method);
 
-    var paymentOk = await paymentService.ChargeAsync(request.Payment, ct);
-    if (!paymentOk) return new OrderResponse { Success = false, Reason = "Payment failed" };
+    var serviceScope = context.ServiceProvider;
+    var metrics = serviceScope.GetRequiredService<IMetrics>();
+    await metrics.AddInvocationAsync(order.Id, ct);
 
-    var order = await orderService.CreateAsync(request, ct);
-    await notificationService.NotifyAsync(order, ct);
-
-    return new OrderResponse { Success = true, OrderId = order.Id };
-});
-```
-
-**⚠️ Caution:** Too many dependencies may indicate the handler is doing too much. Consider
-delegating to a facade service.
-
-## Return Types
-
-Handler return values are automatically serialized to JSON.
-
-### Serialized Responses
-
-```csharp title="Program.cs"
-// Return simple types
-lambda.MapHandler(([Event] string input) => input.ToUpper());
-// Returns: "HELLO" (serialized as JSON string)
-
-// Return complex types
-lambda.MapHandler(([Event] Order order) =>
-    new OrderResponse(order.Id, true)
-);
-// Returns: {"orderId":"123","success":true}
-
-// Return collections
-lambda.MapHandler(([Event] SearchRequest request, ISearchService search) =>
-    search.Find(request.Query)
-);
-// Returns: [{"id":"1","name":"Item 1"}, ...]
-```
-
-### Void Returns
-
-Handlers can return `void` or `Task` for operations with no response:
-
-```csharp title="Program.cs"
-lambda.MapHandler(([Event] LogEntry entry, ILogger<Program> logger) =>
-{
-    logger.LogInformation("Log entry: {Entry}", entry);
-    // No return value
-});
-
-// Async void
-lambda.MapHandler(async ([Event] Order order, IOrderRepository repo) =>
-{
-    await repo.SaveAsync(order);
-    // No return value
-});
-```
-
-**Response:** Empty JSON response or `null`
-
-### Task vs ValueTask
-
-Both `Task<T>` and `ValueTask<T>` are supported:
-
-```csharp
-// Task<T>
-lambda.MapHandler(async ([Event] Order order, IOrderService service) =>
-    await service.ProcessAsync(order)
-);
-
-// ValueTask<T> - for hot paths
-lambda.MapHandler(async ([Event] Order order, IOrderService service) =>
-{
-    ValueTask<OrderResponse> result = service.ProcessAsync(order);
-    return await result;
-});
-```
-
-**Prefer `Task<T>`** for most cases. Use `ValueTask<T>` only for hot paths where allocation matters.
-
-## Source Generation
-
-Source generators analyze your handler at compile time and generate optimized code.
-
-### How It Works
-
-```csharp title="Program.cs"
-lambda.MapHandler(([Event] Order order, IOrderService service) =>
-    service.Process(order)
-);
-```
-
-**Generated code** (simplified):
-
-```csharp
-// Deserialization
-var order = JsonSerializer.Deserialize<Order>(eventJson);
-
-// Service resolution
-var service = context.ServiceProvider.GetRequiredService<IOrderService>();
-
-// Invocation
-var response = service.Process(order);
-
-// Serialization
-var responseJson = JsonSerializer.Serialize(response);
-```
-
-**All generated at compile time—zero runtime reflection.**
-
-### Compile-Time Benefits
-
-✅ **Compile-time errors** for missing services:
-
-```csharp
-lambda.MapHandler(([Event] Order order, IMissingService service) => ...);
-// Compiler error if IMissingService not registered
-```
-
-✅ **Compile-time errors** for incorrect signatures:
-
-```csharp
-lambda.MapHandler((Order order) => ...);
-// Compiler error: Missing [Event] attribute
-```
-
-✅ **Optimized code generation**:
-
-```csharp
-// Source generator creates optimized path for your exact signature
-// No reflection, no dynamic dispatch, no runtime overhead
-```
-
-### Interceptors
-
-The framework uses C# 12 interceptors to replace the `MapHandler` call site with generated code:
-
-```csharp
-// Your code
-lambda.MapHandler(([Event] Order order) => ...);
-
-// Intercepted and replaced with
-lambda.MapHandlerInterceptor0(([Event] Order order) => ...);
-// Where MapHandlerInterceptor0 is generated with optimized code
-```
-
-**Result:** Zero-cost abstraction—as if you wrote the optimized code by hand.
-
-## Handler Patterns
-
-### Simple CRUD Handler
-
-```csharp title="Program.cs"
-lambda.MapHandler(async (
-    [Event] CreateOrderRequest request,
-    IOrderRepository repo
-) =>
-{
-    var order = new Order(request.CustomerId, request.Items, request.Total);
-    await repo.CreateAsync(order);
-    return new CreateOrderResponse(order.Id);
-});
-```
-
-### Handler with Validation
-
-```csharp title="Program.cs"
-lambda.MapHandler(([Event] Order order, IValidator<Order> validator) =>
-{
-    var validationResult = validator.Validate(order);
-    if (!validationResult.IsValid)
-    {
-        throw new ValidationException(validationResult.Errors);
-    }
-
-    return new OrderResponse(order.Id, true);
-});
-```
-
-### Handler with Context Access
-
-```csharp title="Program.cs"
-lambda.MapHandler(([Event] Request request, ILambdaHostContext context) =>
-{
-    // Store request metadata
-    context.Items["RequestId"] = request.Id;
-    context.Items["Timestamp"] = DateTime.UtcNow;
-
-    // Access shared properties
-    var appVersion = context.Properties["Version"] as string;
-
-    // Process request...
-    return new Response("Success");
-});
-```
-
-### Handler with Cancellation Token
-
-```csharp title="Program.cs"
-lambda.MapHandler(async (
-    [Event] Order order,
-    IOrderService service,
-    CancellationToken ct
-) =>
-{
-    try
-    {
-        return await service.ProcessAsync(order, ct);
-    }
-    catch (OperationCanceledException)
-    {
-        // Lambda timeout approaching
-        return new OrderResponse { Success = false, Reason = "Timeout" };
-    }
-});
-```
-
-### Handler with Envelope
-
-```csharp title="Program.cs"
-using AwsLambda.Host.Envelopes.ApiGateway;
-
-lambda.MapHandler(([Event] ApiGatewayRequestEnvelope<Order> request, ILogger<Program> logger) =>
-{
-    logger.LogInformation("Request from IP: {IP}", request.RequestContext.Identity.SourceIp);
-
-    // Access payload
-    var order = request.Body;
-
-    // Process...
     return new ApiGatewayResponseEnvelope<OrderResponse>
     {
         StatusCode = 200,
-        Body = new OrderResponse(order.Id, true)
+        Body = new(order.Id, approved: true)
     };
 });
 ```
 
-### Thin Handler Pattern
+- `context.Items` is a per-invocation bag for ad-hoc data.
+- `context.Properties` mirrors `lambda.Properties` so you can stash long-lived configuration at startup and read it later.
+- `context.Features` exposes the ASP.NET-style feature system documented in the middleware guide; features enable decoupled access to the raw event/request/response without direct DI coupling.
 
-**Best Practice:** Keep handlers thin and delegate to services.
+## Source Generation and Diagnostics
 
-```csharp title="Program.cs"
-// GOOD: Thin handler delegates to service
-lambda.MapHandler(([Event] Order order, IOrderProcessor processor) =>
-    processor.ProcessAsync(order)
-);
-```
+`MapHandler` is decorated as a C# 12 interceptor target. During compilation the generator:
 
-```csharp title="Services/OrderProcessor.cs"
-public class OrderProcessor : IOrderProcessor
-{
-    private readonly IOrderRepository _repository;
-    private readonly IInventoryService _inventory;
-    private readonly IPaymentService _payment;
-    private readonly ILogger<OrderProcessor> _logger;
+1. Ensures the project is built with C# 11+ so interceptors are available (otherwise `LH0004`).
+2. Verifies there is exactly one handler and, when a payload parameter exists, exactly one `[Event]` annotation.
+3. Validates keyed service metadata so the requested key matches the DI container's capabilities (`LH0003` when the key uses an unsupported type such as arrays).
+4. Emits a strongly typed `Handle` call that deserializes the payload (if any), resolves services via generated code, sets up features, and serializes the response.
 
-    public OrderProcessor(
-        IOrderRepository repository,
-        IInventoryService inventory,
-        IPaymentService payment,
-        ILogger<OrderProcessor> logger)
-    {
-        _repository = repository;
-        _inventory = inventory;
-        _payment = payment;
-        _logger = logger;
-    }
+At runtime the stub `MapHandler` method would throw if invoked, but the interception step guarantees that never happens. You get ahead-of-time compatible, reflection-free code with compile-time errors if the signature is invalid.
 
-    public async Task<OrderResponse> ProcessAsync(Order order)
-    {
-        _logger.LogInformation("Processing order {OrderId}", order.Id);
+## Patterns and Best Practices
 
-        // Complex business logic here
-        var inventoryOk = await _inventory.ReserveAsync(order.Items);
-        if (!inventoryOk) throw new InvalidOperationException("Insufficient inventory");
-
-        var paymentOk = await _payment.ChargeAsync(order.Payment);
-        if (!paymentOk) throw new InvalidOperationException("Payment failed");
-
-        await _repository.SaveAsync(order);
-
-        return new OrderResponse(order.Id, true);
-    }
-}
-```
-
-**Why?**
-
-- ✅ Testable (test `OrderProcessor` in isolation)
-- ✅ Reusable (use `OrderProcessor` in multiple handlers)
-- ✅ Maintainable (business logic separated from handler)
-
-## Best Practices
-
-### ✅ Do: Keep Handlers Thin
-
-```csharp
-// GOOD: Handler delegates to service
-lambda.MapHandler(([Event] Order order, IOrderService service) =>
-    service.ProcessAsync(order)
-);
-```
-
-### ❌ Don't: Put Business Logic in Handlers
-
-```csharp
-// BAD: Business logic in handler
-lambda.MapHandler(async ([Event] Order order, IOrderRepository repo, IInventoryService inventory) =>
-{
-    // 50+ lines of business logic
-    if (order.Items.Count == 0) throw new ValidationException();
-    var inventoryOk = await inventory.CheckAsync(order.Items);
-    if (!inventoryOk) throw new InvalidOperationException();
-    // More logic...
-    return new OrderResponse(order.Id, true);
-});
-```
-
-### ✅ Do: Use Async/Await for I/O
-
-```csharp
-// GOOD: Async handler for I/O operations
-lambda.MapHandler(async ([Event] Order order, IOrderRepository repo) =>
-    await repo.SaveAsync(order)
-);
-```
-
-### ❌ Don't: Block Async Operations
-
-```csharp
-// BAD: Blocking async code
-lambda.MapHandler(([Event] Order order, IOrderRepository repo) =>
-    repo.SaveAsync(order).Result  // DON'T!
-);
-```
-
-### ✅ Do: Inject Services, Not Factories
-
-```csharp
-// GOOD: Inject service directly
-lambda.MapHandler(([Event] Order order, IOrderService service) =>
-    service.ProcessAsync(order)
-);
-```
-
-### ❌ Don't: Use Service Locator Pattern
-
-```csharp
-// BAD: Service locator anti-pattern
-lambda.MapHandler(([Event] Order order, IServiceProvider services) =>
-{
-    var service = services.GetRequiredService<IOrderService>();
-    return service.ProcessAsync(order);
-});
-```
-
-### ✅ Do: Return Strongly-Typed Responses
-
-```csharp
-// GOOD: Strongly-typed response
-lambda.MapHandler(([Event] Order order) =>
-    new OrderResponse(order.Id, true)
-);
-```
-
-### ❌ Don't: Return Anonymous Types
-
-```csharp
-// BAD: Anonymous type (harder to test and maintain)
-lambda.MapHandler(([Event] Order order) =>
-    new { orderId = order.Id, success = true }
-);
-```
-
-### ✅ Do: Use CancellationToken
-
-```csharp
-// GOOD: Respect timeout signal
-lambda.MapHandler(async ([Event] Order order, IOrderService service, CancellationToken ct) =>
-    await service.ProcessAsync(order, ct)
-);
-```
+- Keep handlers thin. Delegate business logic to services so you can test them outside Lambda and reuse them across handlers.
+- Respect the provided `CancellationToken`; `AwsLambda.Host` fires it `InvocationCancellationBuffer` before the hard Lambda timeout.
+- Prefer strongly typed responses or envelopes instead of anonymous objects—serialization contracts stay predictable and versionable.
+- Use `ILambdaHostContext.Features` (e.g., `context.GetEvent<T>()`) to decouple middleware from handlers when you need shared metadata.
+- Avoid resolving services manually from `IServiceProvider` unless absolutely necessary. Let the generator inject what you need, or expose a dedicated facade service.
+- Prefer referencing a static method on a static class when you want to exercise the handler logic outside of the Lambda host. Mapping a method group (`lambda.MapHandler(MyHandler.HandleAsync);`) makes it trivial to unit test the handler by invoking it directly.
 
 ## Troubleshooting
 
-### Handler Not Found Error
+**`LH0001: Multiple handlers registered`**
 
-**Error:**
+Make sure you call `MapHandler` only once. If you need to branch by trigger type, create separate Lambda projects or use envelope dispatching.
 
-```
-System.InvalidOperationException: No handler registered
-```
+**`LH0002: No parameter marked with [Event]`**
 
-**Solution:**
+Add a `[Event]` attribute when your handler accepts an input payload. This diagnostic does **not** appear for payload-less handlers because no event parameter is required in that case.
 
-Ensure you call `MapHandler` before `RunAsync`:
+**`InvalidOperationException: No service for type ... has been registered`**
 
-```csharp
-lambda.MapHandler(([Event] string input) => ...);
-await lambda.RunAsync();  // ✅
-```
+Register dependencies before building the application:
 
-### Missing [Event] Attribute
-
-**Error:**
-
-```
-Compiler error: No parameter marked with [Event] attribute
-```
-
-**Solution:**
-
-Mark the event parameter with `[Event]`:
-
-```csharp
-lambda.MapHandler(([Event] Order order) => ...);  // ✅
-```
-
-### Service Not Registered
-
-**Error:**
-
-```
-System.InvalidOperationException: No service for type 'IOrderService' has been registered
-```
-
-**Solution:**
-
-Register the service before building:
-
-```csharp
-builder.Services.AddScoped<IOrderService, OrderService>();  // ✅
+```csharp linenums="1"
+var builder = LambdaApplication.CreateBuilder();
+builder.Services.AddScoped<IOrderProcessor, OrderProcessor>();
 var lambda = builder.Build();
 ```
 
-### Multiple [Event] Attributes
+**`InvalidOperationException: Unable to resolve service referenced by FromKeyedServicesAttribute`**
 
-**Error:**
-
-```
-Compiler error: Only one parameter can be marked with [Event]
-```
-
-**Solution:**
-
-Only mark one parameter with `[Event]`:
-
-```csharp
-lambda.MapHandler(([Event] Order order, IOrderService service) => ...);  // ✅
-```
-
-## Key Takeaways
-
-1. **MapHandler** – Registers your Lambda handler with type-safe DI
-2. **[Event] Attribute** – Marks the event parameter (required on exactly one parameter)
-3. **Injectable Parameters** – `[Event] T`, registered services, `ILambdaHostContext`,
-   `CancellationToken`
-4. **Return Types** – Any serializable type or `void`/`Task`
-5. **Source Generation** – Zero reflection, compile-time optimization, AOT ready
-6. **Thin Handlers** – Delegate business logic to services
-7. **Async/Await** – Always use async for I/O operations
-8. **CancellationToken** – Handle Lambda timeouts gracefully
+Keyed services require .NET 8+ DI. Ensure you registered the keyed instance using `AddKeyed*` and that the key is a supported primitive, enum, `string`, `Type`, or `null`.
 
 ## Next Steps
 
-Now that you understand handler registration, explore related topics:
-
-- **[Dependency Injection](/guides/dependency-injection.md)** – Inject services into handlers
-- **[Middleware](/guides/middleware.md)** – Build middleware around handlers
-- **[Error Handling](/guides/error-handling.md)** – Handle exceptions in handlers
-- **[Testing](/guides/testing.md)** – Test handlers in isolation
-- **[Configuration](/guides/configuration.md)** – Configure handler behavior
-
----
-
-Congratulations! You now understand how to register type-safe Lambda handlers with automatic
-dependency injection.
+- [Dependency Injection](dependency-injection.md) – Learn how scopes, keyed services, and context injection work under the hood.
+- [Middleware](middleware.md) – Compose reusable components that run before and after your handler.
+- [Lifecycle Management](lifecycle-management.md) – Initialize resources before the first invocation and dispose them during shutdown.
+- [Features](../features/envelopes.md) – Understand envelopes and the feature pipeline when you need event-specific helpers.
