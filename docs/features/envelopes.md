@@ -2,7 +2,7 @@
 
 **What are Envelopes?**
 
-Envelope packages wrap official AWS Lambda event classes (like `SQSEvent`, `APIGatewayProxyRequest`) and add a `BodyContent<T>` property that provides type-safe access to deserialized message payloads. Instead of manually parsing JSON strings from event bodies, you get strongly-typed objects with full IDE support and compile-time type checking.
+Envelope packages wrap official AWS Lambda event classes (like `SQSEvent`, `APIGatewayProxyRequest`) and add typed content properties (`BodyContent<T>`, `MessageContent<T>`, etc.) that provide type-safe access to deserialized message payloads. Instead of manually parsing JSON strings from event bodies, you get strongly-typed objects with full IDE support and compile-time type checking.
 
 **Key Benefits**:
 
@@ -29,6 +29,20 @@ Envelope packages wrap official AWS Lambda event classes (like `SQSEvent`, `APIG
     For detailed implementation examples and API documentation, see the individual package README files on GitHub (linked in the table above).
 
 ## Quick Start
+
+### Installation
+
+Install only the envelope packages that match the AWS event sources you plan to handle. For example:
+
+```bash
+# Core SQS envelope
+dotnet add package AwsLambda.Host.Envelopes.Sqs
+
+# API Gateway (REST/WebSocket) envelope
+dotnet add package AwsLambda.Host.Envelopes.ApiGateway
+```
+
+Repeat for SNS, Kinesis, Kafka, ALB, etc., as needed.
 
 ### Using Envelopes
 
@@ -299,7 +313,7 @@ A custom event with metadata and a nested JSON payload:
 ```csharp title="CustomRequestEvent.cs" linenums="1"
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AwsLambda.Host.Abstractions.Options;
+using AwsLambda.Host.Options;
 using AwsLambda.Host.Envelopes;
 
 public class CustomRequestEvent : IRequestEnvelope
@@ -359,7 +373,7 @@ Custom envelopes for both incoming requests and outgoing responses:
 ```csharp title="ApiEnvelopes.cs" linenums="1"
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AwsLambda.Host.Abstractions.Options;
+using AwsLambda.Host.Options;
 using AwsLambda.Host.Envelopes;
 
 // Request envelope
@@ -402,31 +416,37 @@ public record ResponsePayload(bool Success, string Message, object? Data = null)
 **Usage:**
 
 ```csharp title="Program.cs" linenums="1"
-lambda.MapHandler<ApiRequest, ApiResponse>(request =>
-{
-    var response = new ApiResponse { StatusCode = 200 };
-
-    if (request.BodyContent is null)
+lambda.MapHandler(
+    async ([Event] ApiRequest request, CancellationToken cancellationToken) =>
     {
-        response.StatusCode = 400;
-        response.BodyContent = new ResponsePayload(
-            Success: false,
-            Message: "Invalid request body"
+        var response = new ApiResponse { StatusCode = 200 };
+
+        if (request.BodyContent is null)
+        {
+            response.StatusCode = 400;
+            response.BodyContent = new ResponsePayload(
+                Success: false,
+                Message: "Invalid request body"
+            );
+            return response;
+        }
+
+        // Process the request
+        var result = await ProcessActionAsync(
+            request.BodyContent.Action,
+            request.BodyContent.Parameters,
+            cancellationToken
         );
+
+        response.BodyContent = new ResponsePayload(
+            Success: true,
+            Message: "Action completed",
+            Data: result
+        );
+
         return response;
     }
-
-    // Process the request
-    var result = ProcessAction(request.BodyContent.Action, request.BodyContent.Parameters);
-
-    response.BodyContent = new ResponsePayload(
-        Success: true,
-        Message: "Action completed",
-        Data: result
-    );
-
-    return response;
-});
+);
 ```
 
 ---
@@ -438,7 +458,7 @@ A custom event with multiple records, similar to SQS batch processing:
 ```csharp title="BatchEvent.cs" linenums="1"
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AwsLambda.Host.Abstractions.Options;
+using AwsLambda.Host.Options;
 using AwsLambda.Host.Envelopes;
 
 public class BatchEvent : IRequestEnvelope
