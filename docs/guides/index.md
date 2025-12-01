@@ -84,17 +84,6 @@ Write comprehensive tests for your Lambda functions using xUnit, NSubstitute, an
 - Integration testing
 - Test naming conventions
 
-### [Deployment](deployment.md)
-Deploy Lambda functions using AWS SAM, CDK, Terraform, or CI/CD pipelines.
-
-**Topics covered:**
-- Project configuration (standard and AOT)
-- AWS SAM deployment
-- AWS CDK deployment
-- CI/CD with GitHub Actions
-- Versioning and releases
-- Best practices
-
 ## Guide Features
 
 Each guide includes:
