@@ -29,7 +29,7 @@ theme:
     - search.highlight
     - search.share
     - search.suggest
-
+    - content.code.annotate
 
   palette:
     # Palette toggle for light mode

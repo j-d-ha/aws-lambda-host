@@ -55,32 +55,25 @@ using OpenTelemetry.Trace;
 
 var builder = LambdaApplication.CreateBuilder();
 
-// 1. Add OpenTelemetry tracing to the DI container
 builder
-    .Services.AddOpenTelemetry()
+    .Services.AddOpenTelemetry()// (1)!
     .WithTracing(tracing =>
     {
-        // Enable AWS Lambda configurations
-        tracing.AddAWSLambdaConfigurations();
-        // Add a custom source for tracing
-        tracing.AddSource("MyService");
+        tracing.AddAWSLambdaConfigurations();// (2)!
+        tracing.AddSource("MyService");// (3)!
         tracing.SetResourceBuilder(
             ResourceBuilder.CreateDefault().AddService("MyService", serviceVersion: "1.0.0")
         );
-        // Export traces to the console for debugging
-        tracing.AddConsoleExporter();
+        tracing.AddConsoleExporter();// (4)!
     });
 
 await using var lambda = builder.Build();
 
-// 2. Enable OpenTelemetry tracing in the Lambda host through middleware.
-lambda.UseOpenTelemetryTracing();
+lambda.UseOpenTelemetryTracing();// (5)!
 
-// 3. (Optional) Flush the OpenTelemetry traces at the end of the Lambda execution.
-lambda.OnShutdownFlushOpenTelemetry();
+lambda.OnShutdownFlushOpenTelemetry();// (6)!
 
-// 4. Write your Lambda handler like normal.
-lambda.MapHandler(
+lambda.MapHandler(// (7)!
     async ([Event] Request request, ILogger<Program> logger, CancellationToken cancellationToken) =>
     {
         logger.LogInformation("Responding to {Name}", request.Name);
@@ -97,6 +90,19 @@ internal record Request(string Name);
 
 internal record Response(string Message);
 ```
+
+1. Add OpenTelemetry tracing to the DI container
+2. Enable AWS Lambda configurations
+3. Add a custom source for tracing
+4. Export traces to a collector, in this case the console
+5. Enable OpenTelemetry tracing in the Lambda host through middleware.
+6. (Optional) Flush the OpenTelemetry traces at the end of the Lambda execution.
+7. Write your Lambda handler like normal.
+
+!!! tip
+    OpenTelemetry tracing can be configured in multiple ways, including manually creating a trace provider using the [OpenTelemetry](https://www.nuget.org/packages/OpenTelemetry), or through registering OpenTelemetry services in your DI container using [OpenTelemetry.Extensions.Hosting](https://www.nuget.org/packages/OpenTelemetry.Extensions.Hosting). 
+
+     When working with  `AwsLambda.Host`, its recommended to the latter approach.
 
 ---
 
