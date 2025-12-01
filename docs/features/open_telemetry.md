@@ -120,22 +120,74 @@ Similarly, `OnShutdownFlushOpenTelemetry()` is an interceptor that registers a s
 
 ---
 
-## Configuration
+## Working With `AwsLambda.Host.OpenTelemetry`
+
+### Configuration
 
 Configuration is done using the standard OpenTelemetry .NET SDK extension methods on `IServiceCollection`. Official documentation for these methods can be found [here](https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/src/OpenTelemetry.Extensions.Hosting/README.md).
 
+### Instrumenting The Invocation Pipeline 
+
+### Gracefully Shutting & Cleaning Up
+
 ---
 
-## Custom Instrumentation
+## Manual Instrumentation
 
-`AwsLambda.Host.OpenTelemetry` helps you instrement your Lambda handlers with [OpenTelemetry.Instrumentation.AWSLambda](https://www.nuget.org/packages/OpenTelemetry.Instrumentation.AWSLambda), but to get the most out of observability, you should add custom instrumentation to your application code. In this section we cover how this can be done. 
+`AwsLambda.Host.OpenTelemetry` helps you instrement your Lambda handlers with [OpenTelemetry.Instrumentation.AWSLambda](https://www.nuget.org/packages/OpenTelemetry.Instrumentation.AWSLambda), but to get the most out of observability, you should add custom instrumentation to your application code. In this section we cover how this can be done easily with the Dependancy Injection support provided by `AwsLambda.Host`.
 
 !!! note
     This code is not specific to `AwsLambda.Host.OpenTelemetry` and follows the guidlines provided by Microsoft's [.NET distributed tracing documetation](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/distributed-tracing).
 
-### Custom Spans (Activities)
+A full working example of an instrumented Lambda application can be found in [here](../../examples/AwsLambda.Host.Example.OpenTelemetry)
 
-Inject an `ActivitySource` to create custom spans that represent specific units of work, like a database call or an API request.
+### Custom Instrumentation Class
+
+```csharp title="Instrumentation.cs" linenums="1"
+using System.Diagnostics;
+
+namespace AwsLambda.Host.Example.OpenTelemetry;
+
+/// <summary>
+///     It is recommended to use a custom type to hold references for ActivitySource. This avoids
+///     possible type collisions with other components in the DI container.
+/// </summary>
+internal class Instrumentation : IDisposable
+{
+    internal const string ActivitySourceName = "MyLambda";
+    internal const string ActivitySourceVersion = "1.0.0";
+
+    internal ActivitySource ActivitySource { get; } =
+        new(ActivitySourceName, ActivitySourceVersion);
+
+    public void Dispose() => ActivitySource.Dispose();
+}
+```
+
+### Custom Metrics Class
+
+```csharp title="NameMetrics.cs" linenums="1"
+using System.Diagnostics.Metrics;
+
+namespace AwsLambda.Host.Example.OpenTelemetry;
+
+public class NameMetrics
+{
+    private readonly Counter<int> _namesProcessed;
+
+    public NameMetrics(IMeterFactory meterFactory)
+    {
+        var meter = meterFactory.Create("MyLambda.Service");
+        _namesProcessed = meter.CreateCounter<int>("MyLambda.Service.Processed");
+    }
+
+    public void ProcessName(string name) =>
+        _namesProcessed.Add(1, new KeyValuePair<string, object?>("name", name));
+}
+```
+
+
+### Instrument A Service
 
 ```csharp title="NameService.cs" linenums="1"
 using System.Diagnostics;
@@ -159,73 +211,27 @@ public class NameService
 }
 ```
 
-### Custom Metrics
+### Instrument A Handler
 
-Inject a `Meter` and create `Counter`, `Histogram`, or `UpDownCounter` instruments to record business or performance metrics.
+```csharp title="Function.cs" linenums="1"
+using AwsLambda.Host.Builder;
 
-```csharp title="OrderProcessor.cs" linenums="1"
-using System.Diagnostics.Metrics;
+namespace AwsLambda.Host.Example.OpenTelemetry;
 
-public class OrderProcessor
+internal static class Function
 {
-    private static readonly Meter Meter = new("MyApplication.Metrics");
-    private static readonly Counter<int> OrdersProcessed = Meter.CreateCounter<int>("orders.processed");
-    private static readonly Histogram<double> OrderValue = Meter.CreateHistogram<double>("orders.value");
-
-    public void Process(Order order)
+    internal static async Task<Response> Handler(
+        [Event] Request request,
+        IService service,
+        Instrumentation instrumentation,
+        CancellationToken cancellationToken
+    )
     {
-        // ... process order ...
+        using var activity = instrumentation.ActivitySource.StartActivity();
 
-        OrdersProcessed.Add(1);
-        OrderValue.Record(order.Value);
+        var message = await service.GetMessage(request.Name, cancellationToken);
+
+        return new Response(message, DateTime.UtcNow);
     }
 }
 ```
-
----
-
-## Viewing Traces: A Practical Example
-
-You can run the included example project to see tracing in action with a local Jaeger instance.
-
-### Dependencies
-
-- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/)
-
-### 1. Start Jaeger
-
-Navigate to the example directory and start the Jaeger container.
-
-```bash
-cd ./examples/AwsLambda.Host.Example.OpenTelemetry
-docker compose up
-```
-
-Jaeger UI will be available at [`http://localhost:16686`](http://localhost:16686).
-
-### 2. Run the Lambda Function
-
-In a new terminal, run the Lambda function. It is configured to export traces to the Jaeger instance started above.
-
-```bash
-# In ./examples/AwsLambda.Host.Example.OpenTelemetry
-dotnet run
-```
-
-### 3. Invoke the Function
-
-You can use any tool to send a POST request to `http://localhost:8080`, which is the default for `dotnet run`.
-
-Using `curl`:
-```bash
-curl -X POST "http://localhost:8080" \
--H "Content-Type: application/json" \
--d '{"Name": "World"}'
-```
-
-### 4. View the Trace
-
-Refresh the Jaeger UI. You should see a new trace for the service. Clicking on it will reveal the full trace, including the handler invocation span and any custom spans you created.
-
-!!! warning "Traces Not Appearing?"
-    It may take a few seconds for traces to be exported. If they don't appear, stop the running Lambda function (`Ctrl+C`). This triggers the shutdown hook, which forces a flush of any buffered telemetry.
