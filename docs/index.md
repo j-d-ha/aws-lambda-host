@@ -5,17 +5,22 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=j-d-ha_aws-lambda-host&metric=alert_status&token=9fb519975d91379dcfbc6c13a4bd4207131af6e3)](https://sonarcloud.io/summary/new_code?id=j-d-ha_aws-lambda-host)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/j-d-ha/aws-lambda-host/blob/main/LICENSE)
 
-A modern .NET framework that brings familiar .NET Core patterns to AWS Lambda - middleware,
-dependency injection, and lifecycle hooks.
+AwsLambda.Host is a lightweight hosting framework for .NET developers who want the comfort of ASP.NET
+Core’s middleware, dependency injection, and lifecycle hooks inside AWS Lambda. Instead of wiring up
+scopes, serializers, and cancellation tokens by hand, you map strongly typed handlers and let the
+source-generated pipeline handle the plumbing. The result: less boilerplate, better testability, and
+handlers that feel like the rest of your .NET codebase.
 
 [Get Started](getting-started/){ .md-button .md-button--primary }
-[View Examples](examples/){ .md-button }
+[Guides](guides/){ .md-button }
+[Examples (Coming Soon)](examples/){ .md-button }
 
 ---
 
 ## Why AwsLambda.Host?
 
-Stop writing boilerplate Lambda code. Start building features with patterns you already know.
+Stop wiring up DI scopes, serializers, and cancellation tokens by hand. Ship features with patterns you
+already know, while still embracing Lambda’s execution model.
 
 === "Traditional Lambda"
 
@@ -106,48 +111,47 @@ Stop writing boilerplate Lambda code. Start building features with patterns you 
 
 ### :material-view-dashboard-outline: .NET Hosting Patterns
 
-Use middleware, builder pattern, and dependency injection similar to ASP.NET Core, with proper
+Use middleware, the builder pattern, and dependency injection just like ASP.NET Core—with proper
 scoped lifetime management per invocation.
 
 [Learn about DI](guides/dependency-injection.md){ .md-button }
 
 ### :material-calendar-sync-outline: Lifecycle Management
 
-Native support for async/await with proper Lambda timeout and cancellation handling built-in.
+Run OnInit/OnShutdown hooks alongside your handler pipeline to warm resources, clear Lambda log
+formatting, and flush telemetry with host-managed cancellation tokens.
 
-[See lifecycle management](guides/lifecycle-management.md){ .md-button }
+[Lifecycle management](guides/lifecycle-management.md){ .md-button }
 
-### :material-code-braces: Source Generators & Interceptors
+### :material-code-braces: Source-Generated Handlers
 
-Compile-time code generation and method interception for optimal performance with zero runtime
-reflection.
+Compile-time interception validates handler signatures, injects dependencies, and avoids reflection.
 
-[Explore advanced topics](advanced/source-generators.md){ .md-button }
+[Handler registration](guides/handler-registration.md){ .md-button }
 
-### :material-rocket-launch-outline: AOT Ready
+### :material-rocket-launch-outline: AOT Friendly
 
-Full support for Ahead-of-Time compilation for faster cold starts and reduced memory footprint.
+Source generation plus System.Text.Json contexts keep handlers ready for Native AOT publishing.
 
-[AOT compilation guide](advanced/aot-compilation.md){ .md-button }
+[Advanced topics (Coming Soon)](advanced/index.md){ .md-button }
 
 ### :material-chart-line: Built-in Observability
 
-OpenTelemetry integration for distributed tracing with automatic root span creation and custom
-instrumentation.
+OpenTelemetry integration emits traces and metrics without bolting on custom shims.
 
 [OpenTelemetry setup](features/opentelemetry.md){ .md-button }
 
 ### :material-code-json: Flexible Handler Registration
 
-Simple, declarative API for mapping Lambda event types to handlers with compile-time type safety.
+Map strongly typed handlers to envelopes or raw events with compile-time validation.
 
 [Handler registration](guides/handler-registration.md){ .md-button }
 
 ### :material-speedometer: Minimal Runtime Overhead
 
-No unnecessary abstractions - efficient use of Lambda resources with optimized execution paths.
+Small abstraction surface area keeps CPU and memory usage predictable inside Lambda’s sandbox.
 
-[Performance optimization](advanced/performance-optimization.md){ .md-button }
+[Advanced topics (Coming Soon)](advanced/index.md){ .md-button }
 
 ---
 
@@ -163,20 +167,13 @@ Create your first Lambda handler:
 
 ```csharp
 using AwsLambda.Host.Builder;
-using Microsoft.Extensions.Hosting;
 
-// Create the application builder
 var builder = LambdaApplication.CreateBuilder();
+var lambda = builder.Build();
 
-// Build the Lambda application
-await using var lambda = builder.Build();
-
-// Map your handler - the event is automatically injected
 lambda.MapHandler(([Event] string name) => $"Hello {name}!");
 
-// Run the Lambda
 await lambda.RunAsync();
-
 ```
 
 !!! tip "Next Steps"
@@ -227,16 +224,10 @@ deserialization.
 
 ## Examples & Use Cases
 
-Explore complete example projects demonstrating real-world Lambda patterns:
+Explore the repository’s `examples/` folder and the docs’ [Examples](examples/) page (content coming
+soon) for end-to-end Lambda samples that wire up middleware, envelopes, and DI.
 
-- **[Hello World](examples/hello-world.md)** - Basic Lambda with dependency injection and middleware
-- **[REST API](examples/api-rest.md)** - API Gateway integration with request/response handling
-- **[SQS Processing](examples/sqs-processing.md)** - Event-driven message processing
-- **[OpenTelemetry](examples/opentelemetry-example.md)** - Full observability with distributed
-  tracing
-- **[AOT Compilation](examples/aot-example.md)** - Native AOT for optimal cold start performance
-
-[View all examples](examples/){ .md-button }
+[Examples (Coming Soon)](examples/){ .md-button }
 
 ---
 
@@ -244,28 +235,22 @@ Explore complete example projects demonstrating real-world Lambda patterns:
 
 ### Get Involved
 
-- **[GitHub Repository](https://github.com/j-d-ha/aws-lambda-host)** - Source code, issues, and
-  discussions
-- **[Changelog](changelog.md)** - Version history and release notes
-- **[License](https://github.com/j-d-ha/aws-lambda-host/blob/main/LICENSE)** - MIT License
+- **[GitHub Repository](https://github.com/j-d-ha/aws-lambda-host)** – Source code, issues, and discussions.
+- **[Changelog](changelog.md)** – Version history and release notes.
+- **[License](https://github.com/j-d-ha/aws-lambda-host/blob/main/LICENSE)** – MIT License.
 
 ### Documentation
 
-- **[Getting Started](getting-started/)** - Installation and first Lambda tutorial
-- **[Guides](guides/)** - Comprehensive feature documentation
-- **[Features](features/)** - Envelopes and OpenTelemetry integration
-- **[API Reference](api-reference/)** - Detailed API documentation
-- **[Advanced Topics](advanced/)** - AOT, source generators, and performance
+- **[Getting Started](getting-started/)** – Installation and first Lambda tutorial.
+- **[Guides](guides/)** – In-depth docs on DI, middleware, lifecycle, configuration, and more.
+- **[Features](features/)** – Envelopes, OpenTelemetry integration, and other add-ons.
+- **[Advanced Topics](advanced/)** – Coming soon: AOT, source generators, performance tuning.
 
 ### Support
 
-Need help or want to contribute?
-
-- Browse the [FAQ](resources/faq.md) for common questions
-- Check the [Troubleshooting Guide](resources/troubleshooting.md) for solutions
-- Visit the [Community Page](resources/community.md) for support channels
+- Ask or search in [GitHub Discussions](https://github.com/j-d-ha/aws-lambda-host/discussions).
+- File bugs or feature requests via [GitHub Issues](https://github.com/j-d-ha/aws-lambda-host/issues).
 
 ---
 
-**Ready to modernize your Lambda development?** [Get started now](getting-started/){ .md-button
-.md-button--primary }
+**Ready to modernize your Lambda development?** [Get started now](getting-started/){ .md-button .md-button--primary }

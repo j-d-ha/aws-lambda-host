@@ -48,6 +48,8 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+  font:
+    code: JetBrains Mono
 
 markdown_extensions:
   # Python Markdown extensions
@@ -96,6 +98,7 @@ nav:
       - Middleware: guides/middleware.md
       - Lifecycle Management: guides/lifecycle-management.md
       - Handler Registration: guides/handler-registration.md
+      - Hosting & Builder: guides/hosting.md
       - Configuration: guides/configuration.md
       - Error Handling: guides/error-handling.md
       - Testing: guides/testing.md
@@ -110,6 +113,8 @@ nav:
 
 plugins:
   - search
+  - optimize:
+      print_gain_summary: false
 
 extra_css:
   - stylesheets/extra.css

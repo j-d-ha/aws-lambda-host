@@ -51,6 +51,17 @@ Register type-safe Lambda handlers with automatic dependency injection and sourc
 - Source generation benefits
 - Handler patterns
 
+### [Hosting & Builder](hosting.md)
+Understand what `LambdaApplication.CreateBuilder()` configures, how the runtime composes middleware,
+and how to customize the host for advanced scenarios.
+
+**Topics covered:**
+
+- Builder defaults (configuration, logging, DI)
+- LambdaApplicationOptions customization
+- LambdaHostedService orchestration
+- Default serializers and cancellation factories
+- Troubleshooting host setup
 ### [Configuration](configuration.md)
 Configure framework behavior with LambdaHostOptions and application settings.
 
