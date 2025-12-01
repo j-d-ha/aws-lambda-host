@@ -128,7 +128,22 @@ Configuration is done using the standard OpenTelemetry .NET SDK extension method
 
 `AwsLambda.Host.OpenTelemetry` expectes for an instance of `TracerProvider` to be registered in the DI container as this provider is used by `OpenTelemetry.Instrumentation.AWSLambda`. As such, it is your responsibility to configure the OpenTelemetry provider and ensure it is registered in the DI container. If it is not, an exception will be thrown at startup.
 
-### Instrumenting The Invocation Pipeline 
+### Instrumenting The Invocation Pipeline
+
+After configuring the OpenTelemetry services, you need to add the tracing middleware to the Lambda invocation pipeline. This is done by calling the `UseOpenTelemetryTracing()` extension method on the `LambdaApplication` instance.
+
+```csharp
+await using var lambda = builder.Build();
+
+// This method call enables the tracing middleware
+lambda.UseOpenTelemetryTracing();
+
+// ... MapHandler, OnShutdown, etc. ...
+```
+
+This method call acts as a compile-time trigger for a source generator. The generator intercepts the call and injects middleware into the request pipeline. This middleware is responsible for creating the root trace span for each Lambda invocation.
+
+Under the covers, the source generator performs a critical task. It inspects the delegate you provided to `MapHandler` to determine the specific input and output types of your function (e.g., `APIGatewayProxyRequest`, `SQSEvent`). It then uses these types to generate a call to a generic helper method. This ensures that the underlying `OpenTelemetry.Instrumentation.AWSLambda` package receives a strongly-typed request object. By preserving the specific event type, the OpenTelemetry instrumentation can correctly extract context and attributes, such as trace parent headers from an API Gateway request, ensuring proper distributed trace propagation.
 
 
 ### Gracefully Shutting & Cleaning Up
@@ -139,11 +154,11 @@ For situations where you notice data being dropped, or if you want to guarantee 
 
 The following methods are available to be called on the `LambdaApplication` instance:
 
-| Method                             | Description                                                                                                                                  |
-| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OnShutdownFlushOpenTelemetry()`   | A convenience method that registers shutdown hooks to flush both traces and metrics. It calls both `OnShutdownFlushTracer` and `OnShutdownFlushMeter` internally. This is the recommended method for most users. |
-| `OnShutdownFlushTracer()`          | Registers a shutdown hook to force-flush only the `TracerProvider`. Use this if you are only tracing and not collecting metrics, or if you need separate control over flushing traces. |
-| `OnShutdownFlushMeter()`           | Registers a shutdown hook to force-flush only the `MeterProvider`. Use this if you are only collecting metrics and not tracing.            |
+| Method                           | Description                                                                                                                                                                                                      |
+|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `OnShutdownFlushOpenTelemetry()` | A convenience method that registers shutdown hooks to flush both traces and metrics. It calls both `OnShutdownFlushTracer` and `OnShutdownFlushMeter` internally. This is the recommended method for most users. |
+| `OnShutdownFlushTracer()`        | Registers a shutdown hook to force-flush only the `TracerProvider`. Use this if you are only tracing and not collecting metrics, or if you need separate control over flushing traces.                           |
+| `OnShutdownFlushMeter()`         | Registers a shutdown hook to force-flush only the `MeterProvider`. Use this if you are only collecting metrics and not tracing.                                                                                  |
 
 For most applications, calling `lambda.OnShutdownFlushOpenTelemetry()` is sufficient to ensure all telemetry is flushed. If your application only uses tracing or metrics, but not both, you can use the more specific methods for clarity.
 
