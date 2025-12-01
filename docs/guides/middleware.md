@@ -4,7 +4,7 @@
 runs code before/after the next component, and can short-circuit the pipeline. If you're new to the
 pattern, skim the [ASP.NET Core middleware overview](https://learn.microsoft.com/aspnet/core/fundamentals/middleware/)
 first. This guide focuses on Lambda-specific behavior: invocation scopes, feature access, and
-composition tips.
+composition tips that keep middleware and handlers decoupled without extra DI plumbing.
 
 ## Pipeline Basics
 
@@ -74,13 +74,13 @@ Key members:
   `LambdaHostOptions.InvocationCancellationBuffer`). Pass it to downstream async work.
 - `Items` – per-invocation storage shared by middleware/handler.
 - `Properties` – cross-invocation storage.
-- `Features` – type-keyed feature objects such as `IEventFeature<T>`
-  and `IResponseFeature<T>`.
+- `Features` – ASP.NET-style typed capabilities such as `IEventFeature<T>` and `IResponseFeature<T>` that let middleware collaborate without injecting each other.
 
-## Inline Middleware Only
+## Inline Middleware
 
 `UseMiddleware` currently accepts inline delegates. Class-based middleware activators are on the roadmap,
-so for now keep middleware logic inside the lambda or extract helper services for reuse.
+so for now keep middleware logic inside the lambda or extract helper services (registered in DI) for reuse.
+Treat the delegate as the orchestration glue and push heavy lifting into services so the code stays testable.
 
 ## Working with Features
 
@@ -119,40 +119,48 @@ Common features:
 
 - Middleware can extract values set by handlers (or other middleware) without DI fan-out.
 - Handlers remain free of middleware-specific dependencies; they just work with the event/response types.
-- Custom features are easy to add—Just add an implementation of `IFeatureProvider` and register it. It will then be available to all middleware.
+- Custom features are easy to add—register an implementation of `IFeatureProvider` and it becomes available to all middleware.
 
-```csharp title="Custom feature"
-public interface ICorrelationFeature
+### Feature Providers in Practice
+
+When `context.Features.Get<T>()` runs, aws-lambda-host walks through every registered `IFeatureProvider`
+until one returns the requested feature. Built-in providers handle common cases such as response
+serialization. Use the same pattern for your features.
+
+```csharp title="DefaultResponseFeatureProvider.cs" linenums="1"
+using Amazon.Lambda.Core;
+
+namespace AwsLambda.Host.Core;
+
+/// <summary>
+///     Provides a default implementation of <see cref="IResponseFeature" /> for Lambda response
+///     serialization. This provider is instantiated by source-generated code to handle Lambda response
+///     processing using the specified <see cref="ILambdaSerializer" />.
+/// </summary>
+public class DefaultResponseFeatureProvider<T>(ILambdaSerializer lambdaSerializer)
+    : IFeatureProvider
 {
-    string CorrelationId { get; set; }
-}
+    // ReSharper disable once StaticMemberInGenericType
+    private static readonly Type FeatureType = typeof(IResponseFeature);
 
-public sealed class CorrelationFeature : ICorrelationFeature
-{
-    public string CorrelationId { get; set; } = Guid.NewGuid().ToString();
-}
-
-lambda.UseMiddleware(async (context, next) =>
-{
-    var feature = context.Features.Get<ICorrelationFeature>() ?? new CorrelationFeature();
-    
-    context.Items["CorrelationId"] = feature.CorrelationId;
-    await next(context);
-});
-
-public sealed class CorrelationFeatureProvider : IFeatureProvider
-{
-    private static readonly Type FeatureType = typeof(ICorrelationFeature);
-
+    /// <inheritdoc />
     public bool TryCreate(Type type, out object? feature)
     {
-        feature = type == FeatureType ? new CorrelationFeature() : null;
+        feature = type == FeatureType ? new DefaultResponseFeature<T>(lambdaSerializer) : null;
+
         return feature is not null;
     }
 }
-
-builder.Services.AddSingleton<IFeatureProvider, CorrelationFeatureProvider>();
 ```
+
+Registering a provider is just another DI call:
+
+```csharp title="Program.cs"
+builder.Services.AddSingleton<IFeatureProvider, MyCorrelationFeatureProvider>(); // implements IFeatureProvider
+```
+
+Your provider can return singleton instances (for stateless metadata) or create fresh objects per
+invocation.
 
 ## Short-Circuiting and Error Handling
 
@@ -227,7 +235,6 @@ or services via `context.ServiceProvider` the same way you would inside a handle
   report success unintentionally.
 - **Use per-invocation state wisely.** `Items` is cleared after each request; `Properties` live for the life
   of the container and must be thread-safe.
-- **Prefer class-based middleware** for anything reusable or needing DI/Options.
 - **Make cancellation cooperative.** Honor `context.CancellationToken` in middleware and pass it to downstream I/O.
 
 With these patterns, you can build rich, testable pipelines around your Lambda handlers while keeping
