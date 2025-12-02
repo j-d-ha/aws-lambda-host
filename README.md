@@ -1,4 +1,4 @@
-# aws-lambda-host
+# AwsLambda.Host
 
 [![Main Build](https://github.com/j-d-ha/aws-lambda-host/actions/workflows/main-build.yaml/badge.svg)](https://github.com/j-d-ha/aws-lambda-host/actions/workflows/main-build.yaml)
 [![codecov](https://codecov.io/gh/j-d-ha/aws-lambda-host/graph/badge.svg?token=BWORPTQ0UK)](https://codecov.io/gh/j-d-ha/aws-lambda-host)
@@ -6,6 +6,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A modern .NET framework for building AWS Lambda functions using familiar .NET patterns.
+
+> 📚 **[View Full Documentation](https://j-d-ha.github.io/aws-lambda-host/)**
 
 ## Overview
 
