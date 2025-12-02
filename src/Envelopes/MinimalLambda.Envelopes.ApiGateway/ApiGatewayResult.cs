@@ -125,7 +125,14 @@ public sealed class ApiGatewayResult : APIGatewayProxyResponse, IResponseEnvelop
     public static ApiGatewayResult Ok<T>(T bodyContent) =>
         Json(StatusCodes.Status200OK, bodyContent);
 
-    // ── 201 No Content ───────────────────────────────────────────────────────────────
+    // ── 201 Created ──────────────────────────────────────────────────────────────────
+
+    public static ApiGatewayResult Created() => StatusCode(StatusCodes.Status201Created);
+
+    public static ApiGatewayResult Created<T>(T bodyContent) =>
+        Json(StatusCodes.Status201Created, bodyContent);
+
+    // ── 204 No Content ───────────────────────────────────────────────────────────────
 
     public static ApiGatewayResult NoContent() => StatusCode(StatusCodes.Status204NoContent);
 
