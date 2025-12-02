@@ -1,5 +1,9 @@
+#region
+
 using Amazon.Lambda.Core;
 using Microsoft.Extensions.DependencyInjection;
+
+#endregion
 
 namespace AwsLambda.Host.Core;
 
@@ -8,6 +12,7 @@ internal class LambdaHostContextFactory : ILambdaHostContextFactory
     private readonly ILambdaHostContextAccessor? _contextAccessor;
     private readonly IFeatureCollectionFactory _featureCollectionFactory;
     private readonly IServiceScopeFactory _serviceScopeFactory;
+    private IEnumerable<IFeatureProvider>? _featureProviders;
 
     public LambdaHostContextFactory(
         IServiceScopeFactory serviceScopeFactory,
@@ -29,11 +34,17 @@ internal class LambdaHostContextFactory : ILambdaHostContextFactory
         CancellationToken cancellationToken
     )
     {
+        _featureProviders ??=
+            properties.TryGetValue(LambdaInvocationBuilder.FeatureProvidersKey, out var value)
+            && value is IEnumerable<IFeatureProvider> providers
+                ? providers
+                : [];
+
         var context = new DefaultLambdaHostContext(
             lambdaContext,
             _serviceScopeFactory,
             properties,
-            _featureCollectionFactory.Create(),
+            _featureCollectionFactory.Create(_featureProviders),
             cancellationToken
         );
 
