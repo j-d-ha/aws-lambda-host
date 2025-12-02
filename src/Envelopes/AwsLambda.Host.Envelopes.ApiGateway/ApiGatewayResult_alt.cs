@@ -1,21 +1,17 @@
-#region
-
 using System.Text.Json.Serialization;
 using Amazon.Lambda.APIGatewayEvents;
 using AwsLambda.Host.Options;
 
-#endregion
-
 namespace AwsLambda.Host.Envelopes.ApiGateway;
 
-public abstract class ApiGatewayResult : APIGatewayProxyResponse, IResponseEnvelope
+public abstract class ApiGatewayResult_alt : APIGatewayProxyResponse, IResponseEnvelope
 {
     [JsonIgnore]
     private readonly IResponseEnvelope? _inner;
 
-    protected ApiGatewayResult() { }
+    protected ApiGatewayResult_alt() { }
 
-    protected ApiGatewayResult(APIGatewayProxyResponse response)
+    protected ApiGatewayResult_alt(APIGatewayProxyResponse response)
     {
         _inner = (IResponseEnvelope)response;
         StatusCode = response.StatusCode;
@@ -35,34 +31,34 @@ public abstract class ApiGatewayResult : APIGatewayProxyResponse, IResponseEnvel
     }
 }
 
-public sealed class ApiGatewayResult<T1, T2> : ApiGatewayResult
+public sealed class ApiGatewayResultAlt<T1, T2> : ApiGatewayResult_alt
 {
-    private ApiGatewayResult(APIGatewayProxyResponse response)
+    private ApiGatewayResultAlt(APIGatewayProxyResponse response)
         : base(response) { }
 
-    public static implicit operator ApiGatewayResult<T1, T2>(
+    public static implicit operator ApiGatewayResultAlt<T1, T2>(
         ApiGatewayResponseEnvelopeBase<T1> response
     ) => new(response);
 
-    public static implicit operator ApiGatewayResult<T1, T2>(
+    public static implicit operator ApiGatewayResultAlt<T1, T2>(
         ApiGatewayResponseEnvelopeBase<T2> response
     ) => new(response);
 }
 
-public sealed class ApiGatewayResult<T1, T2, T3> : ApiGatewayResult
+public sealed class ApiGatewayResultAlt<T1, T2, T3> : ApiGatewayResult_alt
 {
-    private ApiGatewayResult(APIGatewayProxyResponse response)
+    private ApiGatewayResultAlt(APIGatewayProxyResponse response)
         : base(response) { }
 
-    public static implicit operator ApiGatewayResult<T1, T2, T3>(
+    public static implicit operator ApiGatewayResultAlt<T1, T2, T3>(
         ApiGatewayResponseEnvelopeBase<T1> response
     ) => new(response);
 
-    public static implicit operator ApiGatewayResult<T1, T2, T3>(
+    public static implicit operator ApiGatewayResultAlt<T1, T2, T3>(
         ApiGatewayResponseEnvelopeBase<T2> response
     ) => new(response);
 
-    public static implicit operator ApiGatewayResult<T1, T2, T3>(
+    public static implicit operator ApiGatewayResultAlt<T1, T2, T3>(
         ApiGatewayResponseEnvelopeBase<T3> response
     ) => new(response);
 }

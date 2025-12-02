@@ -13,7 +13,7 @@ namespace AwsLambda.Host.Envelopes.ApiGateway;
 ///     <see cref="System.Text.Json.JsonSerializer" /> with the configured
 ///     <see cref="EnvelopeOptions.JsonOptions" />.
 /// </remarks>
-public sealed class ApiGatewayResult<T> : ApiGatewayResponseEnvelopeBase<T>
+public sealed class ApiGatewayResponseEnvelope<T> : ApiGatewayResponseEnvelopeBase<T>
 {
     /// <inheritdoc cref="IResponseEnvelope" />
     /// <remarks>This implementation serializes the response body to JSON.</remarks>
