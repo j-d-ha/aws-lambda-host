@@ -1,3 +1,5 @@
+#region
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Amazon.Lambda.APIGatewayEvents;
@@ -8,10 +10,12 @@ using AwsLambda.Host.Options;
 using JetBrains.Annotations;
 using Xunit;
 
+#endregion
+
 namespace AwsLambda.Host.Envelopes.UnitTests;
 
-[TestSubject(typeof(ApiGatewayResponseEnvelope<>))]
-public class ApiGatewayResponseEnvelopeTests
+[TestSubject(typeof(ApiGatewayResult<>))]
+public class ApiGatewayResultTests
 {
     private readonly Fixture _fixture = new();
 
@@ -20,10 +24,7 @@ public class ApiGatewayResponseEnvelopeTests
     {
         // Arrange
         var responseData = _fixture.Create<ResponsePayload>();
-        var envelope = new ApiGatewayResponseEnvelope<ResponsePayload>
-        {
-            BodyContent = responseData,
-        };
+        var envelope = new ApiGatewayResult<ResponsePayload> { BodyContent = responseData };
         var options = new EnvelopeOptions();
 
         // Act
@@ -45,10 +46,7 @@ public class ApiGatewayResponseEnvelopeTests
     {
         // Arrange
         var responseData = new ResponsePayload("test", 42);
-        var envelope = new ApiGatewayResponseEnvelope<ResponsePayload>
-        {
-            BodyContent = responseData,
-        };
+        var envelope = new ApiGatewayResult<ResponsePayload> { BodyContent = responseData };
         var options = new EnvelopeOptions
         {
             JsonOptions = new JsonSerializerOptions
@@ -72,7 +70,7 @@ public class ApiGatewayResponseEnvelopeTests
     public void PackPayload_WithNullBodyContent_SerializesNull()
     {
         // Arrange
-        var envelope = new ApiGatewayResponseEnvelope<ResponsePayload> { BodyContent = null };
+        var envelope = new ApiGatewayResult<ResponsePayload> { BodyContent = null };
         var options = new EnvelopeOptions();
 
         // Act
@@ -88,10 +86,7 @@ public class ApiGatewayResponseEnvelopeTests
     {
         // Arrange
         var responseData = _fixture.Create<ResponsePayload>();
-        var envelope = new ApiGatewayResponseEnvelope<ResponsePayload>
-        {
-            BodyContent = responseData,
-        };
+        var envelope = new ApiGatewayResult<ResponsePayload> { BodyContent = responseData };
         var options = new EnvelopeOptions();
 
         // Act
@@ -109,8 +104,8 @@ public class ApiGatewayResponseEnvelopeTests
     public void BodyContent_HasJsonIgnoreAttribute()
     {
         // Arrange
-        var property = typeof(ApiGatewayResponseEnvelope<ResponsePayload>).GetProperty(
-            nameof(ApiGatewayResponseEnvelope<ResponsePayload>.BodyContent)
+        var property = typeof(ApiGatewayResult<ResponsePayload>).GetProperty(
+            nameof(ApiGatewayResult<ResponsePayload>.BodyContent)
         );
 
         // Act
@@ -125,7 +120,7 @@ public class ApiGatewayResponseEnvelopeTests
     public void ApiGatewayResponseEnvelope_InheritsFromApiGatewayProxyResponse()
     {
         // Arrange & Act
-        var envelope = new ApiGatewayResponseEnvelope<ResponsePayload>();
+        var envelope = new ApiGatewayResult<ResponsePayload>();
 
         // Assert
         envelope.Should().BeAssignableTo<APIGatewayProxyResponse>();
@@ -137,7 +132,7 @@ public class ApiGatewayResponseEnvelopeTests
         // Arrange
         var firstData = new ResponsePayload("First", 1);
         var secondData = new ResponsePayload("Second", 2);
-        var envelope = new ApiGatewayResponseEnvelope<ResponsePayload> { BodyContent = firstData };
+        var envelope = new ApiGatewayResult<ResponsePayload> { BodyContent = firstData };
         var options = new EnvelopeOptions();
 
         // Act
@@ -162,7 +157,7 @@ public class ApiGatewayResponseEnvelopeTests
     public void PackPayload_WithEmptyString_SerializesEmptyString()
     {
         // Arrange
-        var envelope = new ApiGatewayResponseEnvelope<string> { BodyContent = string.Empty };
+        var envelope = new ApiGatewayResult<string> { BodyContent = string.Empty };
         var options = new EnvelopeOptions();
 
         // Act
@@ -178,10 +173,7 @@ public class ApiGatewayResponseEnvelopeTests
     {
         // Arrange
         var responseData = _fixture.Create<ResponsePayload>();
-        var envelope = new ApiGatewayResponseEnvelope<ResponsePayload>
-        {
-            BodyContent = responseData,
-        };
+        var envelope = new ApiGatewayResult<ResponsePayload> { BodyContent = responseData };
         var options = new EnvelopeOptions
         {
             JsonOptions = new JsonSerializerOptions
