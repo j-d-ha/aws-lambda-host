@@ -10,5 +10,5 @@ internal class DefaultFeatureCollectionFactory : IFeatureCollectionFactory
     public IFeatureCollection Create() => new DefaultFeatureCollection(_featureProviders);
 
     public IFeatureCollection Create(IEnumerable<IFeatureProvider> featureProviders) =>
-        new DefaultFeatureCollection(_featureProviders.Concat(featureProviders));
+        new DefaultFeatureCollection(_featureProviders.Concat(featureProviders).ToArray());
 }
