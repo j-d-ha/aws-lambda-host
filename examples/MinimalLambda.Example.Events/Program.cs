@@ -1,4 +1,6 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -7,6 +9,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MinimalLambda.Builder;
 using MinimalLambda.Envelopes.ApiGateway;
+
+#endregion
 
 var builder = LambdaApplication.CreateBuilder();
 
@@ -26,16 +30,19 @@ builder.Services.AddLambdaSerializerWithContext<SerializerContext>();
 var lambda = builder.Build();
 
 lambda.MapHandler(
-    ([Event] ApiGatewayRequestEnvelope<Request> request, ILogger<Program> logger) =>
+    ApiGatewayResponseEnvelopes<Response, ErrorDetails> (
+        [Event] ApiGatewayRequestEnvelope<Request> request,
+        ILogger<Program> logger
+    ) =>
     {
         logger.LogInformation("In Handler. Payload: {Payload}", request.Body);
 
-        return new ApiGatewayResponseEnvelope<Response>
-        {
-            BodyContent = new Response($"Hello {request.BodyContent?.Name}!", DateTime.UtcNow),
-            StatusCode = 201,
-            Headers = new Dictionary<string, string> { ["Content-Type"] = "application/json" },
-        };
+        if (request.BodyContent == null)
+            return ApiGatewayResponse.BadRequest(new ErrorDetails("bummer"));
+
+        return ApiGatewayResponse.Ok(
+            new Response($"Hello {request.BodyContent?.Name}!", DateTime.UtcNow)
+        );
     }
 );
 
@@ -43,10 +50,32 @@ await lambda.RunAsync();
 
 internal record Response(string Message, DateTime TimestampUtc);
 
+internal record ErrorDetails(string Message);
+
 internal record Request(string Name);
 
 [JsonSerializable(typeof(ApiGatewayRequestEnvelope<Request>))]
-[JsonSerializable(typeof(ApiGatewayResponseEnvelope<Response>))]
+[JsonSerializable(typeof(ApiGatewayResponseEnvelopes<Response, ErrorDetails>))]
 [JsonSerializable(typeof(Request))]
+[JsonSerializable(typeof(ErrorDetails))]
 [JsonSerializable(typeof(Response))]
 internal partial class SerializerContext : JsonSerializerContext;
+
+public static class ApiGatewayResponse
+{
+    public static ApiGatewayResponseEnvelope<T> Ok<T>(T bodyContent) =>
+        new()
+        {
+            BodyContent = bodyContent,
+            StatusCode = 200,
+            Headers = new Dictionary<string, string> { ["Content-Type"] = "application/json" },
+        };
+
+    public static ApiGatewayResponseEnvelope<T> BadRequest<T>(T bodyContent) =>
+        new()
+        {
+            BodyContent = bodyContent,
+            StatusCode = 400,
+            Headers = new Dictionary<string, string> { ["Content-Type"] = "application/json" },
+        };
+}
