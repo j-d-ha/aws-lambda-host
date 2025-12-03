@@ -9,7 +9,7 @@ namespace AwsLambda.Host.Core.Generated
     using Microsoft.Extensions.DependencyInjection;
     
     {{ generated_code_attribute }}
-    file static class MapHandlerLambdaApplicationExtensions
+    file static class GeneratedLambdaInvocationBuilderExtensions
     {
         private const string EventFeatureProviderKey = "__EventFeatureProvider";
         private const string ResponseFeatureProviderKey = "__ResponseFeatureProvider";

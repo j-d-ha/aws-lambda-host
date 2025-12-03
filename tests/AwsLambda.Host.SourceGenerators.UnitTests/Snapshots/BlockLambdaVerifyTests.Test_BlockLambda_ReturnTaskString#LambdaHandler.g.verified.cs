@@ -37,7 +37,7 @@ namespace AwsLambda.Host.Core.Generated
     using Microsoft.Extensions.DependencyInjection;
     
     [GeneratedCode("AwsLambda.Host.SourceGenerators", "0.0.0")]
-    file static class MapHandlerLambdaApplicationExtensions
+    file static class GeneratedLambdaInvocationBuilderExtensions
     {
         private const string EventFeatureProviderKey = "__EventFeatureProvider";
         private const string ResponseFeatureProviderKey = "__ResponseFeatureProvider";
