@@ -15,7 +15,8 @@ namespace AwsLambda.Host.Core.Generated
     {{ generated_code_attribute }}
     file static class MapHandlerLambdaApplicationExtensions
     {
-        private const string FeatureProvidersKey = "__FeatureProviders";
+        private const string EventFeatureProviderKey = "__EventFeatureProvider";
+        private const string ResponseFeatureProviderKey = "__ResponseFeatureProvider";
     
         {{~ for call in map_handler_calls ~}}
         // Location: {{ call.location.display_location }}
@@ -28,25 +29,21 @@ namespace AwsLambda.Host.Core.Generated
             var castHandler = ({{ call.handler_signature }})handler;
             
             application.Handle(InvocationDelegate);
-
-            {{~ if call.is_event_feature_required || call.is_response_feature_required ~}}
-            var providersToAdd = new IFeatureProvider[]
-            {
-                {{~ if call.is_event_feature_required ~}}
-                application.Services.GetRequiredService<IEventFeatureProviderFactory>().Create<{{ call.input_event.type }}>(),
-                {{~ end ~}}
-                {{~ if call.is_response_feature_required ~}}
-                application.Services.GetRequiredService<IResponseFeatureProviderFactory>().Create<{{ call.output_response.response_type }}>(),
-                {{~ end ~}}
-            };
+            {{~ if call.is_event_feature_required ~}}
             
-            application.Properties[FeatureProvidersKey] =
-                application.Properties.TryGetValue(FeatureProvidersKey, out var existing)
-                && existing is IEnumerable<IFeatureProvider> existingProviders
-                    ? existingProviders.Concat(providersToAdd).ToArray()
-                    : providersToAdd;
-            
+            if (!application.Properties.ContainsKey(EventFeatureProviderKey))
+                application.Properties[EventFeatureProviderKey] = application
+                    .Services.GetRequiredService<IEventFeatureProviderFactory>()
+                    .Create<{{ call.input_event.type }}>();
             {{~ end ~}}
+            {{~ if call.is_response_feature_required ~}}
+            
+            if (!application.Properties.ContainsKey(ResponseFeatureProviderKey))
+                application.Properties[ResponseFeatureProviderKey] = application.
+                    Services.GetRequiredService<IResponseFeatureProviderFactory>()
+                    .Create<{{ call.output_response.response_type }}>();
+            {{~ end ~}}
+            
             return application;
 
             {{ if call.should_await ~}} async {{ end ~}}Task InvocationDelegate(ILambdaHostContext context)
