@@ -1,13 +1,17 @@
+#region
+
 using System.Threading;
 using AwsLambda.Host.SourceGenerators.Models;
 using Microsoft.CodeAnalysis;
+
+#endregion
 
 namespace AwsLambda.Host.SourceGenerators;
 
 internal static class MapHandlerSyntaxProvider
 {
     internal static bool Predicate(SyntaxNode node, CancellationToken cancellationToken) =>
-        HandlerInfoExtractor.Predicate(node, GeneratorConstants.MapHandlerMethodName, "Handle");
+        HandlerInfoExtractor.Predicate(node, GeneratorConstants.MapHandlerMethodName);
 
     internal static HigherOrderMethodInfo? Transformer(
         GeneratorSyntaxContext context,
