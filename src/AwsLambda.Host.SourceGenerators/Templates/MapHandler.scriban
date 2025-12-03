@@ -2,12 +2,8 @@ namespace AwsLambda.Host.Core.Generated
 {
     using System;
     using System.CodeDom.Compiler;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
-    using Amazon.Lambda.Core;
     using AwsLambda.Host.Builder;
     using AwsLambda.Host.Core;
     using Microsoft.Extensions.DependencyInjection;
