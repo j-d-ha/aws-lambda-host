@@ -1,10 +1,6 @@
-#region
-
 using System.Threading;
 using AwsLambda.Host.SourceGenerators.Models;
 using Microsoft.CodeAnalysis;
-
-#endregion
 
 namespace AwsLambda.Host.SourceGenerators;
 

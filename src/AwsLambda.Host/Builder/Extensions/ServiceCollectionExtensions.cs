@@ -1,12 +1,8 @@
-#region
-
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-
-#endregion
 
 namespace Microsoft.Extensions.DependencyInjection;
 

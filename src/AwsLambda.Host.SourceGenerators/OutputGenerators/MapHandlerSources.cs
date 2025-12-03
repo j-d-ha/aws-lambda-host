@@ -1,11 +1,7 @@
-#region
-
 using System.Linq;
 using AwsLambda.Host.SourceGenerators.Extensions;
 using AwsLambda.Host.SourceGenerators.Models;
 using AwsLambda.Host.SourceGenerators.Types;
-
-#endregion
 
 namespace AwsLambda.Host.SourceGenerators;
 

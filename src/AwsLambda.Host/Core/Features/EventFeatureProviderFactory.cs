@@ -1,8 +1,4 @@
-#region
-
 using Amazon.Lambda.Core;
-
-#endregion
 
 namespace AwsLambda.Host.Core;
 
