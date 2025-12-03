@@ -10,7 +10,7 @@ namespace AwsLambda.Host.Core.Generated
     using AwsLambda.Host.Core;
     
     {{ generated_code_attribute }}
-    file static class {{ name }}LambdaApplicationExtensions
+    file static class GeneratedLambda{{ name }}BuilderExtensions
     {
         {{~ for call in calls ~}}
         // Location: {{ call.location.display_location }}

@@ -38,7 +38,7 @@ namespace AwsLambda.Host.Core.Generated
     using AwsLambda.Host.Core;
     
     [GeneratedCode("AwsLambda.Host.SourceGenerators", "0.0.0")]
-    file static class OnInitLambdaApplicationExtensions
+    file static class GeneratedLambdaOnInitBuilderExtensions
     {
         // Location: InputFile.cs(10,8)
         [InterceptsLocation(1, "B75vzDHbMAaDhY3yPDqta9QAAABJbnB1dEZpbGUuY3M=")]
