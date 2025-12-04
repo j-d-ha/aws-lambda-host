@@ -7,12 +7,37 @@ shutdown windows, serializer choices, etc.). This guide covers both layers.
 
 ## How Configuration Is Built
 
-`LambdaApplication.CreateBuilder()` wires up the standard .NET defaults:
+`LambdaApplication.CreateBuilder()` wires up the standard .NET defaults unless you pass
+`new LambdaApplicationOptions { DisableDefaults = true }`. When defaults are enabled, configuration
+providers are added in the following order (later entries override earlier ones):
 
-1. `appsettings.json` (optional) in the application root.
-2. `appsettings.{Environment}.json` (optional) based on `DOTNET_ENVIRONMENT`/`ASPNETCORE_ENVIRONMENT`.
-3. User secrets (Development only).
-4. Environment variables (`AWS_`, `DOTNET_`, and general variables).
+1. Environment variables prefixed with `AWS_` (Lambda metadata such as `AWS_LAMBDA_FUNCTION_NAME`).
+2. Environment variables prefixed with `DOTNET_` (host defaults such as `DOTNET_ENVIRONMENT` or `DOTNET_CONTENTROOT`).
+3. `appsettings.json` (optional) in the application root.
+4. `appsettings.{Environment}.json` (optional) based on `DOTNET_ENVIRONMENT`.
+5. User secrets (Development only, resolved from the entry assembly).
+6. All remaining environment variables (no prefix filter).
+
+!!! warning "`ASPNETCORE_` Prefixed Environment Variable"
+    Enviroment variables with the `ASPNETCORE_` prefix are not automatically loaded by `CreateBuilder()` and must be added manually. As such, the enviroment cannot be set using the `ASPNETCORE_ENVIRONMENT` environment variable.
+
+    To load environment variables prefixed with `ASPNETCORE_` after calling `CreateBuilder()`, you can add the following code:
+
+    ```csharp
+    var builder = LambdaApplication.CreateBuilder();
+    builder.Configuration.AddEnvironmentVariables("ASPNETCORE_");
+    ```
+  
+    If you need to use `ASPNETCORE_` prefixed environment variables when creating the `LambdaApplicationBuilder`, you can add the following code:
+
+    ```csharp
+    var configuration = new ConfigurationManager();
+    configuration.AddEnvironmentVariables("ASPNETCORE_");
+    
+    var builder = LambdaApplication.CreateBuilder(
+        new LambdaApplicationOptions { Configuration = configuration }
+    );
+    ```
 
 The builder also binds the `AwsLambdaHost` section (from JSON or environment variables) into
 `LambdaHostOptions` so framework settings can live next to your app configuration.

@@ -86,6 +86,9 @@ markdown_extensions:
   - def_list
   - pymdownx.tasklist:
       custom_checkbox: true
+  - toc:
+      permalink: true
+      permalink_title: Anchor link to this section for reference
 
 watch:
   - ./docs/
