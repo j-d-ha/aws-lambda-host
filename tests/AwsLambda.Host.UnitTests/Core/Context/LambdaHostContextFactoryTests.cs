@@ -96,4 +96,36 @@ public class LambdaHostContextFactoryTests
         // Assert
         contextAccessor!.LambdaHostContext.Should().NotBeNull();
     }
+
+    [Theory]
+    [AutoNSubstituteData]
+    internal void Create_GetsFeaturesFromProperties(
+        [Frozen] IFeatureCollectionFactory featureCollectionFactory,
+        IFeatureProvider eventFeatureProvider,
+        IFeatureProvider responseFeatureProvider,
+        ILambdaHostContext lambdaContext,
+        LambdaHostContextFactory factory
+    )
+    {
+        // Arrange
+        var properties = new Dictionary<string, object?>
+        {
+            [LambdaInvocationBuilder.EventFeatureProviderKey] = eventFeatureProvider,
+            [LambdaInvocationBuilder.ResponseFeatureProviderKey] = responseFeatureProvider,
+        };
+
+        // Act
+        _ = factory.Create(lambdaContext, properties, CancellationToken.None);
+
+        // Assert
+        featureCollectionFactory
+            .Received(1)
+            .Create(
+                Arg.Is<IEnumerable<IFeatureProvider>>(providers =>
+                    providers.Count() == 2
+                    && providers.Contains(eventFeatureProvider)
+                    && providers.Contains(responseFeatureProvider)
+                )
+            );
+    }
 }
