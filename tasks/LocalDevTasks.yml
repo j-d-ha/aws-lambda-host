@@ -48,3 +48,10 @@ tasks:
     silent: true
     cmds:
       - dotnet lambda-test-tool start --lambda-emulator-port 5050
+  
+  run-docs:
+    desc: Run MKDocs server locally
+    silent: true
+    cmds:
+      - uv sync
+      - uv run mkdocs serve --livereload 
