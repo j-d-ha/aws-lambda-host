@@ -1,3 +1,5 @@
+#region
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Amazon.Lambda.APIGatewayEvents;
@@ -7,6 +9,8 @@ using AwsLambda.Host.Envelopes.ApiGateway;
 using AwsLambda.Host.Options;
 using JetBrains.Annotations;
 using Xunit;
+
+#endregion
 
 namespace AwsLambda.Host.Envelopes.UnitTests;
 

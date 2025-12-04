@@ -1,5 +1,9 @@
+#region
+
 using System.Text.Json;
 using AwsLambda.Host.Options;
+
+#endregion
 
 namespace AwsLambda.Host.Envelopes.ApiGateway;
 
