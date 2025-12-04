@@ -10,9 +10,12 @@ shutdown windows, serializer choices, etc.). This guide covers both layers.
 `LambdaApplication.CreateBuilder()` wires up the standard .NET defaults:
 
 1. `appsettings.json` (optional) in the application root.
-2. `appsettings.{Environment}.json` (optional) based on `DOTNET_ENVIRONMENT`/`ASPNETCORE_ENVIRONMENT`.
+2. `appsettings.{Environment}.json` (optional) based on `DOTNET_ENVIRONMENT` environment variable.
 3. User secrets (Development only).
 4. Environment variables (`AWS_`, `DOTNET_`, and general variables).
+
+!!! warning "`ASPNETCORE_` Prefixed Environment Variable"
+    Enviroment variables with the `ASPNETCORE_` prefix are not automatically loaded by `CreateBuilder()` and must be added manually. As such, the enviroment cannot be set using the `ASPNETCORE_ENVIRONMENT` environment variable.
 
 The builder also binds the `AwsLambdaHost` section (from JSON or environment variables) into
 `LambdaHostOptions` so framework settings can live next to your app configuration.
