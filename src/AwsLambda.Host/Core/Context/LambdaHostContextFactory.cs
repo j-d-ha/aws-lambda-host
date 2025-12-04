@@ -60,7 +60,7 @@ internal class LambdaHostContextFactory : ILambdaHostContextFactory
     private static void AddIfPresent(
         IDictionary<string, object?> properties,
         string key,
-        ICollection<IFeatureProvider> target
+        List<IFeatureProvider> target
     )
     {
         if (properties.TryGetValue(key, out var value) && value is IFeatureProvider provider)
