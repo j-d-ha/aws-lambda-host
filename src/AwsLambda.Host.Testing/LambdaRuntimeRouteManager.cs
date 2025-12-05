@@ -13,7 +13,7 @@ internal class LambdaRuntimeRouteManager : ILambdaRuntimeRouteManager
             Type = RequestType.GetNextInvocation,
             Method = HttpMethod.Get.Method,
             Matcher = new TemplateMatcher(
-                TemplateParser.Parse("2018-06-01/runtime/invocation/next"),
+                TemplateParser.Parse("{version}/runtime/invocation/next"),
                 new RouteValueDictionary()
             ),
         },
@@ -22,7 +22,7 @@ internal class LambdaRuntimeRouteManager : ILambdaRuntimeRouteManager
             Type = RequestType.PostResponse,
             Method = HttpMethod.Post.Method,
             Matcher = new TemplateMatcher(
-                TemplateParser.Parse("2018-06-01/runtime/invocation/{requestId}/response"),
+                TemplateParser.Parse("{version}/runtime/invocation/{requestId}/response"),
                 new RouteValueDictionary()
             ),
         },
@@ -31,7 +31,7 @@ internal class LambdaRuntimeRouteManager : ILambdaRuntimeRouteManager
             Type = RequestType.PostError,
             Method = HttpMethod.Post.Method,
             Matcher = new TemplateMatcher(
-                TemplateParser.Parse("2018-06-01/runtime/invocation/{requestId}/error"),
+                TemplateParser.Parse("{version}/runtime/invocation/{requestId}/error"),
                 new RouteValueDictionary()
             ),
         },
