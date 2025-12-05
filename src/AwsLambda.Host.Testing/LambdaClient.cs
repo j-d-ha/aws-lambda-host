@@ -71,10 +71,7 @@ public class LambdaClient
         };
     }
 
-    public async Task<InvocationResponse<TResponse>> Invoke<TEvent, TResponse>(
-        TEvent invokeEvent,
-        CancellationToken cancellationToken = default
-    )
+    private HttpResponseMessage CreateRequest<TEvent>(TEvent invokeEvent)
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -85,18 +82,40 @@ public class LambdaClient
             ),
             Version = Version.Parse("1.1"),
         };
-        // Add response headers
-        response.Headers.Date = new DateTimeOffset(2025, 12, 4, 20, 40, 53, TimeSpan.Zero);
-        response.Headers.TransferEncodingChunked = true;
 
-        // Add custom Lambda headers
-        response.Headers.Add("ambda-Runtime-Deadline-Ms", "1764881754010");
-        response.Headers.Add("Lambda-Runtime-Aws-Request-Id", "000000000002");
-        response.Headers.Add("Lambda-Runtime-Trace-Id", "2a159b6d-ca3c-4991-8533-c2b2a8da0640");
+        // Add standard HTTP headers
+        response.Headers.Date = new DateTimeOffset(_lambdaClientOptions.InvocationHeaders.Date);
+        response.Headers.TransferEncodingChunked = _lambdaClientOptions
+            .InvocationHeaders
+            .TransferEncodingChunked;
+
+        // Add custom Lambda runtime headers
+        response.Headers.Add(
+            "Lambda-Runtime-Deadline-Ms",
+            _lambdaClientOptions.InvocationHeaders.DeadlineMs.ToString()
+        );
+        response.Headers.Add(
+            "Lambda-Runtime-Aws-Request-Id",
+            _lambdaClientOptions.InvocationHeaders.RequestId
+        );
+        response.Headers.Add(
+            "Lambda-Runtime-Trace-Id",
+            _lambdaClientOptions.InvocationHeaders.TraceId
+        );
         response.Headers.Add(
             "Lambda-Runtime-Invoked-Function-Arn",
-            "arn:aws:lambda:us-west-2:123412341234:function:Function"
+            _lambdaClientOptions.InvocationHeaders.FunctionArn
         );
+
+        return response;
+    }
+
+    public async Task<InvocationResponse<TResponse>> Invoke<TEvent, TResponse>(
+        TEvent invokeEvent,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var response = CreateRequest(invokeEvent);
 
         return default;
     }
