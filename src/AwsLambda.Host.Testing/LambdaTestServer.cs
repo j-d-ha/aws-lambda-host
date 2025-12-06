@@ -295,11 +295,7 @@ internal class LambdaTestServer : IAsyncDisposable
 
         // Complete the invocation with the response from Bootstrap
         pending.ResponseTcs.SetResult(
-            new InvocationCompletion
-            {
-                Request = transaction.Request,
-                RequestType = RequestType.PostResponse,
-            }
+            CreateCompletion(RequestType.PostResponse, transaction.Request)
         );
 
         // Acknowledge to Bootstrap
@@ -350,13 +346,7 @@ internal class LambdaTestServer : IAsyncDisposable
         }
 
         // Complete the invocation with the error response from Bootstrap
-        pending.ResponseTcs.SetResult(
-            new InvocationCompletion
-            {
-                Request = transaction.Request,
-                RequestType = RequestType.PostError,
-            }
-        );
+        pending.ResponseTcs.SetResult(CreateCompletion(RequestType.PostError, transaction.Request));
 
         // Acknowledge to Bootstrap
         transaction.Respond(
@@ -402,5 +392,36 @@ internal class LambdaTestServer : IAsyncDisposable
     {
         if (_pendingInvocations.TryRemove(requestId, out var pendingInvocation))
             pendingInvocation.ResponseTcs.TrySetCanceled(cancellationToken);
+    }
+
+    private static InvocationCompletion CreateCompletion(
+        RequestType requestType,
+        HttpRequestMessage sourceRequest
+    )
+    {
+        var clonedRequest = new HttpRequestMessage(sourceRequest.Method, sourceRequest.RequestUri)
+        {
+            Version = sourceRequest.Version,
+            VersionPolicy = sourceRequest.VersionPolicy,
+        };
+
+        foreach (var header in sourceRequest.Headers)
+            clonedRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
+
+        if (sourceRequest.Content != null)
+        {
+            var contentBytes = sourceRequest
+                .Content.ReadAsByteArrayAsync()
+                .GetAwaiter()
+                .GetResult();
+            var clonedContent = new ByteArrayContent(contentBytes);
+
+            foreach (var header in sourceRequest.Content.Headers)
+                clonedContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
+
+            clonedRequest.Content = clonedContent;
+        }
+
+        return new InvocationCompletion { Request = clonedRequest, RequestType = requestType };
     }
 }
