@@ -38,7 +38,7 @@ public class LambdaClient
         return this;
     }
 
-    internal async Task WaitForNextRequestAsync(CancellationToken cancellationToken = default)
+    public async Task WaitForNextRequestAsync(CancellationToken cancellationToken = default)
     {
         var request = await WaitForRequestAsync(cancellationToken);
 
@@ -115,7 +115,7 @@ public class LambdaClient
     private string GetRequestId() =>
         Interlocked.Increment(ref _requestCounter).ToString().PadLeft(12, '0');
 
-    public async Task<InvocationResponse<TResponse>> InvokeAsync<TEvent, TResponse>(
+    public async Task<InvocationResponse<TResponse>> InvokeAsync<TResponse, TEvent>(
         TEvent invokeEvent,
         CancellationToken cancellationToken = default
     )
@@ -130,22 +130,6 @@ public class LambdaClient
             throw new InvalidOperationException(
                 $"Expected PostResponse or PostError request, but received {request.RequestType}"
             );
-
-        await _responseChanel.Writer.WriteAsync(
-            new HttpResponseMessage(HttpStatusCode.Accepted)
-            {
-                Content = new StringContent(
-                    JsonSerializer.Serialize(
-                        new Dictionary<string, string?> { ["status"] = "success" },
-                        _jsonSerializerOptions
-                    ),
-                    Encoding.UTF8,
-                    "application/json"
-                ),
-                Version = Version.Parse("1.1"),
-            },
-            cancellationToken
-        );
 
         var wasSuccess = request.RequestType == RequestType.PostResponse;
 
@@ -169,6 +153,22 @@ public class LambdaClient
                 )
                 : null,
         };
+
+        await _responseChanel.Writer.WriteAsync(
+            new HttpResponseMessage(HttpStatusCode.Accepted)
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(
+                        new Dictionary<string, string?> { ["status"] = "success" },
+                        _jsonSerializerOptions
+                    ),
+                    Encoding.UTF8,
+                    "application/json"
+                ),
+                Version = Version.Parse("1.1"),
+            },
+            cancellationToken
+        );
 
         return invocationResponse;
     }
