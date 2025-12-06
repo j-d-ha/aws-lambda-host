@@ -10,8 +10,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AwsLambda.Host.Builder.Extensions;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace AwsLambda.Host.Testing;
@@ -191,15 +191,15 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         SetContentRoot(hostBuilder);
         _configuration(hostBuilder);
 
-        // hostBuilder.ConfigureWebHost(webHostBuilder =>
-        // {
-        //     webHostBuilder.UseTestServer();
-        // });
+        _server = new LambdaTestServer();
 
         // set Lambda Bootstrap Http Client
+        hostBuilder.ConfigureServices(services =>
+        {
+            services.AddLambdaBootstrapHttpClient(new HttpClient(_server.CreateTestingHandler()));
+        });
 
         _host = CreateHost(hostBuilder);
-        _server = (LambdaTestServer)_host.Services.GetRequiredService<IServer>();
     }
 
     private void SetContentRoot(IHostBuilder builder)
