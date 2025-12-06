@@ -13,6 +13,10 @@ namespace AwsLambda.Host.Testing;
 /// </summary>
 internal class LambdaTestServer : IAsyncDisposable
 {
+    private static readonly OperationCanceledException DisposedException = new(
+        "LambdaTestServer disposed"
+    );
+
     private readonly LambdaClient _client;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
     private readonly ConcurrentQueue<string> _pendingInvocationIds;
@@ -40,6 +44,21 @@ internal class LambdaTestServer : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await _shutdownCts.CancelAsync();
+
+        _transactionChannel.Writer.TryComplete();
+        _queuedNextRequests.Writer.TryComplete();
+
+        // Cancel any transactions waiting for work
+        while (_queuedNextRequests.Reader.TryRead(out var queuedTransaction))
+            queuedTransaction.Fail(DisposedException);
+
+        // Fail any in-flight transactions that haven't been processed yet
+        while (_transactionChannel.Reader.TryRead(out var transaction))
+            transaction.Fail(DisposedException);
+
+        // Cancel any pending invocations waiting for bootstrap responses
+        foreach (var pendingInvocation in _pendingInvocations.Values)
+            pendingInvocation.ResponseTcs.TrySetCanceled(_shutdownCts.Token);
 
         if (_processingTask != null)
         {
@@ -103,8 +122,12 @@ internal class LambdaTestServer : IAsyncDisposable
         if (_queuedNextRequests.Reader.TryRead(out var nextTransaction))
             RespondToNextRequest(nextTransaction);
 
+        using var cancellationRegistration = cancellationToken.Register(() =>
+            CancelPendingInvocation(requestId, cancellationToken)
+        );
+
         // Wait for Bootstrap to process and respond
-        return await pending.ResponseTcs.Task;
+        return await pending.ResponseTcs.Task.WaitAsync(cancellationToken);
     }
 
     /// <summary>
@@ -173,22 +196,10 @@ internal class LambdaTestServer : IAsyncDisposable
     private async Task HandleGetNextInvocationAsync(LambdaHttpTransaction transaction)
     {
         // Try to dequeue next pending invocation (FIFO)
-        if (!_pendingInvocationIds.TryDequeue(out var requestId))
+        if (!TryDequeuePendingInvocation(out var pending))
         {
             // No work available - queue this /next request
             await _queuedNextRequests.Writer.WriteAsync(transaction);
-            return;
-        }
-
-        if (!_pendingInvocations.TryGetValue(requestId, out var pending))
-        {
-            // Should not happen, but handle gracefully
-            transaction.Respond(
-                new HttpResponseMessage(HttpStatusCode.InternalServerError)
-                {
-                    Content = new StringContent("Internal error: pending invocation not found"),
-                }
-            );
             return;
         }
 
@@ -211,25 +222,13 @@ internal class LambdaTestServer : IAsyncDisposable
     private void RespondToNextRequest(LambdaHttpTransaction transaction)
     {
         // Try to dequeue next pending invocation (FIFO)
-        if (!_pendingInvocationIds.TryDequeue(out var requestId))
+        if (!TryDequeuePendingInvocation(out var pending))
         {
             // This shouldn't happen, but if it does, respond with error
             transaction.Respond(
                 new HttpResponseMessage(HttpStatusCode.InternalServerError)
                 {
                     Content = new StringContent("No pending invocations available"),
-                }
-            );
-            return;
-        }
-
-        if (!_pendingInvocations.TryGetValue(requestId, out var pending))
-        {
-            // Should not happen, but handle gracefully
-            transaction.Respond(
-                new HttpResponseMessage(HttpStatusCode.InternalServerError)
-                {
-                    Content = new StringContent("Internal error: pending invocation not found"),
                 }
             );
             return;
@@ -333,5 +332,21 @@ internal class LambdaTestServer : IAsyncDisposable
         );
 
         return Task.CompletedTask;
+    }
+
+    private bool TryDequeuePendingInvocation(out PendingInvocation? pendingInvocation)
+    {
+        while (_pendingInvocationIds.TryDequeue(out var requestId))
+            if (_pendingInvocations.TryGetValue(requestId, out pendingInvocation))
+                return true;
+
+        pendingInvocation = null;
+        return false;
+    }
+
+    private void CancelPendingInvocation(string requestId, CancellationToken cancellationToken)
+    {
+        if (_pendingInvocations.TryRemove(requestId, out var pendingInvocation))
+            pendingInvocation.ResponseTcs.TrySetCanceled(cancellationToken);
     }
 }
