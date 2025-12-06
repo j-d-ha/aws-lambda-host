@@ -25,7 +25,7 @@ internal class PendingInvocation
     /// Task completion source for the invocation result.
     /// Completed when Bootstrap posts response or error with the HTTP request containing the result payload.
     /// </summary>
-    internal required TaskCompletionSource<HttpRequestMessage> ResponseTcs { get; init; }
+    internal required TaskCompletionSource<InvocationCompletion> ResponseTcs { get; init; }
 
     /// <summary>
     /// Creates a pending invocation with proper TCS configuration.
@@ -35,7 +35,7 @@ internal class PendingInvocation
         {
             RequestId = requestId,
             EventResponse = eventResponse,
-            ResponseTcs = new TaskCompletionSource<HttpRequestMessage>(
+            ResponseTcs = new TaskCompletionSource<InvocationCompletion>(
                 TaskCreationOptions.RunContinuationsAsynchronously
             ),
         };

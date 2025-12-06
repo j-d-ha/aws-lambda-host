@@ -50,14 +50,14 @@ public class LambdaClient
         var eventResponse = CreateEventResponse(invokeEvent, requestId);
 
         // Queue invocation and wait for Bootstrap to process it
-        var responseMessage = await _server.QueueInvocationAsync(
+        var completion = await _server.QueueInvocationAsync(
             requestId,
             eventResponse,
             cancellationToken
         );
 
-        // Parse the response based on route type
-        var wasSuccess = DetermineSuccess(responseMessage);
+        var responseMessage = completion.Request;
+        var wasSuccess = completion.RequestType == RequestType.PostResponse;
 
         var invocationResponse = new InvocationResponse<TResponse>
         {
@@ -123,13 +123,6 @@ public class LambdaClient
             response.Headers.Add(header.Key, header.Value);
 
         return response;
-    }
-
-    private bool DetermineSuccess(HttpRequestMessage responseMessage)
-    {
-        // Check the request URI to determine if it was a response or error post
-        var path = responseMessage.RequestUri?.AbsolutePath ?? "";
-        return path.Contains("/response");
     }
 
     private string GetRequestId() =>

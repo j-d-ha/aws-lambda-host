@@ -105,7 +105,7 @@ internal class LambdaTestServer : IAsyncDisposable
     /// Queues a new invocation to be processed by Lambda Bootstrap.
     /// Called by LambdaClient.InvokeAsync().
     /// </summary>
-    internal async Task<HttpRequestMessage> QueueInvocationAsync(
+    internal async Task<InvocationCompletion> QueueInvocationAsync(
         string requestId,
         HttpResponseMessage eventResponse,
         CancellationToken cancellationToken
@@ -269,7 +269,13 @@ internal class LambdaTestServer : IAsyncDisposable
         }
 
         // Complete the invocation with the response from Bootstrap
-        pending.ResponseTcs.SetResult(transaction.Request);
+        pending.ResponseTcs.SetResult(
+            new InvocationCompletion
+            {
+                Request = transaction.Request,
+                RequestType = RequestType.PostResponse,
+            }
+        );
 
         // Acknowledge to Bootstrap
         transaction.Respond(
@@ -319,7 +325,13 @@ internal class LambdaTestServer : IAsyncDisposable
         }
 
         // Complete the invocation with the error response from Bootstrap
-        pending.ResponseTcs.SetResult(transaction.Request);
+        pending.ResponseTcs.SetResult(
+            new InvocationCompletion
+            {
+                Request = transaction.Request,
+                RequestType = RequestType.PostError,
+            }
+        );
 
         // Acknowledge to Bootstrap
         transaction.Respond(
