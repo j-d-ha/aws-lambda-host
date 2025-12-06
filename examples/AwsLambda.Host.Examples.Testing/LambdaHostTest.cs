@@ -95,7 +95,7 @@ public class LambdaHostTest
                 options.InvocationHeaderOptions.InvocationTimeout = TimeSpan.Zero
             );
 
-        await Assert.ThrowsAsync<OperationCanceledException>(() =>
+        await Assert.ThrowsAsync<AggregateException>(() =>
             client.InvokeAsync<string, string>("Jonas", TestContext.Current.CancellationToken)
         );
     }

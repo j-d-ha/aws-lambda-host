@@ -139,7 +139,7 @@ internal class LambdaTestServer : IAsyncDisposable
         if (_queuedNextRequests.Reader.TryRead(out var nextTransaction))
             RespondToNextRequest(nextTransaction);
 
-        using var cancellationRegistration = cancellationToken.Register(() =>
+        await using var cancellationRegistration = cancellationToken.Register(() =>
             CancelPendingInvocation(requestId, cancellationToken)
         );
 
