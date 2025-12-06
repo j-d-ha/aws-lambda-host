@@ -377,18 +377,13 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
         if (typeof(TEntryPoint).Assembly.EntryPoint == null)
             throw new InvalidOperationException(
-                Resources.FormatInvalidAssemblyEntryPoint(typeof(TEntryPoint).Name)
+                $"Invalid assembly entry point: {typeof(TEntryPoint).Assembly.FullName}"
             );
 
         var depsFileName = $"{typeof(TEntryPoint).Assembly.GetName().Name}.deps.json";
         var depsFile = new FileInfo(Path.Combine(AppContext.BaseDirectory, depsFileName));
         if (!depsFile.Exists)
-            throw new InvalidOperationException(
-                Resources.FormatMissingDepsFile(
-                    depsFile.FullName,
-                    Path.GetFileName(depsFile.FullName)
-                )
-            );
+            throw new InvalidOperationException($"Missing deps file: {depsFile.FullName}");
     }
 
     /// <summary>
