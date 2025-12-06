@@ -26,17 +26,17 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 {
     private bool _disposed;
     private bool _disposedAsync;
-    private TestServer? _server;
+    private LambdaTestServer? _server;
     private IHost? _host;
     private Action<IHostBuilder> _configuration;
-    private readonly List<HttpClient> _clients = new();
-    private readonly List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
+    private readonly List<HttpClient> _clients = [];
+    private readonly List<WebApplicationFactory<TEntryPoint>> _derivedFactories = [];
 
     /// <summary>
     /// <para>
     /// Creates an instance of <see cref="WebApplicationFactory{TEntryPoint}"/>. This factory can be used to
-    /// create a <see cref="TestServer"/> instance using the MVC application defined by <typeparamref name="TEntryPoint"/>
-    /// and one or more <see cref="HttpClient"/> instances used to send <see cref="HttpRequestMessage"/> to the <see cref="TestServer"/>.
+    /// create a <see cref="LambdaTestServer"/> instance using the MVC application defined by <typeparamref name="TEntryPoint"/>
+    /// and one or more <see cref="HttpClient"/> instances used to send <see cref="HttpRequestMessage"/> to the <see cref="LambdaTestServer"/>.
     /// The <see cref="WebApplicationFactory{TEntryPoint}"/> will find the entry point class of <typeparamref name="TEntryPoint"/>
     /// assembly and initialize the application by calling <c>IHostBuilder CreateWebHostBuilder(string [] args)</c>
     /// on <typeparamref name="TEntryPoint"/>.
@@ -63,9 +63,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     ~WebApplicationFactory() => Dispose(false);
 
     /// <summary>
-    /// Gets the <see cref="TestServer"/> created by this <see cref="WebApplicationFactory{TEntryPoint}"/>.
+    /// Gets the <see cref="LambdaTestServer"/> created by this <see cref="WebApplicationFactory{TEntryPoint}"/>.
     /// </summary>
-    public TestServer Server
+    public LambdaTestServer Server
     {
         get
         {
@@ -82,7 +82,8 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         get
         {
             EnsureServer();
-            return _host?.Services ?? _server.Host.Services;
+            // return _host?.Services ?? _server.Host.Services;
+            return _host?.Services;
         }
     }
 
@@ -200,7 +201,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             webHostBuilder.UseTestServer();
         });
         _host = CreateHost(hostBuilder);
-        _server = (TestServer)_host.Services.GetRequiredService<IServer>();
+        _server = (LambdaTestServer)_host.Services.GetRequiredService<IServer>();
     }
 
     private void SetContentRoot(IHostBuilder builder)
@@ -377,7 +378,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     }
 
     /// <summary>
-    /// Creates a <see cref="IHostBuilder"/> used to set up <see cref="TestServer"/>.
+    /// Creates a <see cref="IHostBuilder"/> used to set up <see cref="LambdaTestServer"/>.
     /// </summary>
     /// <remarks>
     /// The default implementation of this method looks for a <c>public static IHostBuilder CreateHostBuilder(string[] args)</c>
@@ -396,7 +397,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     }
 
     /// <summary>
-    /// Creates a <see cref="IHostBuilder"/> used to set up <see cref="TestServer"/>.
+    /// Creates a <see cref="IHostBuilder"/> used to set up <see cref="LambdaTestServer"/>.
     /// </summary>
     /// <remarks>
     /// The default implementation of this method looks for a <c>public static IHostBuilder CreateWebHostBuilder(string[] args)</c>
@@ -417,14 +418,14 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     }
 
     /// <summary>
-    /// Creates the <see cref="TestServer"/> with the bootstrapped application in <paramref name="builder"/>.
+    /// Creates the <see cref="LambdaTestServer"/> with the bootstrapped application in <paramref name="builder"/>.
     /// This is only called for applications using <see cref="IHostBuilder"/>. Applications based on
     /// <see cref="IHostBuilder"/> will use <see cref="CreateHost"/> instead.
     /// </summary>
     /// <param name="builder">The <see cref="IHostBuilder"/> used to
     /// create the server.</param>
-    /// <returns>The <see cref="TestServer"/> with the bootstrapped application.</returns>
-    protected virtual TestServer CreateServer(IHostBuilder builder) => new(builder);
+    /// <returns>The <see cref="LambdaTestServer"/> with the bootstrapped application.</returns>
+    protected virtual LambdaTestServer CreateServer(IHostBuilder builder) => new(builder);
 
     /// <summary>
     /// Creates the <see cref="IHost"/> with the bootstrapped application in <paramref name="builder"/>.
@@ -585,7 +586,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
     private sealed class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
     {
-        private readonly Func<IHostBuilder, TestServer> _createServer;
+        private readonly Func<IHostBuilder, LambdaTestServer> _createServer;
         private readonly Func<IHostBuilder, IHost> _createHost;
         private readonly Func<IHostBuilder?> _createWebHostBuilder;
         private readonly Func<IHostBuilder?> _createHostBuilder;
@@ -594,7 +595,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
         public DelegatedWebApplicationFactory(
             WebApplicationFactoryClientOptions options,
-            Func<IHostBuilder, TestServer> createServer,
+            Func<IHostBuilder, LambdaTestServer> createServer,
             Func<IHostBuilder, IHost> createHost,
             Func<IHostBuilder?> createWebHostBuilder,
             Func<IHostBuilder?> createHostBuilder,
@@ -613,7 +614,8 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             _configuration = configureWebHost;
         }
 
-        protected override TestServer CreateServer(IHostBuilder builder) => _createServer(builder);
+        protected override LambdaTestServer CreateServer(IHostBuilder builder) =>
+            _createServer(builder);
 
         protected override IHost CreateHost(IHostBuilder builder) => _createHost(builder);
 
