@@ -4,6 +4,8 @@ using OpenTelemetry.Trace;
 
 namespace AwsLambda.Host.OpenTelemetry.UnitTests;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 [TestSubject(typeof(LambdaOpenTelemetryServiceProviderExtensions))]
 public class LambdaOpenTelemetryServiceProviderExtensionsTests
 {
