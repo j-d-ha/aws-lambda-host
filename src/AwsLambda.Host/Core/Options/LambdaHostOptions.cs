@@ -1,4 +1,5 @@
 using Amazon.Lambda.RuntimeSupport.Bootstrap;
+using AwsLambda.Host.Builder.Extensions;
 
 namespace AwsLambda.Host.Options;
 
@@ -8,8 +9,10 @@ public class LambdaHostOptions
     /// <summary>Gets or sets an optional custom HTTP client for the Lambda bootstrap.</summary>
     /// <remarks>
     ///     When null, the bootstrap will create its own HTTP client for communicating with the Lambda
-    ///     runtime API. Provide a custom client to control connection pooling, timeout settings, or other
-    ///     HTTP-level behaviors.
+    ///     runtime API. This property will be overridden by keyed service registrations from
+    ///     <see cref="LambdaHttpClientServiceCollectionExtensions.AddLambdaBootstrapHttpClient" /> or
+    ///     <see cref="LambdaHttpClientServiceCollectionExtensions.TryAddLambdaBootstrapHttpClient" />
+    ///     extension methods.
     /// </remarks>
     [Obsolete(
         "This property will be removed in version 2.0.0. Use "
