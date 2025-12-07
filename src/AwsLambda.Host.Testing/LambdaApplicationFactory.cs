@@ -92,7 +92,6 @@ public partial class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsync
         get
         {
             EnsureServer();
-            // return _host?.Services ?? _server.Host.Services;
             return _host!.Services;
         }
     }
@@ -262,10 +261,7 @@ public partial class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsync
 
     private void SetContentRoot(IHostBuilder builder)
     {
-        var fromFile = File.Exists("MvcTestingAppManifest.json");
-        var contentRoot = fromFile
-            ? GetContentRootFromFile("MvcTestingAppManifest.json")
-            : GetContentRootFromAssembly();
+        var contentRoot = GetContentRootFromAssembly();
 
         if (contentRoot != null)
             builder.UseContentRoot(contentRoot);
