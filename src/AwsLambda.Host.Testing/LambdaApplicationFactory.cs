@@ -304,22 +304,6 @@ public partial class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsync
         );
     }
 
-    private static string? GetContentRootFromFile(string file)
-    {
-        var data = JsonSerializer.Deserialize(
-            File.ReadAllBytes(file),
-            CustomJsonSerializerContext.Default.IDictionaryStringString
-        )!;
-        var key = typeof(TEntryPoint).Assembly.GetName().FullName;
-
-        // If the `ContentRoot` is not provided in the app manifest, then return null
-        // and fallback to setting the content root relative to the entrypoint's assembly.
-        if (!data.TryGetValue(key, out var contentRoot))
-            return null;
-
-        return contentRoot == "~" ? AppContext.BaseDirectory : contentRoot;
-    }
-
     private string? GetContentRootFromAssembly()
     {
         var metadataAttributes = GetContentRootMetadataAttributes(
@@ -328,9 +312,8 @@ public partial class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsync
         );
 
         string? contentRoot = null;
-        for (var i = 0; i < metadataAttributes.Length; i++)
+        foreach (var contentRootAttribute in metadataAttributes)
         {
-            var contentRootAttribute = metadataAttributes[i];
             var contentRootCandidate = Path.Combine(
                 AppContext.BaseDirectory,
                 contentRootAttribute.ContentRootPath
@@ -418,9 +401,12 @@ public partial class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsync
 
             return testAssemblies;
         }
-        catch (Exception) { }
+        catch (Exception)
+        {
+            // Ignore
+        }
 
-        return Array.Empty<Assembly>();
+        return [];
     }
 
     private static void EnsureDepsFile()
@@ -499,9 +485,9 @@ public partial class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsync
 
     private sealed class DelegatedLambdaApplicationFactory : LambdaApplicationFactory<TEntryPoint>
     {
-        private readonly Func<LambdaTestServer> _createServer;
         private readonly Func<IHostBuilder, IHost> _createHost;
         private readonly Func<IHostBuilder?> _createHostBuilder;
+        private readonly Func<LambdaTestServer> _createServer;
         private readonly Func<IEnumerable<Assembly>> _getTestAssemblies;
 
         public DelegatedLambdaApplicationFactory(
