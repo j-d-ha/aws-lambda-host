@@ -111,7 +111,7 @@ public class LambdaHostTest
 
     [Fact]
     public async Task InvokeAsync_WithZeroTimeout_CancelsInvocation() =>
-        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        await Assert.ThrowsAsync<AggregateException>(async () =>
         {
             await using var factory = new LambdaApplicationFactory<Program>();
             await factory.Server.StartAsync(TestContext.Current.CancellationToken);

@@ -227,6 +227,7 @@ public class LambdaTestServer : IAsyncDisposable
                 }
                 catch
                 {
+                    throw;
                     // Best effort - continue with disposal
                 }
 
