@@ -116,10 +116,11 @@ internal sealed class DeferredHostBuilder : IHostBuilder
         if (exception is not null)
         {
             _hostStartTcs.TrySetException(exception);
-            throw exception;
         }
-
-        _hostStartTcs.TrySetResult();
+        else
+        {
+            _hostStartTcs.TrySetResult();
+        }
     }
 
     public void SetHostFactory(Func<string[], object> hostFactory) => _hostFactory = hostFactory;
