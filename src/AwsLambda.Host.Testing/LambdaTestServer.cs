@@ -139,7 +139,7 @@ internal class LambdaTestServer : IAsyncDisposable
         if (_queuedNextRequests.Reader.TryRead(out var nextTransaction))
             RespondToNextRequest(nextTransaction);
 
-        await using var cancellationRegistration = cancellationToken.Register(() =>
+        using var cancellationRegistration = cancellationToken.Register(() =>
             CancelPendingInvocation(requestId, cancellationToken)
         );
 
@@ -268,7 +268,7 @@ internal class LambdaTestServer : IAsyncDisposable
     /// <summary>
     /// Handles POST /invocation/{requestId}/response - successful function execution.
     /// </summary>
-    private Task HandlePostResponseAsync(
+    private async Task HandlePostResponseAsync(
         LambdaHttpTransaction transaction,
         RouteValueDictionary routeValues
     )
@@ -290,12 +290,12 @@ internal class LambdaTestServer : IAsyncDisposable
                     ),
                 }
             );
-            return Task.CompletedTask;
+            return;
         }
 
         // Complete the invocation with the response from Bootstrap
         pending.ResponseTcs.SetResult(
-            CreateCompletion(RequestType.PostResponse, transaction.Request)
+            await CreateCompletionAsync(RequestType.PostResponse, transaction.Request)
         );
 
         // Acknowledge to Bootstrap
@@ -314,13 +314,13 @@ internal class LambdaTestServer : IAsyncDisposable
             }
         );
 
-        return Task.CompletedTask;
+        return;
     }
 
     /// <summary>
     /// Handles POST /invocation/{requestId}/error - function execution failed.
     /// </summary>
-    private Task HandlePostErrorAsync(
+    private async Task HandlePostErrorAsync(
         LambdaHttpTransaction transaction,
         RouteValueDictionary routeValues
     )
@@ -342,11 +342,13 @@ internal class LambdaTestServer : IAsyncDisposable
                     ),
                 }
             );
-            return Task.CompletedTask;
+            return;
         }
 
         // Complete the invocation with the error response from Bootstrap
-        pending.ResponseTcs.SetResult(CreateCompletion(RequestType.PostError, transaction.Request));
+        pending.ResponseTcs.SetResult(
+            await CreateCompletionAsync(RequestType.PostError, transaction.Request)
+        );
 
         // Acknowledge to Bootstrap
         transaction.Respond(
@@ -361,10 +363,10 @@ internal class LambdaTestServer : IAsyncDisposable
             }
         );
 
-        return Task.CompletedTask;
+        return;
     }
 
-    private bool TryDequeuePendingInvocation(out PendingInvocation? pendingInvocation)
+    private bool TryDequeuePendingInvocation(out PendingInvocation pendingInvocation)
     {
         var now = DateTimeOffset.UtcNow;
 
@@ -384,7 +386,7 @@ internal class LambdaTestServer : IAsyncDisposable
             }
         }
 
-        pendingInvocation = null;
+        pendingInvocation = null!;
         return false;
     }
 
@@ -394,7 +396,7 @@ internal class LambdaTestServer : IAsyncDisposable
             pendingInvocation.ResponseTcs.TrySetCanceled(cancellationToken);
     }
 
-    private static InvocationCompletion CreateCompletion(
+    private static async Task<InvocationCompletion> CreateCompletionAsync(
         RequestType requestType,
         HttpRequestMessage sourceRequest
     )
@@ -408,12 +410,12 @@ internal class LambdaTestServer : IAsyncDisposable
         foreach (var header in sourceRequest.Headers)
             clonedRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
 
+        foreach (var option in sourceRequest.Options)
+            clonedRequest.Options.TryAdd(option.Key, option.Value);
+
         if (sourceRequest.Content != null)
         {
-            var contentBytes = sourceRequest
-                .Content.ReadAsByteArrayAsync()
-                .GetAwaiter()
-                .GetResult();
+            var contentBytes = await sourceRequest.Content.ReadAsByteArrayAsync();
             var clonedContent = new ByteArrayContent(contentBytes);
 
             foreach (var header in sourceRequest.Content.Headers)
