@@ -172,15 +172,9 @@ internal class LambdaTestServer : IAsyncDisposable
     private async Task ProcessTransactionAsync(LambdaHttpTransaction transaction)
     {
         if (!_routeManager.TryMatch(transaction.Request, out var requestType, out var routeValues))
-        {
-            transaction.Respond(
-                new HttpResponseMessage(HttpStatusCode.NotFound)
-                {
-                    Content = new StringContent("Route not found"),
-                }
+            throw new InvalidOperationException(
+                $"Unexpected request: {transaction.Request.Method} {transaction.Request.RequestUri}"
             );
-            return;
-        }
 
         switch (requestType!.Value)
         {
@@ -197,13 +191,9 @@ internal class LambdaTestServer : IAsyncDisposable
                 break;
 
             default:
-                transaction.Respond(
-                    new HttpResponseMessage(HttpStatusCode.BadRequest)
-                    {
-                        Content = new StringContent($"Unknown request type: {requestType}"),
-                    }
+                throw new InvalidOperationException(
+                    $"Unexpected request type {requestType} for {transaction.Request.RequestUri}"
                 );
-                break;
         }
     }
 
