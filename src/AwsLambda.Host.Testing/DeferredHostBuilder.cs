@@ -25,6 +25,10 @@ internal sealed class DeferredHostBuilder : IHostBuilder
         TaskCreationOptions.RunContinuationsAsynchronously
     );
 
+    private readonly TaskCompletionSource<Exception?> _entryPointCompletionTcs = new(
+        TaskCreationOptions.RunContinuationsAsynchronously
+    );
+
     private Action<IHostBuilder> _configure;
     private Func<string[], object>? _hostFactory;
 
@@ -38,6 +42,8 @@ internal sealed class DeferredHostBuilder : IHostBuilder
         };
 
     public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
+
+    public Task<Exception?> EntryPointCompletion => _entryPointCompletionTcs.Task;
 
     public IHost Build()
     {
@@ -116,10 +122,12 @@ internal sealed class DeferredHostBuilder : IHostBuilder
         if (exception is not null)
         {
             _hostStartTcs.TrySetException(exception);
+            _entryPointCompletionTcs.TrySetResult(exception);
         }
         else
         {
             _hostStartTcs.TrySetResult();
+            _entryPointCompletionTcs.TrySetResult(null);
         }
     }
 

@@ -197,7 +197,7 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
             // to IHostBuilder.Build.
             deferredHostBuilder.SetHostFactory(factory);
 
-            ConfigureHostBuilder(deferredHostBuilder);
+            ConfigureHostBuilder(deferredHostBuilder, deferredHostBuilder.EntryPointCompletion);
             return;
         }
 
@@ -205,7 +205,10 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
     }
 
     [MemberNotNull(nameof(_server))]
-    private void ConfigureHostBuilder(IHostBuilder hostBuilder)
+    private void ConfigureHostBuilder(
+        IHostBuilder hostBuilder,
+        Task<Exception?> entryPointCompletion
+    )
     {
         SetContentRoot(hostBuilder);
         _configuration(hostBuilder);
@@ -228,7 +231,11 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
         _host = CreateHost(hostBuilder);
 
         // Create the public server with the built (but not started) host
-        _server = new LambdaTestServer(_host, processor);
+        _server = new LambdaTestServer(
+            _host,
+            processor,
+            entryPointCompletion: entryPointCompletion
+        );
     }
 
     private void SetContentRoot(IHostBuilder builder)

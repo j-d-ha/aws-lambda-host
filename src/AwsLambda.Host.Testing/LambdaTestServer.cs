@@ -16,20 +16,24 @@ public class LambdaTestServer : IAsyncDisposable
     private readonly InvocationProcessor _processor;
     private readonly LambdaClientOptions _defaultClientOptions;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
+    private readonly Task<Exception?> _entryPointCompletion;
     private int _requestCounter;
+    private Task? _entryPointMonitorTask;
     private ServerState _state;
 
     internal LambdaTestServer(
         IHost host,
         InvocationProcessor processor,
         LambdaClientOptions? defaultClientOptions = null,
-        JsonSerializerOptions? jsonSerializerOptions = null
+        JsonSerializerOptions? jsonSerializerOptions = null,
+        Task<Exception?>? entryPointCompletion = null
     )
     {
         _host = host ?? throw new ArgumentNullException(nameof(host));
         _processor = processor ?? throw new ArgumentNullException(nameof(processor));
         _defaultClientOptions = defaultClientOptions ?? new LambdaClientOptions();
         _jsonSerializerOptions = jsonSerializerOptions ?? new JsonSerializerOptions();
+        _entryPointCompletion = entryPointCompletion ?? Task.FromResult<Exception?>(null);
         _state = ServerState.Created;
     }
 
@@ -72,6 +76,8 @@ public class LambdaTestServer : IAsyncDisposable
         {
             _state = ServerState.Starting;
 
+            EnsureEntryPointDidNotFault();
+
             // Start the host
             await _host.StartAsync(cancellationToken);
 
@@ -79,6 +85,7 @@ public class LambdaTestServer : IAsyncDisposable
             _processor.StartProcessing();
 
             _state = ServerState.Running;
+            BeginEntryPointMonitoring();
         }
         catch
         {
@@ -227,8 +234,17 @@ public class LambdaTestServer : IAsyncDisposable
                 }
                 catch
                 {
-                    throw;
                     // Best effort - continue with disposal
+                }
+
+            if (_entryPointMonitorTask != null)
+                try
+                {
+                    await _entryPointMonitorTask.ConfigureAwait(false);
+                }
+                catch
+                {
+                    // Swallow monitoring errors during disposal
                 }
 
             // Dispose processor
@@ -292,4 +308,71 @@ public class LambdaTestServer : IAsyncDisposable
 
     private string GetRequestId() =>
         Interlocked.Increment(ref _requestCounter).ToString().PadLeft(12, '0');
+
+    private void EnsureEntryPointDidNotFault()
+    {
+        if (!_entryPointCompletion.IsCompleted)
+            return;
+
+        PropagateEntryPointCompletion(_entryPointCompletion);
+    }
+
+    private void BeginEntryPointMonitoring()
+    {
+        if (_entryPointCompletion.IsCompleted)
+        {
+            PropagateEntryPointCompletion(_entryPointCompletion);
+            return;
+        }
+
+        _entryPointMonitorTask = MonitorEntryPointCompletionAsync();
+    }
+
+    private async Task MonitorEntryPointCompletionAsync()
+    {
+        try
+        {
+            var exception = await _entryPointCompletion.ConfigureAwait(false);
+            if (exception != null)
+                await HandleEntryPointFailureAsync(exception).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            await HandleEntryPointFailureAsync(ex).ConfigureAwait(false);
+        }
+    }
+
+    private void PropagateEntryPointCompletion(Task<Exception?> completionTask)
+    {
+        if (completionTask.IsFaulted)
+            throw completionTask.Exception!.GetBaseException();
+
+        if (completionTask.Status == TaskStatus.Canceled)
+            throw new TaskCanceledException("Entry point execution was canceled.");
+
+        var exception =
+            completionTask.Status == TaskStatus.RanToCompletion ? completionTask.Result : null;
+
+        if (exception != null)
+            throw exception;
+    }
+
+    private async Task HandleEntryPointFailureAsync(Exception exception)
+    {
+        if (_state == ServerState.Disposed)
+            return;
+
+        _processor.FailPendingInvocations(exception);
+
+        try
+        {
+            await _host.StopAsync();
+        }
+        catch
+        {
+            // Best effort stop
+        }
+
+        _state = ServerState.Stopped;
+    }
 }

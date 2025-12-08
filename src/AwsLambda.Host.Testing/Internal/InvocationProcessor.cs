@@ -400,4 +400,16 @@ internal class InvocationProcessor : IAsyncDisposable
 
         return new InvocationCompletion { Request = clonedRequest, RequestType = requestType };
     }
+
+    internal void FailPendingInvocations(Exception exception)
+    {
+        while (_queuedNextRequests.Reader.TryRead(out var queuedTransaction))
+            queuedTransaction.Fail(exception);
+
+        while (_transactionChannel.Reader.TryRead(out var transaction))
+            transaction.Fail(exception);
+
+        foreach (var pendingInvocation in _pendingInvocations.Values)
+            pendingInvocation.ResponseTcs.TrySetException(exception);
+    }
 }
