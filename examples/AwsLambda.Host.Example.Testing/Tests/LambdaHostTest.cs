@@ -16,15 +16,15 @@ public class LambdaHostTest
 
         var setup = await factory.Server.StartAsync(TestContext.Current.CancellationToken);
 
-        await Task.Delay(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        // await Task.Delay(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-        // var response = await factory.Server.InvokeAsync<string, string>(
-        //     "Jonas",
-        //     TestContext.Current.CancellationToken
-        // );
-        // Assert.True(response.WasSuccess);
-        // Assert.NotNull(response);
-        // Assert.Equal("Hello Jonas!", response.Response);
+        var response = await factory.Server.InvokeAsync<string, string>(
+            "Jonas",
+            TestContext.Current.CancellationToken
+        );
+        Assert.True(response.WasSuccess);
+        Assert.NotNull(response);
+        Assert.Equal("Hello Jonas!", response.Response);
     }
 
     [Fact]
@@ -54,34 +54,34 @@ public class LambdaHostTest
         Assert.Equal("Hello Jonas!", response.Response);
     }
 
-    // [Fact]
-    // public async Task LambdaHost_ProcessesConcurrentInvocationsInFifoOrder()
-    // {
-    //     await using var factory = new LambdaApplicationFactory<Program>();
-    //     await factory.Server.StartAsync(TestContext.Current.CancellationToken);
-    //
-    //     // Launch 5 concurrent invocations
-    //     var tasks = Enumerable
-    //         .Range(1, 5)
-    //         .Select(i =>
-    //             factory.Server.InvokeAsync<string, string>(
-    //                 $"User{i}",
-    //                 TestContext.Current.CancellationToken
-    //             )
-    //         )
-    //         .ToArray();
-    //
-    //     var responses = await Task.WhenAll(tasks);
-    //
-    //     // All should complete successfully
-    //     Assert.All(responses, r => Assert.True(r.WasSuccess));
-    //     Assert.Equal("Hello User1!", responses[0].Response);
-    //     Assert.Equal("Hello User2!", responses[1].Response);
-    //     Assert.Equal("Hello User3!", responses[2].Response);
-    //     Assert.Equal("Hello User4!", responses[3].Response);
-    //     Assert.Equal("Hello User5!", responses[4].Response);
-    // }
-    //
+    [Fact]
+    public async Task LambdaHost_ProcessesConcurrentInvocationsInFifoOrder()
+    {
+        await using var factory = new LambdaApplicationFactory<Program>();
+        await factory.Server.StartAsync(TestContext.Current.CancellationToken);
+
+        // Launch 5 concurrent invocations
+        var tasks = Enumerable
+            .Range(1, 5)
+            .Select(i =>
+                factory.Server.InvokeAsync<string, string>(
+                    $"User{i}",
+                    TestContext.Current.CancellationToken
+                )
+            )
+            .ToArray();
+
+        var responses = await Task.WhenAll(tasks);
+
+        // All should complete successfully
+        Assert.All(responses, r => Assert.True(r.WasSuccess));
+        Assert.Equal("Hello User1!", responses[0].Response);
+        Assert.Equal("Hello User2!", responses[1].Response);
+        Assert.Equal("Hello User3!", responses[2].Response);
+        Assert.Equal("Hello User4!", responses[3].Response);
+        Assert.Equal("Hello User5!", responses[4].Response);
+    }
+
     // [Fact]
     // public async Task InvokeAsync_WithInvalidPayload_ReturnsError()
     // {

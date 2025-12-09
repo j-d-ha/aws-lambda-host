@@ -113,6 +113,7 @@ public class LambdaServerV2 : IAsyncDisposable
                 _initCompletionTcs.Task.Result.InitStatus == InitStatus.InitCompleted
                     ? ServerState.Running
                     : ServerState.Stopped;
+
             return _initCompletionTcs.Task.Result;
         }
 
@@ -127,12 +128,18 @@ public class LambdaServerV2 : IAsyncDisposable
         return ExtractExceptions(tasks);
     }
 
+    private static async Task<Exception[]> WhenAll(params Task[] tasks)
+    {
+        await Task.WhenAll(tasks);
+        return ExtractExceptions(tasks);
+    }
+
     private static Exception[] ExtractExceptions(Task[] tasks) =>
         tasks
             .Where(t => t is { IsFaulted: true, Exception: not null })
             .Select(e =>
                 e.Exception!.InnerExceptions.Count > 1
-                    ? e.Exception!
+                    ? e.Exception
                     : e.Exception.InnerExceptions[0]
             )
             .ToArray();
@@ -146,6 +153,8 @@ public class LambdaServerV2 : IAsyncDisposable
             throw new InvalidOperationException("Server is not started.");
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+        var pending = PendingInvocation.Create(requestId, eventResponse, deadlineUtc);
 
         return default;
     }
@@ -217,9 +226,12 @@ public class LambdaServerV2 : IAsyncDisposable
     private async Task HandleGetNextInvocationAsync(LambdaHttpTransaction transaction)
     {
         if (_state == ServerState.Starting)
+        {
             _initCompletionTcs.SetResult(
                 new InitResponse { InitStatus = InitStatus.InitCompleted }
             );
+            return;
+        }
     }
 
     private async Task HandlePostResponseAsync(

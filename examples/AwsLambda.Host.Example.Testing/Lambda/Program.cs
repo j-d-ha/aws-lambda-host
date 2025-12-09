@@ -13,9 +13,12 @@ builder.Services.ConfigureLambdaHostOptions(options =>
 // Build the Lambda application
 var lambda = builder.Build();
 
+// throw new Exception("Init failed");
+
 // lambda.OnInit(() =>
 // {
-//     return false;
+//     // throw new Exception("Init failed");
+//     // return false;
 // });
 
 // Map your handler - the event is automatically injected

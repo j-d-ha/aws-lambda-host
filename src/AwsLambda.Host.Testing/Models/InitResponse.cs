@@ -1,11 +1,24 @@
 namespace AwsLambda.Host.Testing;
 
+/// <summary>
+/// Represents the result of a Lambda function initialization attempt.
+/// </summary>
 public class InitResponse
 {
-    public ErrorResponse? Error { get; internal set; }
-    public InitStatus InitStatus { get; internal set; }
+    /// <summary>
+    /// Gets the error information if initialization failed, or null if initialization succeeded.
+    /// </summary>
+    public ErrorResponse? Error { get; internal init; }
+
+    /// <summary>
+    /// Gets the status of the initialization attempt.
+    /// </summary>
+    public InitStatus InitStatus { get; internal init; }
 }
 
+/// <summary>
+/// An enumeration of possible statuses for Lambda initialization.
+/// </summary>
 public enum InitStatus
 {
     /// <summary>
