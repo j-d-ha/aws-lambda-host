@@ -210,7 +210,9 @@ internal class InvocationProcessor : IAsyncDisposable
         if (_state == ProcessorState.Initializing)
         {
             _state = ProcessorState.Running;
-            _initCompletionTcs.TrySetResult(new InitResponse { InitSuccess = true });
+            _initCompletionTcs.TrySetResult(
+                new InitResponse { InitStatus = InitStatus.InitCompleted }
+            );
         }
 
         // Loop until we find work or shutdown
@@ -398,7 +400,7 @@ internal class InvocationProcessor : IAsyncDisposable
         {
             _state = ProcessorState.Stopped;
             _initCompletionTcs.TrySetResult(
-                new InitResponse { InitSuccess = false, Error = errorResponse }
+                new InitResponse { InitStatus = InitStatus.InitError, Error = errorResponse }
             );
             // Wake up any waiting /next requests by releasing the semaphore
             // They will check state and fail appropriately

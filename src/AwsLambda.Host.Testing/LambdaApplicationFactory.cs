@@ -213,12 +213,12 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
         SetContentRoot(hostBuilder);
         _configuration(hostBuilder);
 
-        var processor = new InvocationProcessor();
+        _server = new LambdaServerV2(entryPointCompletion);
 
         // set Lambda Bootstrap Http Client
         hostBuilder.ConfigureServices(services =>
         {
-            services.AddLambdaBootstrapHttpClient(new HttpClient(processor.CreateTestingHandler()));
+            services.AddLambdaBootstrapHttpClient(new HttpClient(_server.CreateHandler()));
 
             services.PostConfigure<LambdaHostOptions>(options =>
             {
@@ -229,12 +229,11 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
 
         // Build the host but DON'T start it - server will start it
         _host = CreateHost(hostBuilder);
+        _server.SetHost(_host);
 
         // Create the public server with the built (but not started) host
         // _server = new LambdaServerV2(_host, processor, entryPointCompletion:
         // entryPointCompletion);
-
-        _server = new LambdaServerV2(_host);
     }
 
     private void SetContentRoot(IHostBuilder builder)

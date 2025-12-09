@@ -1,5 +1,7 @@
+using AwsLambda.Host.Options;
 using AwsLambda.Host.Testing;
 using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Lambda.Host.Example.HelloWorld;
@@ -14,6 +16,8 @@ public class LambdaHostTest
 
         var setup = await factory.Server.StartAsync(TestContext.Current.CancellationToken);
 
+        await Task.Delay(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
         // var response = await factory.Server.InvokeAsync<string, string>(
         //     "Jonas",
         //     TestContext.Current.CancellationToken
@@ -23,34 +27,33 @@ public class LambdaHostTest
         // Assert.Equal("Hello Jonas!", response.Response);
     }
 
-    // [Fact]
-    // public async Task LambdaHost_CrashesWithBadConfiguration_ThrowsException()
-    // {
-    //     await using var factory = new LambdaApplicationFactory<Program>().WithHostBuilder(builder
-    // =>
-    //     {
-    //         builder.ConfigureServices(
-    //             (_, services) =>
-    //             {
-    //                 services.Configure<LambdaHostOptions>(options =>
-    //                 {
-    //                     options.BootstrapOptions.RuntimeApiEndpoint = "http://localhost:3002";
-    //                 });
-    //             }
-    //         );
-    //     });
-    //
-    //     await factory.Server.StartAsync(TestContext.Current.CancellationToken);
-    //
-    //     var response = await factory.Server.InvokeAsync<string, string>(
-    //         "Jonas",
-    //         TestContext.Current.CancellationToken
-    //     );
-    //     Assert.True(response.WasSuccess);
-    //     Assert.NotNull(response);
-    //     Assert.Equal("Hello Jonas!", response.Response);
-    // }
-    //
+    [Fact]
+    public async Task LambdaHost_CrashesWithBadConfiguration_ThrowsException()
+    {
+        await using var factory = new LambdaApplicationFactory<Program>().WithHostBuilder(builder =>
+        {
+            builder.ConfigureServices(
+                (_, services) =>
+                {
+                    services.Configure<LambdaHostOptions>(options =>
+                    {
+                        options.BootstrapOptions.RuntimeApiEndpoint = "http://localhost:3002";
+                    });
+                }
+            );
+        });
+
+        await factory.Server.StartAsync(TestContext.Current.CancellationToken);
+
+        var response = await factory.Server.InvokeAsync<string, string>(
+            "Jonas",
+            TestContext.Current.CancellationToken
+        );
+        Assert.True(response.WasSuccess);
+        Assert.NotNull(response);
+        Assert.Equal("Hello Jonas!", response.Response);
+    }
+
     // [Fact]
     // public async Task LambdaHost_ProcessesConcurrentInvocationsInFifoOrder()
     // {

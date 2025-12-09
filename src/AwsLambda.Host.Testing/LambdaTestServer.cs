@@ -95,8 +95,10 @@ public class LambdaTestServer : IAsyncDisposable
             var initResponse = await initTask;
 
             // If init failed, auto-stop the server
-            if (!initResponse.InitSuccess)
-                await StopAsync(CancellationToken.None);
+            // if (initResponse != InitStatus.InitCompleted)
+            //     await StopAsync(CancellationToken.None);
+            // if (!initResponse.InitSuccess)
+            //     await StopAsync(CancellationToken.None);
 
             return initResponse;
         }
