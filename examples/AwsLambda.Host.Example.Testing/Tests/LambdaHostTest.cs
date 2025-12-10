@@ -70,7 +70,7 @@ public class LambdaHostTest
     }
 
     [Fact]
-    public async Task LambdaHost_CrashesWithBadConfiguration_ThrowsException()
+    public async Task LambdaHost_ServerInternalExceptions_AreCaughtAndReturnedAsError()
     {
         await using var factory = new LambdaApplicationFactory<Program>().WithHostBuilder(builder =>
         {
@@ -85,15 +85,17 @@ public class LambdaHostTest
             );
         });
 
-        await factory.Server.StartAsync(TestContext.Current.CancellationToken);
+        var act = async () =>
+            await factory.Server.StartAsync(TestContext.Current.CancellationToken);
 
-        var response = await factory.Server.InvokeAsync<string, string>(
-            "Jonas",
-            TestContext.Current.CancellationToken
-        );
-        Assert.True(response.WasSuccess);
-        Assert.NotNull(response);
-        Assert.Equal("Hello Jonas!", response.Response);
+        (await act.Should().ThrowAsync<AggregateException>())
+            .And.InnerExceptions.Should()
+            .ContainSingle(ex =>
+                ex is InvalidOperationException
+                && ex.Message.Contains(
+                    "Unexpected request: GET http://http//localhost:3002/2018-06-01/runtime/invocation/next"
+                )
+            );
     }
 
     [Fact]
@@ -124,36 +126,36 @@ public class LambdaHostTest
         Assert.Equal("Hello User5!", responses[4].Response);
     }
 
-    // [Fact]
-    // public async Task InvokeAsync_WithInvalidPayload_ReturnsError()
-    // {
-    //     await using var factory = new LambdaApplicationFactory<Program>();
-    //     await factory.Server.StartAsync(TestContext.Current.CancellationToken);
-    //
-    //     var response = await factory.Server.InvokeAsync<string, int>(
-    //         123,
-    //         TestContext.Current.CancellationToken
-    //     );
-    //
-    //     Assert.False(response.WasSuccess);
-    //     Assert.NotNull(response.Error);
-    //     Assert.Contains("Json", response.Error!.ErrorType, StringComparison.OrdinalIgnoreCase);
-    // }
-    //
-    // [Fact]
-    // public async Task InvokeAsync_WithPreCanceledToken_CancelsInvocation()
-    // {
-    //     await using var factory = new LambdaApplicationFactory<Program>();
-    //     await factory.Server.StartAsync(TestContext.Current.CancellationToken);
-    //
-    //     using var cts = new CancellationTokenSource();
-    //     await cts.CancelAsync();
-    //
-    //     await Assert.ThrowsAsync<TaskCanceledException>(() =>
-    //         factory.Server.InvokeAsync<string, string>("Jonas", cts.Token)
-    //     );
-    // }
-    //
+    [Fact]
+    public async Task InvokeAsync_WithInvalidPayload_ReturnsError()
+    {
+        await using var factory = new LambdaApplicationFactory<Program>();
+        await factory.Server.StartAsync(TestContext.Current.CancellationToken);
+
+        var response = await factory.Server.InvokeAsync<string, int>(
+            123,
+            TestContext.Current.CancellationToken
+        );
+
+        Assert.False(response.WasSuccess);
+        Assert.NotNull(response.Error);
+        Assert.Contains("Json", response.Error!.ErrorType, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task InvokeAsync_WithPreCanceledToken_CancelsInvocation()
+    {
+        await using var factory = new LambdaApplicationFactory<Program>();
+        await factory.Server.StartAsync(TestContext.Current.CancellationToken);
+
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(() =>
+            factory.Server.InvokeAsync<string, string>("Jonas", cts.Token)
+        );
+    }
+
     // [Fact]
     // public async Task InvokeAsync_WithZeroTimeout_CancelsInvocation() =>
     //     await Assert.ThrowsAsync<TaskCanceledException>(async () =>
@@ -170,13 +172,13 @@ public class LambdaHostTest
     //             TestContext.Current.CancellationToken
     //         );
     //     });
-    //
+
     // [Fact]
     // public async Task StartAsync_WithFailingInit_ReturnsInitError()
     // {
     //     // This test verifies that when OnInit returns false (as configured in Program.cs),
     //     // the runtime posts to /runtime/init/error and StartAsync returns InitResponse with
-    // error
+    //     //error
     //     await using var factory = new LambdaApplicationFactory<Program>();
     //
     //     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));

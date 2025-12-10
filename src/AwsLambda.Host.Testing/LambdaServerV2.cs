@@ -50,7 +50,7 @@ public class LambdaServerV2 : IAsyncDisposable
     /// <summary>
     /// Route manager to determine the route of the incoming request from the Lambda.
     /// </summary>
-    private readonly ILambdaRuntimeRouteManager _routeManager = new LambdaRuntimeRouteManager();
+    private readonly LambdaRuntimeRouteManager _routeManager = new();
 
     /// <summary>
     /// CTS used to signal shutdown of the server and cancellation of pending tasks.

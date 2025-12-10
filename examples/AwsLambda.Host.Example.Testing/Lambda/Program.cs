@@ -23,8 +23,9 @@ var lambda = builder.Build();
 
 // Map your handler - the event is automatically injected
 lambda.MapHandler(
-    ([Event] string name) =>
+    async ([Event] string name, CancellationToken cancellationToken) =>
     {
+        // await Task.Delay(TimeSpan.FromSeconds(60), cancellationToken);
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentNullException(nameof(name), "Name is required.");
 

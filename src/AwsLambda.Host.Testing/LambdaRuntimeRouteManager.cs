@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Routing.Template;
 
 namespace AwsLambda.Host.Testing;
 
-internal class LambdaRuntimeRouteManager : ILambdaRuntimeRouteManager
+internal class LambdaRuntimeRouteManager
 {
     private static readonly RouteTemplate[] Routes =
     [
