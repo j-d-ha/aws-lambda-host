@@ -142,7 +142,10 @@ public class LambdaServerV2 : IAsyncDisposable
         if (_host is null)
             throw new InvalidOperationException("Host is not set.");
 
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            _shutdownCts.Token
+        );
 
         _state = ServerState.Starting;
 
@@ -186,7 +189,10 @@ public class LambdaServerV2 : IAsyncDisposable
                 "Server is not Running and as such an event cannot be invoked."
             );
 
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            _shutdownCts.Token
+        );
 
         // Generate unique request ID
         var requestId = GetRequestId();
@@ -251,7 +257,8 @@ public class LambdaServerV2 : IAsyncDisposable
 
         await TaskHelpers
             .WhenAll(_entryPointCompletion, _processingTask!)
-            .UnwrapAndThrow("Exception(s) encountered while running StopAsync");
+            .UnwrapAndThrow("Exception(s) encountered while running StopAsync")
+            .WaitAsync(cancellationToken);
 
         _state = ServerState.Stopped;
     }
@@ -262,44 +269,51 @@ public class LambdaServerV2 : IAsyncDisposable
 
     private async Task ProcessTransactionsAsync()
     {
-        await foreach (
-            var transaction in _transactionChannel.Reader.ReadAllAsync(_shutdownCts.Token)
-        )
+        try
         {
-            if (
-                !_routeManager.TryMatch(
-                    transaction.Request,
-                    out var requestType,
-                    out var routeValues
-                )
+            await foreach (
+                var transaction in _transactionChannel.Reader.ReadAllAsync(_shutdownCts.Token)
             )
-                throw new InvalidOperationException(
-                    $"Unexpected request: {transaction.Request.Method} {transaction.Request.RequestUri}"
-                );
-
-            switch (requestType!.Value)
             {
-                case RequestType.GetNextInvocation:
-                    await HandleGetNextInvocationAsync(transaction);
-                    break;
-
-                case RequestType.PostResponse:
-                    await HandlePostResponseAsync(transaction, routeValues!);
-                    break;
-
-                case RequestType.PostError:
-                    await HandlePostErrorAsync(transaction, routeValues!);
-                    break;
-
-                case RequestType.PostInitError:
-                    await HandlePostInitErrorAsync(transaction);
-                    break;
-
-                default:
+                if (
+                    !_routeManager.TryMatch(
+                        transaction.Request,
+                        out var requestType,
+                        out var routeValues
+                    )
+                )
                     throw new InvalidOperationException(
-                        $"Unexpected request type {requestType} for {transaction.Request.RequestUri}"
+                        $"Unexpected request: {transaction.Request.Method} {transaction.Request.RequestUri}"
                     );
+
+                switch (requestType!.Value)
+                {
+                    case RequestType.GetNextInvocation:
+                        await HandleGetNextInvocationAsync(transaction);
+                        break;
+
+                    case RequestType.PostResponse:
+                        await HandlePostResponseAsync(transaction, routeValues!);
+                        break;
+
+                    case RequestType.PostError:
+                        await HandlePostErrorAsync(transaction, routeValues!);
+                        break;
+
+                    case RequestType.PostInitError:
+                        await HandlePostInitErrorAsync(transaction);
+                        break;
+
+                    default:
+                        throw new InvalidOperationException(
+                            $"Unexpected request type {requestType} for {transaction.Request.RequestUri}"
+                        );
+                }
             }
+        }
+        catch (OperationCanceledException) when (_shutdownCts.IsCancellationRequested)
+        {
+            // Expected when task is canceled
         }
     }
 
