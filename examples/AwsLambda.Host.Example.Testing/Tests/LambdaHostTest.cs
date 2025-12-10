@@ -15,11 +15,11 @@ public class LambdaHostTest
     {
         await using var factory = new LambdaApplicationFactory<Program>();
 
-        var setup = await factory.Server.StartAsync(TestContext.Current.CancellationToken);
+        var setup = await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
 
         setup.InitStatus.Should().Be(InitStatus.InitCompleted);
 
-        var response = await factory.Server.InvokeAsync<string, string>(
+        var response = await factory.TestServer.InvokeAsync<string, string>(
             "Jonas",
             TestContext.Current.CancellationToken
         );
@@ -34,11 +34,11 @@ public class LambdaHostTest
     {
         await using var factory = new LambdaApplicationFactory<Program>();
 
-        var setup = await factory.Server.StartAsync(TestContext.Current.CancellationToken);
+        var setup = await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
 
         setup.InitStatus.Should().Be(InitStatus.InitCompleted);
 
-        var response = await factory.Server.InvokeAsync<string, string>(
+        var response = await factory.TestServer.InvokeAsync<string, string>(
             "",
             TestContext.Current.CancellationToken
         );
@@ -53,11 +53,11 @@ public class LambdaHostTest
     {
         await using var factory = new LambdaApplicationFactory<Program>();
 
-        var setup = await factory.Server.StartAsync(TestContext.Current.CancellationToken);
+        var setup = await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
 
         setup.InitStatus.Should().Be(InitStatus.InitCompleted);
 
-        var response = await factory.Server.InvokeAsync<string, string>(
+        var response = await factory.TestServer.InvokeAsync<string, string>(
             "Jonas",
             TestContext.Current.CancellationToken
         );
@@ -66,7 +66,7 @@ public class LambdaHostTest
         response.Should().NotBeNull();
         response.Response.Should().Be("Hello Jonas!");
 
-        await factory.Server.StopAsync(TestContext.Current.CancellationToken);
+        await factory.TestServer.StopAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -86,7 +86,7 @@ public class LambdaHostTest
         });
 
         var act = async () =>
-            await factory.Server.StartAsync(TestContext.Current.CancellationToken);
+            await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
 
         (await act.Should().ThrowAsync<AggregateException>())
             .And.InnerExceptions.Should()
@@ -102,13 +102,13 @@ public class LambdaHostTest
     public async Task LambdaHost_ProcessesConcurrentInvocationsInFifoOrder()
     {
         await using var factory = new LambdaApplicationFactory<Program>();
-        await factory.Server.StartAsync(TestContext.Current.CancellationToken);
+        await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
 
         // Launch 5 concurrent invocations
         var tasks = Enumerable
             .Range(1, 5)
             .Select(i =>
-                factory.Server.InvokeAsync<string, string>(
+                factory.TestServer.InvokeAsync<string, string>(
                     $"User{i}",
                     TestContext.Current.CancellationToken
                 )
@@ -130,9 +130,9 @@ public class LambdaHostTest
     public async Task InvokeAsync_WithInvalidPayload_ReturnsError()
     {
         await using var factory = new LambdaApplicationFactory<Program>();
-        await factory.Server.StartAsync(TestContext.Current.CancellationToken);
+        await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
 
-        var response = await factory.Server.InvokeAsync<string, int>(
+        var response = await factory.TestServer.InvokeAsync<string, int>(
             123,
             TestContext.Current.CancellationToken
         );
@@ -146,13 +146,13 @@ public class LambdaHostTest
     public async Task InvokeAsync_WithPreCanceledToken_CancelsInvocation()
     {
         await using var factory = new LambdaApplicationFactory<Program>();
-        await factory.Server.StartAsync(TestContext.Current.CancellationToken);
+        await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
 
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
         await Assert.ThrowsAsync<TaskCanceledException>(() =>
-            factory.Server.InvokeAsync<string, string>("Jonas", cts.Token)
+            factory.TestServer.InvokeAsync<string, string>("Jonas", cts.Token)
         );
     }
 
@@ -161,12 +161,12 @@ public class LambdaHostTest
     //     await Assert.ThrowsAsync<TaskCanceledException>(async () =>
     //     {
     //         await using var factory = new LambdaApplicationFactory<Program>();
-    //         await factory.Server.StartAsync(TestContext.Current.CancellationToken);
+    //         await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
     //
     //         var options = new LambdaClientOptions();
     //         options.InvocationHeaderOptions.ClientWaitTimeout = TimeSpan.Zero;
     //
-    //         await factory.Server.InvokeAsync<string, string>(
+    //         await factory.TestServer.InvokeAsync<string, string>(
     //             "Jonas",
     //             options,
     //             TestContext.Current.CancellationToken
@@ -182,10 +182,10 @@ public class LambdaHostTest
     //     await using var factory = new LambdaApplicationFactory<Program>();
     //
     //     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-    //     var initResponse = await factory.Server.StartAsync(cts.Token);
+    //     var initResponse = await factory.TestServer.StartAsync(cts.Token);
     //
     //     Assert.False(initResponse.InitSuccess);
     //     Assert.NotNull(initResponse.Error);
-    //     Assert.Equal(ServerState.Stopped, factory.Server.State);
+    //     Assert.Equal(ServerState.Stopped, factory.TestServer.State);
     // }
 }

@@ -11,7 +11,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace AwsLambda.Host.Testing;
 
-public class LambdaServerV2 : IAsyncDisposable
+public class LambdaTestServer : IAsyncDisposable
 {
     /// <summary>
     /// Options used to configure how the server interacts with the Lambda.
@@ -90,7 +90,7 @@ public class LambdaServerV2 : IAsyncDisposable
     /// </summary>
     private ServerState _state;
 
-    internal LambdaServerV2(
+    internal LambdaTestServer(
         Task<Exception?>? entryPointCompletion,
         CancellationToken shutdownToken = default
     )
@@ -136,7 +136,7 @@ public class LambdaServerV2 : IAsyncDisposable
     {
         if (_state != ServerState.Created)
             throw new InvalidOperationException(
-                "Server has already been started and cannot be restarted."
+                "TestServer has already been started and cannot be restarted."
             );
 
         if (_host is null)
@@ -175,7 +175,7 @@ public class LambdaServerV2 : IAsyncDisposable
         }
 
         throw new InvalidOperationException(
-            "Server initialization failed with neither an error nor completion."
+            "TestServer initialization failed with neither an error nor completion."
         );
     }
 
@@ -186,7 +186,7 @@ public class LambdaServerV2 : IAsyncDisposable
     {
         if (_state != ServerState.Running)
             throw new InvalidOperationException(
-                "Server is not Running and as such an event cannot be invoked."
+                "TestServer is not Running and as such an event cannot be invoked."
             );
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(
@@ -246,7 +246,7 @@ public class LambdaServerV2 : IAsyncDisposable
     {
         if (_state != ServerState.Running)
             throw new InvalidOperationException(
-                "Server is not running and as such cannot be stopped."
+                "TestServer is not running and as such cannot be stopped."
             );
 
         _state = ServerState.Stopping;
@@ -264,7 +264,7 @@ public class LambdaServerV2 : IAsyncDisposable
     }
 
     //      ┌──────────────────────────────────────────────────────────┐
-    //      │                  Internal Server Logic                   │
+    //      │                  Internal TestServer Logic                   │
     //      └──────────────────────────────────────────────────────────┘
 
     private async Task ProcessTransactionsAsync()
@@ -378,7 +378,7 @@ public class LambdaServerV2 : IAsyncDisposable
             );
 
         throw new InvalidOperationException(
-            "Server is already started and as such an initialization error cannot be reported."
+            "TestServer is already started and as such an initialization error cannot be reported."
         );
     }
 

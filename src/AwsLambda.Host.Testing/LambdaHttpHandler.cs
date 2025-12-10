@@ -41,7 +41,7 @@ internal class LambdaTestingHttpHandler(Channel<LambdaHttpTransaction> transacti
         }
         catch (ChannelClosedException)
         {
-            // Server is shutting down; propagate cancellation to caller
+            // TestServer is shutting down; propagate cancellation to caller
             var canceled = new TaskCompletionSource<HttpResponseMessage>(
                 TaskCreationOptions.RunContinuationsAsynchronously
             );
