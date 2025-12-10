@@ -11,21 +11,20 @@ namespace AwsLambda.Host.Testing;
 
 public class LambdaServerV2 : IAsyncDisposable
 {
+    private readonly LambdaClientOptions _clientOptions;
+    private readonly Task<Exception?> _entryPointCompletion;
     private readonly TaskCompletionSource<InitResponse> _initCompletionTcs;
     private readonly SemaphoreSlim _invocationAddedSignal;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
-    private readonly ConcurrentQueue<string> _pendingInvocationIds;
-    private readonly ConcurrentDictionary<string, PendingInvocation> _pendingInvocations_old;
+    private readonly Channel<string> _pendingInvocationIds;
+    private readonly ConcurrentDictionary<string, PendingInvocation> _pendingInvocations;
     private readonly ILambdaRuntimeRouteManager _routeManager;
     private readonly CancellationTokenSource _shutdownCts;
     private readonly Channel<LambdaHttpTransaction> _transactionChannel;
-    private readonly Task<Exception?> _entryPointCompletion;
-    private readonly LambdaClientOptions _clientOptions;
-    private readonly Channel<PendingInvocation> _pendingInvocations;
 
     private IHost? _host;
-    private int _requestCounter;
     private Task? _processingTask;
+    private int _requestCounter;
     private ServerState _state;
 
     internal LambdaServerV2(
@@ -40,11 +39,10 @@ public class LambdaServerV2 : IAsyncDisposable
         _transactionChannel = Channel.CreateUnbounded<LambdaHttpTransaction>(
             new UnboundedChannelOptions { SingleReader = true, SingleWriter = false }
         );
-        _pendingInvocations = Channel.CreateUnbounded<PendingInvocation>(
+        _pendingInvocationIds = Channel.CreateUnbounded<string>(
             new UnboundedChannelOptions { SingleReader = true, SingleWriter = false }
         );
-        _pendingInvocationIds = new ConcurrentQueue<string>();
-        // _pendingInvocations = new ConcurrentDictionary<string, PendingInvocation>();
+        _pendingInvocations = new ConcurrentDictionary<string, PendingInvocation>();
         _routeManager = new LambdaRuntimeRouteManager();
         _jsonSerializerOptions = new JsonSerializerOptions();
         _shutdownCts = CancellationTokenSource.CreateLinkedTokenSource(shutdownToken);
@@ -56,11 +54,7 @@ public class LambdaServerV2 : IAsyncDisposable
         _clientOptions = new LambdaClientOptions();
     }
 
-    internal void SetHost(IHost host)
-    {
-        ArgumentNullException.ThrowIfNull(host);
-        _host = host;
-    }
+    public IServiceProvider Services => _host.Services;
 
     public async ValueTask DisposeAsync()
     {
@@ -71,7 +65,11 @@ public class LambdaServerV2 : IAsyncDisposable
         _state = ServerState.Disposed;
     }
 
-    public IServiceProvider Services => _host.Services;
+    internal void SetHost(IHost host)
+    {
+        ArgumentNullException.ThrowIfNull(host);
+        _host = host;
+    }
 
     internal HttpMessageHandler CreateHandler() =>
         new LambdaTestingHttpHandler(_transactionChannel);
@@ -175,7 +173,9 @@ public class LambdaServerV2 : IAsyncDisposable
 
         var pending = PendingInvocation.Create(requestId, eventResponse, deadlineUtc);
 
-        _pendingInvocations.Writer.TryWrite(pending);
+        if (!_pendingInvocations.TryAdd(requestId, pending))
+            throw new InvalidOperationException($"Duplicate request ID: {requestId}");
+        _pendingInvocationIds.Writer.TryWrite(requestId);
 
         var completion = await pending.ResponseTcs.Task.WaitAsync(cts.Token);
 
@@ -225,66 +225,88 @@ public class LambdaServerV2 : IAsyncDisposable
         await foreach (
             var transaction in _transactionChannel.Reader.ReadAllAsync(_shutdownCts.Token)
         )
-            try
-            {
-                if (
-                    !_routeManager.TryMatch(
-                        transaction.Request,
-                        out var requestType,
-                        out var routeValues
-                    )
+        {
+            if (
+                !_routeManager.TryMatch(
+                    transaction.Request,
+                    out var requestType,
+                    out var routeValues
                 )
-                    throw new InvalidOperationException(
-                        $"Unexpected request: {transaction.Request.Method} {transaction.Request.RequestUri}"
-                    );
+            )
+                throw new InvalidOperationException(
+                    $"Unexpected request: {transaction.Request.Method} {transaction.Request.RequestUri}"
+                );
 
-                switch (requestType!.Value)
-                {
-                    case RequestType.GetNextInvocation:
-                        await HandleGetNextInvocationAsync(transaction);
-                        break;
-
-                    case RequestType.PostResponse:
-                        await HandlePostResponseAsync(transaction, routeValues!);
-                        break;
-
-                    case RequestType.PostError:
-                        await HandlePostErrorAsync(transaction, routeValues!);
-                        break;
-
-                    case RequestType.PostInitError:
-                        await HandlePostInitErrorAsync(transaction);
-                        break;
-
-                    default:
-                        throw new InvalidOperationException(
-                            $"Unexpected request type {requestType} for {transaction.Request.RequestUri}"
-                        );
-                }
-            }
-            catch (Exception ex)
+            switch (requestType!.Value)
             {
-                // Fail the transaction and continue processing
-                // transaction.Fail(ex);
-                throw;
+                case RequestType.GetNextInvocation:
+                    await HandleGetNextInvocationAsync(transaction);
+                    break;
+
+                case RequestType.PostResponse:
+                    await HandlePostResponseAsync(transaction, routeValues!);
+                    break;
+
+                case RequestType.PostError:
+                    await HandlePostErrorAsync(transaction, routeValues!);
+                    break;
+
+                case RequestType.PostInitError:
+                    await HandlePostInitErrorAsync(transaction);
+                    break;
+
+                default:
+                    throw new InvalidOperationException(
+                        $"Unexpected request type {requestType} for {transaction.Request.RequestUri}"
+                    );
             }
+        }
     }
 
     private async Task HandleGetNextInvocationAsync(LambdaHttpTransaction transaction)
     {
         if (_state == ServerState.Starting)
-        {
             _initCompletionTcs.SetResult(
                 new InitResponse { InitStatus = InitStatus.InitCompleted }
             );
-            return;
+
+        if (await _pendingInvocationIds.Reader.WaitToReadAsync(_shutdownCts.Token))
+        {
+            var requestId = await _pendingInvocationIds.Reader.ReadAsync(_shutdownCts.Token);
+            if (!_pendingInvocations.TryGetValue(requestId, out var pendingInvocation))
+                throw new InvalidOperationException($"Missing pending invocation for {requestId}");
+            transaction.ResponseTcs.SetResult(pendingInvocation.EventResponse);
         }
     }
 
     private async Task HandlePostResponseAsync(
         LambdaHttpTransaction transaction,
         RouteValueDictionary routeValues
-    ) { }
+    )
+    {
+        var requestId = routeValues["requestId"]?.ToString();
+        if (requestId is null || !_pendingInvocations.TryGetValue(requestId, out var pending))
+            throw new InvalidOperationException($"Missing pending invocation for {requestId}");
+
+        // Acknowledge to Bootstrap
+        transaction.Respond(
+            new HttpResponseMessage(HttpStatusCode.Accepted)
+            {
+                Content = new StringContent(
+                    """
+                    {"status":"success"}
+                    """,
+                    Encoding.UTF8,
+                    "application/json"
+                ),
+                Version = Version.Parse("1.1"),
+            }
+        );
+
+        pending.ResponseTcs.SetResult(
+            await CreateCompletionAsync(RequestType.PostResponse, transaction.Request)
+        );
+    }
 
     private async Task HandlePostErrorAsync(
         LambdaHttpTransaction transaction,
@@ -353,6 +375,37 @@ public class LambdaServerV2 : IAsyncDisposable
 
     private string GetRequestId() =>
         Interlocked.Increment(ref _requestCounter).ToString().PadLeft(12, '0');
+
+    private static async Task<InvocationCompletion> CreateCompletionAsync(
+        RequestType requestType,
+        HttpRequestMessage sourceRequest
+    )
+    {
+        var clonedRequest = new HttpRequestMessage(sourceRequest.Method, sourceRequest.RequestUri)
+        {
+            Version = sourceRequest.Version,
+            VersionPolicy = sourceRequest.VersionPolicy,
+        };
+
+        foreach (var header in sourceRequest.Headers)
+            clonedRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
+
+        foreach (var option in sourceRequest.Options)
+            clonedRequest.Options.TryAdd(option.Key, option.Value);
+
+        if (sourceRequest.Content != null)
+        {
+            var contentBytes = await sourceRequest.Content.ReadAsByteArrayAsync();
+            var clonedContent = new ByteArrayContent(contentBytes);
+
+            foreach (var header in sourceRequest.Content.Headers)
+                clonedContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
+
+            clonedRequest.Content = clonedContent;
+        }
+
+        return new InvocationCompletion { Request = clonedRequest, RequestType = requestType };
+    }
 }
 
 // public static class Temp

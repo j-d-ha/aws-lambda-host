@@ -1,3 +1,4 @@
+using AwesomeAssertions;
 using AwsLambda.Host.Options;
 using AwsLambda.Host.Testing;
 using JetBrains.Annotations;
@@ -16,15 +17,16 @@ public class LambdaHostTest
 
         var setup = await factory.Server.StartAsync(TestContext.Current.CancellationToken);
 
-        // await Task.Delay(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        setup.InitStatus.Should().Be(InitStatus.InitCompleted);
 
         var response = await factory.Server.InvokeAsync<string, string>(
             "Jonas",
             TestContext.Current.CancellationToken
         );
-        Assert.True(response.WasSuccess);
-        Assert.NotNull(response);
-        Assert.Equal("Hello Jonas!", response.Response);
+
+        response.WasSuccess.Should().BeTrue();
+        response.Should().NotBeNull();
+        response.Response.Should().Be("Hello Jonas!");
     }
 
     [Fact]
