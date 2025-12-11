@@ -3,9 +3,9 @@ using System.Text.Json.Serialization;
 using Amazon.Lambda.SQSEvents;
 using AutoFixture;
 using AwesomeAssertions;
-using AwsLambda.Host.Options;
 using JetBrains.Annotations;
 using MinimalLambda.Envelopes.Sqs;
+using MinimalLambda.Options;
 using Xunit;
 using SQSMessage = Amazon.Lambda.SQSEvents.SQSEvent.SQSMessage;
 

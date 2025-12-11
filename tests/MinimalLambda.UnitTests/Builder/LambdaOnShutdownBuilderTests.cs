@@ -1,4 +1,3 @@
-using AwsLambda.Host;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MinimalLambda.UnitTests.Builder;

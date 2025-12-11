@@ -1,4 +1,4 @@
-namespace AwsLambda.Host.Builder;
+namespace MinimalLambda.Builder;
 
 /// <summary>Builder for composing Lambda shutdown handlers that execute during the Shutdown phase.</summary>
 /// <remarks>

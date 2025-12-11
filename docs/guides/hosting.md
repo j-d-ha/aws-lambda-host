@@ -17,7 +17,7 @@ Calling `LambdaApplication.CreateBuilder()` assembles a standard .NET host with 
 Most applications can rely entirely on `CreateBuilder()` + `builder.Build()`—just add services, middleware, handlers, and call `await lambda.RunAsync();`.
 
 ```csharp title="Program.cs" linenums="1"
-using AwsLambda.Host.Builder;
+using MinimalLambda.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = LambdaApplication.CreateBuilder();

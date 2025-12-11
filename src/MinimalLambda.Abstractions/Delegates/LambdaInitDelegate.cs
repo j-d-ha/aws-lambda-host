@@ -1,4 +1,4 @@
-namespace AwsLambda.Host;
+namespace MinimalLambda;
 
 /// <summary>
 ///     A callback delegate invoked during the AWS Lambda Function Init phase, before any handler

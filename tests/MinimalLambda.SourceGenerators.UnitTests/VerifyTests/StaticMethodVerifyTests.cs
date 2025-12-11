@@ -7,8 +7,8 @@ public class MethodHandlerVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -32,8 +32,8 @@ public class MethodHandlerVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using Amazon.Lambda.Core;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
@@ -69,8 +69,8 @@ public class MethodHandlerVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -92,8 +92,8 @@ public class MethodHandlerVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -118,8 +118,8 @@ public class MethodHandlerVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -141,8 +141,8 @@ public class MethodHandlerVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -166,8 +166,8 @@ public class MethodHandlerVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -191,8 +191,8 @@ public class MethodHandlerVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -216,8 +216,8 @@ public class MethodHandlerVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();

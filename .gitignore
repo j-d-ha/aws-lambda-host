@@ -75,7 +75,7 @@ nunit-*.xml
 **/*.env
 
 **/node_modules/
-/benchmarks/AwsLambda.Host.Benchmarks/BenchmarkDotNet.Artifacts/
+/benchmarks/MinimalLambda.Benchmarks/BenchmarkDotNet.Artifacts/
 /nupkg/
 /temp.md
 /.claude/

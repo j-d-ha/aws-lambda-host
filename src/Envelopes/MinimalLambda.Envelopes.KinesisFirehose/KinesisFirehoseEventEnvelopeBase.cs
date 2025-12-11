@@ -1,7 +1,6 @@
 using System.Text.Json.Serialization;
 using Amazon.Lambda.KinesisFirehoseEvents;
-using AwsLambda.Host.Envelopes;
-using AwsLambda.Host.Options;
+using MinimalLambda.Options;
 
 namespace MinimalLambda.Envelopes.KinesisFirehose;
 

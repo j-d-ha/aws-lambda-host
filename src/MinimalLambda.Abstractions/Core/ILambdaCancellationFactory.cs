@@ -1,6 +1,6 @@
 using Amazon.Lambda.Core;
 
-namespace AwsLambda.Host.Core;
+namespace MinimalLambda.Core;
 
 /// <summary>
 ///     Provides a factory for creating cancellation token sources configured for AWS Lambda

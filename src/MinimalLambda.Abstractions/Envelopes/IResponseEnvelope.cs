@@ -1,4 +1,4 @@
-namespace AwsLambda.Host.Envelopes;
+namespace MinimalLambda.Envelopes;
 
 /// <summary>
 ///     Defines a contract for serializing and packing handler results into Lambda response

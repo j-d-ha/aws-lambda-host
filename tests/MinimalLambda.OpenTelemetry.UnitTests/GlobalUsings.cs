@@ -1,10 +1,10 @@
 global using AutoFixture;
 global using AutoFixture.Xunit3;
 global using AwesomeAssertions;
-global using AwsLambda.Host;
-global using AwsLambda.Host.Builder;
-global using AwsLambda.Host.Core;
-global using AwsLambda.Host.Options;
 global using JetBrains.Annotations;
+global using MinimalLambda;
+global using MinimalLambda.Builder;
+global using MinimalLambda.Core;
+global using MinimalLambda.Options;
 global using NSubstitute;
 global using Xunit;

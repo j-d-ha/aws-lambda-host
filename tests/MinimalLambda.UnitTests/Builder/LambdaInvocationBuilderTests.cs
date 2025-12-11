@@ -1,5 +1,3 @@
-using AwsLambda.Host;
-
 namespace MinimalLambda.UnitTests.Builder;
 
 [TestSubject(typeof(LambdaInvocationBuilder))]

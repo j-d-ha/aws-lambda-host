@@ -1,4 +1,4 @@
-namespace AwsLambda.Host;
+namespace MinimalLambda;
 
 /// <summary>A delegate that represents an asynchronous handler for AWS Lambda invocations.</summary>
 /// <remarks>

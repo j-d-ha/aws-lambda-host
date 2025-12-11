@@ -65,7 +65,7 @@ internal static class GeneratorTestHelpers
     {
         IEnumerable<KeyValuePair<string, string>> features =
         [
-            new("InterceptorsNamespaces", "AwsLambda.Host"),
+            new("InterceptorsNamespaces", "MinimalLambda"),
         ];
 
         var parseOptions = CSharpParseOptions

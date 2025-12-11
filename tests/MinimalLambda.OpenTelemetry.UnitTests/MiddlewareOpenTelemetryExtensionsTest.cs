@@ -1,4 +1,4 @@
-using AwsLambda.Host.UnitTests;
+using MinimalLambda.UnitTests;
 using OpenTelemetry.Trace;
 
 namespace MinimalLambda.OpenTelemetry.UnitTests;

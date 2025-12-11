@@ -1,4 +1,4 @@
-namespace AwsLambda.Host.Core;
+namespace MinimalLambda.Core;
 
 /// <summary>Provides access to the deserialized Lambda invocation event.</summary>
 /// <remarks>

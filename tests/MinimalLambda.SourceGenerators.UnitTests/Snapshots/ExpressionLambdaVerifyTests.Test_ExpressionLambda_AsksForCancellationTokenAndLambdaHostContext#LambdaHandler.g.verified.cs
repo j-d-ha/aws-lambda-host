@@ -26,7 +26,7 @@ namespace System.Runtime.CompilerServices
     }
 }
 
-namespace AwsLambda.Host.Core.Generated
+namespace MinimalLambda.Core.Generated
 {
     using System;
     using System.CodeDom.Compiler;
@@ -64,7 +64,7 @@ namespace AwsLambda.Host.Core.Generated
             {
                 // ParameterInfo { Type = global::System.Threading.CancellationToken, Name = ct, Source = CancellationToken, IsNullable = False, IsOptional = False}
                 var arg0 = context.CancellationToken;
-                // ParameterInfo { Type = global::AwsLambda.Host.Core.ILambdaHostContext, Name = ctx, Source = Context, IsNullable = False, IsOptional = False}
+                // ParameterInfo { Type = global::MinimalLambda.Core.ILambdaHostContext, Name = ctx, Source = Context, IsNullable = False, IsOptional = False}
                 var arg1 = context;
                 var response = castHandler.Invoke(arg0, arg1);
                 if (context.Features.Get<IResponseFeature>() is not IResponseFeature<string> responseFeature)

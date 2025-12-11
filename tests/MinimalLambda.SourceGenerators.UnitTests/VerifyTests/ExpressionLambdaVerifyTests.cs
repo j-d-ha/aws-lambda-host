@@ -7,8 +7,8 @@ public class ExpressionLambdaVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -28,8 +28,8 @@ public class ExpressionLambdaVerifyTests
             using System.IO;
             using System.Threading.Tasks;
             using Amazon.Lambda.Core;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -46,8 +46,8 @@ public class ExpressionLambdaVerifyTests
     public async Task Test_ExpressionLambda_NoInput_NoOutput() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -64,8 +64,8 @@ public class ExpressionLambdaVerifyTests
     public async Task Test_ExpressionLambda_NoInput_ReturnString() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -82,8 +82,8 @@ public class ExpressionLambdaVerifyTests
     public async Task Test_ExpressionLambda_NoInput_ReturnNullablePrimitive() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -99,8 +99,8 @@ public class ExpressionLambdaVerifyTests
     public async Task Test_ExpressionLambda_NoInput_ReturnGenericObject() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -120,8 +120,8 @@ public class ExpressionLambdaVerifyTests
     public async Task Test_ExpressionLambda_InputDi_Async() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -146,8 +146,8 @@ public class ExpressionLambdaVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -172,8 +172,8 @@ public class ExpressionLambdaVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
             using MyNamespace;
 
@@ -207,8 +207,8 @@ public class ExpressionLambdaVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -242,8 +242,8 @@ public class ExpressionLambdaVerifyTests
     public async Task Test_ExpressionLambda_NullableInput_ReturnImplicitNullable() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -264,8 +264,8 @@ public class ExpressionLambdaVerifyTests
     public async Task Test_ExpressionLambda_NullableInput_ReturnExplicitNullable() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -290,8 +290,8 @@ public class ExpressionLambdaVerifyTests
             """
             using System.Threading.Tasks;
             using Amazon.Lambda.Core;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -328,8 +328,8 @@ public class ExpressionLambdaVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -346,8 +346,8 @@ public class ExpressionLambdaVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -367,8 +367,8 @@ public class ExpressionLambdaVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -386,8 +386,8 @@ public class ExpressionLambdaVerifyTests
             """
             using System.Threading;
             using Amazon.Lambda.Core;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -405,8 +405,8 @@ public class ExpressionLambdaVerifyTests
             """
             using System.Threading;
             using Amazon.Lambda.Core;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -423,8 +423,8 @@ public class ExpressionLambdaVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.IO;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -441,8 +441,8 @@ public class ExpressionLambdaVerifyTests
     public async Task Test_ExpressionLambda_ExplicitVoid() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();

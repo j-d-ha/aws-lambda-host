@@ -1,9 +1,9 @@
-using AwsLambda.Host.Core;
 using Microsoft.Extensions.DependencyInjection;
+using MinimalLambda.Core;
 using OpenTelemetry.Instrumentation.AWSLambda;
 using OpenTelemetry.Trace;
 
-namespace AwsLambda.Host.Builder;
+namespace MinimalLambda.Builder;
 
 /// <summary>
 ///     Provides extension methods for enabling OpenTelemetry tracing in the Lambda invocation

@@ -4,8 +4,8 @@ namespace MinimalLambda.SourceGenerators;
 
 internal static class Diagnostics
 {
-    private const string UsageCategory = "AwsLambda.Host.Usage";
-    private const string ConfigurationCategory = "AwsLambda.Host.Configuration";
+    private const string UsageCategory = "MinimalLambda.Usage";
+    private const string ConfigurationCategory = "MinimalLambda.Configuration";
 
     internal static readonly DiagnosticDescriptor MultipleParametersUseAttribute = new(
         "LH0002",
@@ -28,7 +28,7 @@ internal static class Diagnostics
     public static readonly DiagnosticDescriptor CSharpVersionTooLow = new(
         "LH0004",
         "C# language version too low",
-        "AwsLambda.Host requires C# 11 or newer (or LanguageVersion=default with a modern SDK). "
+        "MinimalLambda requires C# 11 or newer (or LanguageVersion=default with a modern SDK). "
             + "Set <LangVersion>latest</LangVersion> or enable preview features.",
         ConfigurationCategory,
         DiagnosticSeverity.Error,

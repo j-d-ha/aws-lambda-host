@@ -5,9 +5,9 @@ using System.Text.Json.Serialization;
 using Amazon.Lambda.CloudWatchLogsEvents;
 using AutoFixture;
 using AwesomeAssertions;
-using AwsLambda.Host.Options;
 using JetBrains.Annotations;
 using MinimalLambda.Envelopes.CloudWatchLogs;
+using MinimalLambda.Options;
 using Xunit;
 
 namespace MinimalLambda.Envelopes.UnitTests;

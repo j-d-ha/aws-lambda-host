@@ -46,7 +46,7 @@ internal static class HandlerInfoExtractor
                         },
                     },
                 } targetOperation
-            || targetOperation.TargetMethod.ContainingAssembly.Name != "AwsLambda.Host"
+            || targetOperation.TargetMethod.ContainingAssembly.Name != "MinimalLambda"
         )
             return null;
 

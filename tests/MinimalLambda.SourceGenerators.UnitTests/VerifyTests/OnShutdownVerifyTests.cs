@@ -6,8 +6,8 @@ public class OnShutdownVerifyTests
     public async Task Test_OnShutdown_BaseMethodCall() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -30,8 +30,8 @@ public class OnShutdownVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -52,8 +52,8 @@ public class OnShutdownVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -74,8 +74,8 @@ public class OnShutdownVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -96,8 +96,8 @@ public class OnShutdownVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -118,8 +118,8 @@ public class OnShutdownVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -142,8 +142,8 @@ public class OnShutdownVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -172,8 +172,8 @@ public class OnShutdownVerifyTests
             """
             using System.Threading;
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
@@ -208,8 +208,8 @@ public class OnShutdownVerifyTests
         await GeneratorTestHelpers.Verify(
             """
             using System.Threading.Tasks;
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
 
             var builder = LambdaApplication.CreateBuilder();
@@ -248,8 +248,8 @@ public class OnShutdownVerifyTests
     public async Task Test_OnShutdown_BlockLambda_ReturnsImplicitVoid() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.Hosting;
             using System;
 

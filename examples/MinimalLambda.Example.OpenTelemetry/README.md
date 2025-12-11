@@ -1,4 +1,4 @@
-# AwsLambda.Host.Example.OpenTelemetry
+# MinimalLambda.Example.OpenTelemetry
 
 > 📚 **[View Full Documentation](https://j-d-ha.github.io/aws-lambda-host/)**
 
@@ -7,7 +7,7 @@
 You may need to CD into this directory before running the following commands.
 
 ```bash
-cd ./examples/AwsLambda.Host.Example.OpenTelemetry
+cd ./examples/MinimalLambda.Example.OpenTelemetry
 ```
 
 ### Dependencies

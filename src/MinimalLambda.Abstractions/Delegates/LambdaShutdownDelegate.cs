@@ -1,4 +1,4 @@
-namespace AwsLambda.Host;
+namespace MinimalLambda;
 
 /// <summary>A callback delegate invoked during the AWS Lambda Function Shutdown phase.</summary>
 /// <param name="services">A scoped <see cref="IServiceProvider" /> for resolving dependencies.</param>

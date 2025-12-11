@@ -1,5 +1,5 @@
-using AwsLambda.Host.UnitTests;
 using Microsoft.Extensions.DependencyInjection;
+using MinimalLambda.UnitTests;
 using OpenTelemetry.Trace;
 
 namespace MinimalLambda.OpenTelemetry.UnitTests;

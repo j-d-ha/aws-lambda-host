@@ -193,9 +193,9 @@ messages):
 
 All 3 packages are versioned synchronously:
 
-- `AwsLambda.Host`
-- `AwsLambda.Host.Abstractions`
-- `AwsLambda.Host.OpenTelemetry`
+- `MinimalLambda`
+- `MinimalLambda.Abstractions`
+- `MinimalLambda.OpenTelemetry`
 
 Versions are stored in `/Directory.Build.props` as `<VersionPrefix>`.
 

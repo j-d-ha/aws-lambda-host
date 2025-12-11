@@ -4,9 +4,9 @@ using System.Text.Json.Serialization;
 using Amazon.Lambda.KafkaEvents;
 using AutoFixture;
 using AwesomeAssertions;
-using AwsLambda.Host.Envelopes.Kafka;
-using AwsLambda.Host.Options;
 using JetBrains.Annotations;
+using MinimalLambda.Envelopes.Kafka;
+using MinimalLambda.Options;
 using Xunit;
 
 namespace MinimalLambda.Envelopes.UnitTests;

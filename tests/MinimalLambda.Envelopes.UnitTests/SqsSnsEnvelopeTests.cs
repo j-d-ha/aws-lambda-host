@@ -1,10 +1,10 @@
 using System.Text.Json;
 using AutoFixture;
 using AwesomeAssertions;
-using AwsLambda.Host.Options;
 using JetBrains.Annotations;
 using MinimalLambda.Envelopes.Sns;
 using MinimalLambda.Envelopes.Sqs;
+using MinimalLambda.Options;
 using Xunit;
 
 namespace MinimalLambda.Envelopes.UnitTests;

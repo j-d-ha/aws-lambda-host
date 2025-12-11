@@ -6,8 +6,8 @@ public class KeyedServiceVerifyTests
     public async Task Test_KeyedService_StringAndEnumKeys() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
@@ -50,8 +50,8 @@ public class KeyedServiceVerifyTests
     public async Task Test_KeyedService_IntAndLongKeys() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
@@ -83,8 +83,8 @@ public class KeyedServiceVerifyTests
     public async Task Test_KeyedService_SmallIntegerTypes() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
@@ -121,8 +121,8 @@ public class KeyedServiceVerifyTests
     public async Task Test_KeyedService_UnsignedIntegerTypes() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
@@ -159,8 +159,8 @@ public class KeyedServiceVerifyTests
     public async Task Test_KeyedService_FloatingPointTypes() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 
@@ -195,8 +195,8 @@ public class KeyedServiceVerifyTests
     public async Task Test_KeyedService_OtherTypes() =>
         await GeneratorTestHelpers.Verify(
             """
-            using AwsLambda.Host.Core;
-            using AwsLambda.Host.Builder;
+            using MinimalLambda.Core;
+            using MinimalLambda.Builder;
             using Microsoft.Extensions.DependencyInjection;
             using Microsoft.Extensions.Hosting;
 

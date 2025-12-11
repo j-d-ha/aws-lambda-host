@@ -3,9 +3,9 @@ using System.Text.Json.Serialization;
 using Amazon.Lambda.APIGatewayEvents;
 using AutoFixture;
 using AwesomeAssertions;
-using AwsLambda.Host.Options;
 using JetBrains.Annotations;
 using MinimalLambda.Envelopes.ApiGateway;
+using MinimalLambda.Options;
 using Xunit;
 
 namespace MinimalLambda.Envelopes.UnitTests;

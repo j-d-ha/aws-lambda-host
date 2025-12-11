@@ -3,9 +3,9 @@ using System.Text.Json.Serialization;
 using System.Xml;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.Lambda.Serialization.SystemTextJson.Converters;
-using AwsLambda.Host.Envelopes;
+using MinimalLambda.Envelopes;
 
-namespace AwsLambda.Host.Options;
+namespace MinimalLambda.Options;
 
 /// <summary>Options for configuring envelope payload serialization and deserialization.</summary>
 /// <remarks>

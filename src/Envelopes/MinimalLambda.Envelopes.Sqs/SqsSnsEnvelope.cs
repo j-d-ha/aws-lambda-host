@@ -1,7 +1,6 @@
 using System.Text.Json;
-using AwsLambda.Host.Envelopes;
-using AwsLambda.Host.Options;
 using MinimalLambda.Envelopes.Sns;
+using MinimalLambda.Options;
 
 namespace MinimalLambda.Envelopes.Sqs;
 

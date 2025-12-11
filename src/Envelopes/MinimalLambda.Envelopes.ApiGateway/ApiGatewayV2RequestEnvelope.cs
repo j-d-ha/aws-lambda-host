@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
-using AwsLambda.Host.Envelopes;
-using AwsLambda.Host.Options;
+using MinimalLambda.Options;
 
 namespace MinimalLambda.Envelopes.ApiGateway;
 

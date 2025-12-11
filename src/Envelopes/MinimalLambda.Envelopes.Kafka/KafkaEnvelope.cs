@@ -1,8 +1,8 @@
 using System.Text;
 using System.Text.Json;
-using AwsLambda.Host.Options;
+using MinimalLambda.Options;
 
-namespace AwsLambda.Host.Envelopes.Kafka;
+namespace MinimalLambda.Envelopes.Kafka;
 
 /// <inheritdoc cref="KafkaEnvelopeBase{T}" />
 /// <remarks>

@@ -1,4 +1,3 @@
-using AwsLambda.Host;
 using Microsoft.Extensions.Options;
 
 namespace MinimalLambda.UnitTests.Core.Runtime;

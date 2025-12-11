@@ -1,4 +1,4 @@
-# AwsLambda.Host.SourceGenerators
+# MinimalLambda.SourceGenerators
 
 ## Notes
 

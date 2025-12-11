@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
-namespace AwsLambda.Host.Builder;
+namespace MinimalLambda.Builder;
 
 /// <summary>
 ///     Extension methods for configuring OpenTelemetry force flush behavior during Lambda

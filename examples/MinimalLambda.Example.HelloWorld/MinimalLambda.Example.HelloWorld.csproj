@@ -11,7 +11,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!-- Generate ready to run images during publishing to improve cold start time. -->
     <PublishReadyToRun>true</PublishReadyToRun>
-    <InterceptorsNamespaces>$(InterceptorsNamespaces);AwsLambda.Host</InterceptorsNamespaces>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);MinimalLambda</InterceptorsNamespaces>
     <RootNamespace>Lambda.Host.Example.HelloWorld</RootNamespace>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

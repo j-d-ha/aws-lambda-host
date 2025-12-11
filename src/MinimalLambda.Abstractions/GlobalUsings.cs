@@ -1,4 +1,4 @@
-global using AwsLambda.Host;
-global using AwsLambda.Host.Builder;
-global using AwsLambda.Host.Core;
-global using AwsLambda.Host.Options;
+global using MinimalLambda;
+global using MinimalLambda.Builder;
+global using MinimalLambda.Core;
+global using MinimalLambda.Options;

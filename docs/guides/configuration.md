@@ -1,6 +1,6 @@
 # Configuration
 
-`AwsLambda.Host` embraces the same configuration primitives as the rest of .NET: `IConfiguration` aggregates
+`MinimalLambda` embraces the same configuration primitives as the rest of .NET: `IConfiguration` aggregates
 settings from files and environment variables, and options bind those settings into strongly typed
 objects. On top of that, `LambdaHostOptions` control the Lambda-specific runtime behavior (timeouts,
 shutdown windows, serializer choices, etc.). This guide covers both layers.
@@ -126,7 +126,7 @@ lambda.MapHandler(async ([Event] Order order, IOrderService service, Cancellatio
 ### `ShutdownDuration` and `ShutdownDurationBuffer`
 
 Lambda signals shutdown with SIGTERM and later SIGKILL. Configure how long you expect to have between
-those signals and how much buffer `AwsLambda.Host` should reserve before cancelling `OnShutdown`
+those signals and how much buffer `MinimalLambda` should reserve before cancelling `OnShutdown`
 handlers.
 
 ```csharp title="Program.cs" linenums="1"
@@ -151,7 +151,7 @@ Choose from the provided constants when possible:
 
 The .NET Lambda runtime captures stdout/stderr and wraps each line with its own structured record.
 When you rely on structured loggers (Serilog, MEL JSON) or run locally, disable that extra formatting.
-`AwsLambda.Host` registers the built-in OnInit handler automatically when this option is `true`.
+`MinimalLambda` registers the built-in OnInit handler automatically when this option is `true`.
 
 ```csharp title="Program.cs" linenums="1"
 builder.Services.ConfigureLambdaHostOptions(options =>
@@ -319,7 +319,7 @@ builder.Services.Configure<ExternalApiOptions>(options =>
 
 ## JSON Serialization Configuration
 
-`AwsLambda.Host` defaults to `System.Text.Json` with camelCase naming, case-insensitive reads, and
+`MinimalLambda` defaults to `System.Text.Json` with camelCase naming, case-insensitive reads, and
 null-value ignoring. Because the Lambda serializer is an `ILambdaSerializer` singleton, you configure
 it by registering the serializer instance you want (either the built-in
 `DefaultLambdaJsonSerializer` with custom `JsonSerializerOptions` or your own implementation).

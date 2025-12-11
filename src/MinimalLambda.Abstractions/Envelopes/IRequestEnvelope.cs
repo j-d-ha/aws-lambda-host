@@ -1,4 +1,4 @@
-namespace AwsLambda.Host.Envelopes;
+namespace MinimalLambda.Envelopes;
 
 /// <summary>Defines a contract for extracting and deserializing incoming Lambda event payloads.</summary>
 /// <remarks>

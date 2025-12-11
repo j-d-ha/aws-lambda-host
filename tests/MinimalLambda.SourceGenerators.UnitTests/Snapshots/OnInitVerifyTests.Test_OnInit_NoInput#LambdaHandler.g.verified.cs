@@ -23,14 +23,14 @@ namespace System.Runtime.CompilerServices
     }
 }
 
-namespace AwsLambda.Host
+namespace MinimalLambda
 {
     using System;
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.DependencyInjection;
-    
+
     file static class LambdaHostOnInitExtensions
     {
         // Location: InputFile.cs(9,8)
@@ -44,7 +44,7 @@ namespace AwsLambda.Host
             {
                 return handler();
             }
-            
+
             return application.OnInit(OnInit);
         }
     }

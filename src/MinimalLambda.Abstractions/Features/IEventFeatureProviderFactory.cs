@@ -1,4 +1,4 @@
-namespace AwsLambda.Host.Core;
+namespace MinimalLambda.Core;
 
 /// <summary>Creates feature providers for Lambda event deserialization.</summary>
 /// <remarks>

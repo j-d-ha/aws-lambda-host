@@ -1,4 +1,4 @@
-using AwsLambda.Host.Options;
+using MinimalLambda.Options;
 
 namespace MinimalLambda.Envelopes.CloudWatchLogs;
 

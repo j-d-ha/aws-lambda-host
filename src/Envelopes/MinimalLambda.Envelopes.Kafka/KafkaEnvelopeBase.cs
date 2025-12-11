@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 using Amazon.Lambda.KafkaEvents;
-using AwsLambda.Host.Options;
+using MinimalLambda.Options;
 
-namespace AwsLambda.Host.Envelopes.Kafka;
+namespace MinimalLambda.Envelopes.Kafka;
 
 /// <inheritdoc cref="KafkaEvent" />
 /// <remarks>

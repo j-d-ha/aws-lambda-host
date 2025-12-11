@@ -5,7 +5,7 @@ internal static class TypeConstants
 {
     internal const string ILambdaContext = "global::Amazon.Lambda.Core.ILambdaContext";
 
-    internal const string ILambdaHostContext = "global::AwsLambda.Host.Core.ILambdaHostContext";
+    internal const string ILambdaHostContext = "global::MinimalLambda.Core.ILambdaHostContext";
 
     internal const string CancellationToken = "global::System.Threading.CancellationToken";
 
@@ -29,7 +29,7 @@ internal static class TypeConstants
 /// <summary>Constants for attribute names used in source generation.</summary>
 internal static class AttributeConstants
 {
-    internal const string EventAttribute = "AwsLambda.Host.Builder.EventAttribute";
+    internal const string EventAttribute = "MinimalLambda.Builder.EventAttribute";
 
     internal const string FromKeyedService =
         "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute";

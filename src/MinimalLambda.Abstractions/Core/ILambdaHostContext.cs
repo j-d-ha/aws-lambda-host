@@ -1,6 +1,6 @@
 using Amazon.Lambda.Core;
 
-namespace AwsLambda.Host.Core;
+namespace MinimalLambda.Core;
 
 /// <summary>
 ///     Encapsulates the information about a Lambda invocation. It extends

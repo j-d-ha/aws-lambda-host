@@ -26,7 +26,7 @@ namespace System.Runtime.CompilerServices
     }
 }
 
-namespace AwsLambda.Host.Core.Generated
+namespace MinimalLambda.Core.Generated
 {
     using System;
     using System.CodeDom.Compiler;

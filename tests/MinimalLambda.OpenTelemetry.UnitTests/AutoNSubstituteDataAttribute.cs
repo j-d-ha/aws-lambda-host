@@ -1,6 +1,6 @@
 using AutoFixture.AutoNSubstitute;
 
-namespace AwsLambda.Host.UnitTests;
+namespace MinimalLambda.UnitTests;
 
 public class AutoNSubstituteDataAttribute()
     : AutoDataAttribute(() =>

@@ -1,4 +1,4 @@
-namespace AwsLambda.Host.Builder;
+namespace MinimalLambda.Builder;
 
 /// <summary>Builder for composing Lambda invocation handlers with middleware.</summary>
 /// <remarks>

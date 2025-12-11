@@ -11,7 +11,7 @@
     <PackageId>MinimalLambda.Envelopes.Kafka</PackageId>
     <Description>Strongly-typed Kafka Models AWS Lambda</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RootNamespace>AwsLambda.Host.Envelopes.Kafka</RootNamespace>
+    <RootNamespace>MinimalLambda.Envelopes.Kafka</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

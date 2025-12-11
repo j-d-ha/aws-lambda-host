@@ -38,7 +38,7 @@ internal static class LambdaApplicationBuilderBuildSyntaxProvider
                         },
                     },
                 } targetOperation
-            && targetOperation.TargetMethod.ContainingAssembly.Name == "AwsLambda.Host"
+            && targetOperation.TargetMethod.ContainingAssembly.Name == "MinimalLambda"
         )
         {
             var interceptableLocation = context.SemanticModel.GetInterceptableLocation(

@@ -1,8 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Amazon.Lambda.CloudWatchLogsEvents;
-using AwsLambda.Host.Envelopes;
-using AwsLambda.Host.Options;
+using MinimalLambda.Options;
 
 namespace MinimalLambda.Envelopes.CloudWatchLogs;
 
