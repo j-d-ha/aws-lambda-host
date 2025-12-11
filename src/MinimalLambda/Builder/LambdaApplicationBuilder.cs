@@ -17,7 +17,7 @@ using Microsoft.Extensions.Options;
 
 namespace MinimalLambda.Builder;
 
-/// <summary>A builder for configuring and constructing an AWS Lambda Host application.</summary>
+/// <summary>A builder for configuring and constructing a Lambda application.</summary>
 /// <remarks>
 ///     <para>
 ///         The <see cref="LambdaApplicationBuilder" /> is used to configure services, logging,
