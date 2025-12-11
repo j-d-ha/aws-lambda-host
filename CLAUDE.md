@@ -2,7 +2,7 @@
 
 ## GENERAL
 
-- Repo link: https://github.com/j-d-ha/aws-lambda-host
+- Repo link: https://github.com/j-d-ha/minimal-lambda
 - GitHub Project Name: Lambda.Host Development
 - All code in this project is designed to run on AWS Lambda or generate code that will then be run
   on AWS Lambda.

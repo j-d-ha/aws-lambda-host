@@ -6,9 +6,9 @@
     <!-- Other useful metadata -->
     <Authors>Jonas Ha</Authors>
     <PackageTags>csharp;library;utility;aws;lambda</PackageTags>
-    <RepositoryUrl>https://github.com/j-d-ha/aws-lambda-host</RepositoryUrl>
+    <RepositoryUrl>https://github.com/j-d-ha/minimal-lambda</RepositoryUrl>
     <Copyright>Copyright © 2025 Jonas Ha</Copyright>
-    <PackageProjectUrl>https://github.com/j-d-ha/aws-lambda-host</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/j-d-ha/minimal-lambda</PackageProjectUrl>
     <!-- NuGet.org specific -->
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <IsPackable>true</IsPackable>

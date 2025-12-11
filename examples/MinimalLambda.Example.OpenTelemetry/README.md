@@ -1,6 +1,6 @@
 # MinimalLambda.Example.OpenTelemetry
 
-> 📚 **[View Full Documentation](https://j-d-ha.github.io/aws-lambda-host/)**
+> 📚 **[View Full Documentation](https://j-d-ha.github.io/minimal-lambda/)**
 
 ## Getting Started
 

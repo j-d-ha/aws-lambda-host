@@ -3,7 +3,7 @@
 Core framework for building AWS Lambda functions with dependency injection, middleware, and source
 generation.
 
-> 📚 **[View Full Documentation](https://j-d-ha.github.io/aws-lambda-host/)**
+> 📚 **[View Full Documentation](https://j-d-ha.github.io/minimal-lambda/)**
 
 ## Overview
 
@@ -256,11 +256,11 @@ builder.Services.ConfigureLambdaHostOptions(options =>
 Available options include timeout control, shutdown duration, output formatting, and JSON
 serialization customization. The framework automatically registers `DefaultLambdaHostJsonSerializer`
 which uses `JsonSerializerOptions` and `JsonWriterOptions` for all Lambda serialization. See
-the [configuration guide](https://github.com/j-d-ha/aws-lambda-host/wiki/Configuration) for details.
+the [configuration guide](https://github.com/j-d-ha/minimal-lambda/wiki/Configuration) for details.
 
 ## Other Packages
 
-Additional packages in the aws-lambda-host framework for abstractions, observability, and event
+Additional packages in the minimal-lambda framework for abstractions, observability, and event
 source handling.
 
 | Package                                                                                                         | NuGet                                                                                                                                                            | Downloads                                                                                                                                                              |

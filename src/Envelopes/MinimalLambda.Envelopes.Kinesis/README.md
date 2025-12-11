@@ -114,7 +114,7 @@ builder.Services.ConfigureEnvelopeOptions(options =>
 
 ## Other Packages
 
-Additional packages in the aws-lambda-host framework for abstractions, observability, and event
+Additional packages in the minimal-lambda framework for abstractions, observability, and event
 source handling.
 
 | Package                                                                                               | NuGet                                                                                                                                                            | Downloads                                                                                                                                                              |

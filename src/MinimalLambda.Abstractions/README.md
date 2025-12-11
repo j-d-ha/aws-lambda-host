@@ -1,8 +1,8 @@
 # MinimalLambda.Abstractions
 
-Core interfaces and abstractions for the aws-lambda-host framework.
+Core interfaces and abstractions for the minimal-lambda framework.
 
-> 📚 **[View Full Documentation](https://j-d-ha.github.io/aws-lambda-host/)**
+> 📚 **[View Full Documentation](https://j-d-ha.github.io/minimal-lambda/)**
 
 ## Overview
 
@@ -205,7 +205,7 @@ For implementation details and examples, see [MinimalLambda](../MinimalLambda/RE
 
 ## Other Packages
 
-Additional packages in the aws-lambda-host framework for abstractions, observability, and event
+Additional packages in the minimal-lambda framework for abstractions, observability, and event
 source handling.
 
 | Package                                                                                                         | NuGet                                                                                                                                                            | Downloads                                                                                                                                                              |

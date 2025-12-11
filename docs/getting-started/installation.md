@@ -231,8 +231,8 @@ Envelope packages provide type-safe, strongly-typed event handling for specific 
 
 If you encounter issues not covered here:
 
-- Search or ask in [GitHub Discussions](https://github.com/j-d-ha/aws-lambda-host/discussions)
-- Report bugs in [GitHub Issues](https://github.com/j-d-ha/aws-lambda-host/issues)
+- Search or ask in [GitHub Discussions](https://github.com/j-d-ha/minimal-lambda/discussions)
+- Report bugs in [GitHub Issues](https://github.com/j-d-ha/minimal-lambda/issues)
 
 ## Next Steps
 

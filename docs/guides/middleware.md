@@ -1,6 +1,6 @@
 # Middleware
 
-`aws-lambda-host` uses the same middleware model as ASP.NET Core: each component gets a context object,
+`minimal-lambda` uses the same middleware model as ASP.NET Core: each component gets a context object,
 runs code before/after the next component, and can short-circuit the pipeline. If you're new to the
 pattern, skim the [ASP.NET Core middleware overview](https://learn.microsoft.com/aspnet/core/fundamentals/middleware/)
 first. This guide focuses on Lambda-specific behavior: invocation scopes, feature access, and

@@ -3,7 +3,7 @@
 Envelopes extend AWS Lambda event types with strongly-typed payload handling, making it easier to
 work with JSON (or other formats) in Lambda function handlers.
 
-> 📚 **[View Full Documentation](https://j-d-ha.github.io/aws-lambda-host/)**
+> 📚 **[View Full Documentation](https://j-d-ha.github.io/minimal-lambda/)**
 
 ## Overview
 

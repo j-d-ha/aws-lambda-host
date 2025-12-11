@@ -1,5 +1,5 @@
 {
-  "name": "aws-lambda-host",
+  "name": "minimal-lambda",
   "version": "0.0.7",
   "description": "AWS Lambda Host - .NET library for running code on AWS Lambda",
   "private": true,

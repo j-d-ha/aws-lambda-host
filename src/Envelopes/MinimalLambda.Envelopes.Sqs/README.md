@@ -145,7 +145,7 @@ Lambda function processes messages from that queue.
 
 ## Other Packages
 
-Additional packages in the aws-lambda-host framework for abstractions, observability, and event
+Additional packages in the minimal-lambda framework for abstractions, observability, and event
 source handling.
 
 | Package                                                                                               | NuGet                                                                                                                                                            | Downloads                                                                                                                                                              |

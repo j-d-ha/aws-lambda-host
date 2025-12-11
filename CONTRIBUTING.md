@@ -5,7 +5,7 @@ Thank you for your interest in contributing to the AWS Lambda Host project! This
 ## Table of Contents
 
 <!-- TOC -->
-* [Contributing to AWS Lambda Host](#contributing-to-aws-lambda-host)
+* [Contributing to AWS Lambda Host](#contributing-to-minimal-lambda)
   * [Table of Contents](#table-of-contents)
   * [Code of Conduct](#code-of-conduct)
   * [Getting Started](#getting-started)
@@ -33,12 +33,12 @@ We are committed to providing a welcoming and inclusive environment for all cont
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/aws-lambda-host.git
-   cd aws-lambda-host
+   git clone https://github.com/YOUR_USERNAME/minimal-lambda.git
+   cd minimal-lambda
    ```
 3. **Add the upstream remote**:
    ```bash
-   git remote add upstream https://github.com/j-d-ha/aws-lambda-host.git
+   git remote add upstream https://github.com/j-d-ha/minimal-lambda.git
    ```
 4. **Create a feature branch** (see [Branching Strategy](#branching-strategy))
 

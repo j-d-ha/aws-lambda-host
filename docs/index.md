@@ -4,10 +4,10 @@ title: ""
 
 # Build AWS Lambda Functions with .NET Hosting Patterns
 
-[![Main Build](https://github.com/j-d-ha/aws-lambda-host/actions/workflows/main-build.yaml/badge.svg)](https://github.com/j-d-ha/aws-lambda-host/actions/workflows/main-build.yaml)
-[![codecov](https://codecov.io/gh/j-d-ha/aws-lambda-host/graph/badge.svg?token=BWORPTQ0UK)](https://codecov.io/gh/j-d-ha/aws-lambda-host)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=j-d-ha_aws-lambda-host&metric=alert_status&token=9fb519975d91379dcfbc6c13a4bd4207131af6e3)](https://sonarcloud.io/summary/new_code?id=j-d-ha_aws-lambda-host)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/j-d-ha/aws-lambda-host/blob/main/LICENSE)
+[![Main Build](https://github.com/j-d-ha/minimal-lambda/actions/workflows/main-build.yaml/badge.svg)](https://github.com/j-d-ha/minimal-lambda/actions/workflows/main-build.yaml)
+[![codecov](https://codecov.io/gh/j-d-ha/minimal-lambda/graph/badge.svg?token=BWORPTQ0UK)](https://codecov.io/gh/j-d-ha/minimal-lambda)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=j-d-ha_minimal-lambda&metric=alert_status&token=9fb519975d91379dcfbc6c13a4bd4207131af6e3)](https://sonarcloud.io/summary/new_code?id=j-d-ha_minimal-lambda)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/j-d-ha/minimal-lambda/blob/main/LICENSE)
 
 MinimalLambda is a lightweight hosting framework for .NET developers who want the comfort of ASP.NET
 Core’s middleware, dependency injection, and lifecycle hooks inside AWS Lambda. Instead of wiring up
@@ -195,8 +195,8 @@ for building AWS Lambda functions.
 
 | Package                                                          | Description                                   | NuGet                                                                                                                                    | Downloads                                                                                                                                      |
 |------------------------------------------------------------------|-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
-| [**MinimalLambda**](https://github.com/j-d-ha/aws-lambda-host/tree/main/src/MinimalLambda)                      | Core hosting framework with middleware and DI | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.svg)](https://www.nuget.org/packages/MinimalLambda)                             | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.svg)](https://www.nuget.org/packages/MinimalLambda/)                             |
-| [**MinimalLambda.Abstractions**](https://github.com/j-d-ha/aws-lambda-host/tree/main/src/MinimalLambda.Abstractions) | Core interfaces and contracts                 | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.Abstractions.svg)](https://www.nuget.org/packages/MinimalLambda.Abstractions)   | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.Abstractions.svg)](https://www.nuget.org/packages/MinimalLambda.Abstractions/)   |
+| [**MinimalLambda**](https://github.com/j-d-ha/minimal-lambda/tree/main/src/MinimalLambda)                      | Core hosting framework with middleware and DI | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.svg)](https://www.nuget.org/packages/MinimalLambda)                             | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.svg)](https://www.nuget.org/packages/MinimalLambda/)                             |
+| [**MinimalLambda.Abstractions**](https://github.com/j-d-ha/minimal-lambda/tree/main/src/MinimalLambda.Abstractions) | Core interfaces and contracts                 | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.Abstractions.svg)](https://www.nuget.org/packages/MinimalLambda.Abstractions)   | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.Abstractions.svg)](https://www.nuget.org/packages/MinimalLambda.Abstractions/)   |
 | [**MinimalLambda.OpenTelemetry**](features/open_telemetry.md)    | Distributed tracing and observability         | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.OpenTelemetry.svg)](https://www.nuget.org/packages/MinimalLambda.OpenTelemetry) | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.OpenTelemetry.svg)](https://www.nuget.org/packages/MinimalLambda.OpenTelemetry/) |
 
 ### Envelope Packages
@@ -239,9 +239,9 @@ soon) for end-to-end Lambda samples that wire up middleware, envelopes, and DI.
 
 ### Get Involved
 
-- **[GitHub Repository](https://github.com/j-d-ha/aws-lambda-host)** – Source code, issues, and discussions.
+- **[GitHub Repository](https://github.com/j-d-ha/minimal-lambda)** – Source code, issues, and discussions.
 - **[Changelog](changelog.md)** – Version history and release notes.
-- **[License](https://github.com/j-d-ha/aws-lambda-host/blob/main/LICENSE)** – MIT License.
+- **[License](https://github.com/j-d-ha/minimal-lambda/blob/main/LICENSE)** – MIT License.
 
 ### Documentation
 
@@ -252,8 +252,8 @@ soon) for end-to-end Lambda samples that wire up middleware, envelopes, and DI.
 
 ### Support
 
-- Ask or search in [GitHub Discussions](https://github.com/j-d-ha/aws-lambda-host/discussions).
-- File bugs or feature requests via [GitHub Issues](https://github.com/j-d-ha/aws-lambda-host/issues).
+- Ask or search in [GitHub Discussions](https://github.com/j-d-ha/minimal-lambda/discussions).
+- File bugs or feature requests via [GitHub Issues](https://github.com/j-d-ha/minimal-lambda/issues).
 
 ---
 
