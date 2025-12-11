@@ -55,8 +55,8 @@ public class LambdaHostOptions
     ///     Gets or sets the buffer duration subtracted from the Lambda function's remaining
     ///     invocation time when creating cancellation tokens.
     /// </summary>
-    /// <remarks>Default is 3 seconds.</remarks>
-    public TimeSpan InvocationCancellationBuffer { get; set; } = TimeSpan.FromSeconds(3);
+    /// <remarks>Default is 500 milliseconds.</remarks>
+    public TimeSpan InvocationCancellationBuffer { get; set; } = TimeSpan.FromMilliseconds(500);
 
     /// <summary>
     ///     Gets or sets the duration between when AWS sends SIGTERM and SIGKILL to the Lambda
