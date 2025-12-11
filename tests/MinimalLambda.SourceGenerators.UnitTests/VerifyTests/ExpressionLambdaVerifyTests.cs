@@ -18,8 +18,7 @@ public class ExpressionLambdaVerifyTests
             lambda.Handle(Task (ILambdaHostContext context) => Task.CompletedTask);
 
             await lambda.RunAsync();
-            """,
-            0
+            """
         );
 
     [Fact]
@@ -40,8 +39,7 @@ public class ExpressionLambdaVerifyTests
             lambda.Handle(Task (ILambdaHostContext context) => Task.CompletedTask);
 
             await lambda.RunAsync();
-            """,
-            0
+            """
         );
 
     [Fact]
