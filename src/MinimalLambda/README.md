@@ -1,14 +1,12 @@
 # MinimalLambda
 
-**ASP.NET Core Minimal API-style patterns for AWS Lambda** – Build Lambda functions for any trigger using familiar .NET patterns.
+**Minimal API-style ergonomics, Lambda-first runtime** – Build Lambda functions for any trigger using familiar .NET patterns without sacrificing Lambda-specific capabilities.
 
 > 📚 **[View Full Documentation](https://j-d-ha.github.io/minimal-lambda/)**
 
 ## Overview
 
-**If you know ASP.NET Core Minimal APIs, you already know MinimalLambda.**
-
-Write Lambda functions with the familiar minimal API pattern from ASP.NET Core:
+Write Lambda functions with the familiar minimal API pattern from ASP.NET Core, adapted for Lambda's execution model:
 
 ```csharp
 var builder = LambdaApplication.CreateBuilder();
@@ -23,12 +21,12 @@ await lambda.RunAsync();
 
 The framework provides:
 
-- **Minimal API Pattern**: `lambda.MapHandler(...)` just like `app.MapGet()` – clean and declarative
-- **Dependency Injection**: Same DI container as ASP.NET Core with proper scoped lifetimes per invocation
+- **Minimal API Pattern**: `lambda.MapHandler(...)` in the same declarative style as `app.MapGet()`
+- **Dependency Injection**: The ASP.NET Core container with scoped lifetimes tailored to Lambda invocations
 - **Middleware Pipeline**: Familiar `Use()` pattern for cross-cutting concerns
 - **Source Generated**: Compile-time code generation for zero reflection overhead
 - **Native AOT Ready**: Full AOT support for sub-100ms cold starts
-- **Lambda-Optimized**: Automatic cancellation tokens, timeout handling, and efficient resource use
+- **Lambda-Optimized**: Envelopes, lifecycle hooks, automatic cancellation tokens, and timeout handling
 
 ## Installation
 
