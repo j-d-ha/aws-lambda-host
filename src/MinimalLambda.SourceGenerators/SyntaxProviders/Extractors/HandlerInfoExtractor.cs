@@ -39,11 +39,7 @@ internal static class HandlerInfoExtractor
                     {
                         Name: "Builder",
                         ContainingNamespace:
-                        {
-                            Name: "Host",
-                            ContainingNamespace:
-                            { Name: "AwsLambda", ContainingNamespace.IsGlobalNamespace: true },
-                        },
+                        { Name: "MinimalLambda", ContainingNamespace.IsGlobalNamespace: true },
                     },
                 } targetOperation
             || targetOperation.TargetMethod.ContainingAssembly.Name != "MinimalLambda"
