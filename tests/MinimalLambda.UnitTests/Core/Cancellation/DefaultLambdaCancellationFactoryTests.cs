@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Options;
-
 namespace MinimalLambda.UnitTests;
 
 [TestSubject(typeof(DefaultLambdaCancellationFactory))]
@@ -9,7 +7,7 @@ public class DefaultLambdaCancellationFactoryTest
     public void Constructor_WithNegativeBufferDuration_ThrowsArgumentOutOfRangeException()
     {
         // Arrange
-        var options = Options.Create(
+        var options = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions { InvocationCancellationBuffer = TimeSpan.FromSeconds(-1) }
         );
 
@@ -25,10 +23,10 @@ public class DefaultLambdaCancellationFactoryTest
     public void Constructor_WithZeroOrPositiveBufferDuration_DoesNotThrow()
     {
         // Arrange
-        var optionsWithZero = Options.Create(
+        var optionsWithZero = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions { InvocationCancellationBuffer = TimeSpan.Zero }
         );
-        var optionsWithPositive = Options.Create(
+        var optionsWithPositive = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions { InvocationCancellationBuffer = TimeSpan.FromSeconds(10) }
         );
 
@@ -50,7 +48,7 @@ public class DefaultLambdaCancellationFactoryTest
     public void NewCancellationTokenSource_WithNullContext_ThrowsArgumentNullException()
     {
         // Arrange
-        var options = Options.Create(
+        var options = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions { InvocationCancellationBuffer = TimeSpan.FromSeconds(5) }
         );
         var factory = new DefaultLambdaCancellationFactory(options);
@@ -67,7 +65,7 @@ public class DefaultLambdaCancellationFactoryTest
     public void NewCancellationTokenSource_WhenContextRemainingTimeZeroOrLess_ThrowsInvalidOperationException()
     {
         // Arrange
-        var options = Options.Create(
+        var options = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions { InvocationCancellationBuffer = TimeSpan.FromSeconds(5) }
         );
         var factory = new DefaultLambdaCancellationFactory(options);
@@ -91,7 +89,7 @@ public class DefaultLambdaCancellationFactoryTest
     {
         // Arrange
         var bufferDuration = TimeSpan.FromSeconds(10);
-        var options = Options.Create(
+        var options = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions { InvocationCancellationBuffer = bufferDuration }
         );
         var factory = new DefaultLambdaCancellationFactory(options);
@@ -111,7 +109,7 @@ public class DefaultLambdaCancellationFactoryTest
     {
         // Arrange
         var bufferDuration = TimeSpan.FromSeconds(5);
-        var options = Options.Create(
+        var options = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions { InvocationCancellationBuffer = bufferDuration }
         );
         var factory = new DefaultLambdaCancellationFactory(options);
@@ -137,7 +135,7 @@ public class DefaultLambdaCancellationFactoryTest
     {
         // Arrange
         var bufferDuration = TimeSpan.FromSeconds(10);
-        var options = Options.Create(
+        var options = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions { InvocationCancellationBuffer = bufferDuration }
         );
         var factory = new DefaultLambdaCancellationFactory(options);

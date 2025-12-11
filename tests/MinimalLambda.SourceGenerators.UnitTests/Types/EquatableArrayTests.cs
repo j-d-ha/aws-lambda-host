@@ -1,6 +1,7 @@
 using System.Collections;
 using AwesomeAssertions;
 using JetBrains.Annotations;
+using MinimalLambda.SourceGenerators.Types;
 
 namespace MinimalLambda.SourceGenerators.UnitTests.Types;
 

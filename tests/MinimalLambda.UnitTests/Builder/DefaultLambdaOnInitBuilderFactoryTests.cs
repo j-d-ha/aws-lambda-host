@@ -6,7 +6,8 @@ namespace MinimalLambda.UnitTests.Builder;
 [TestSubject(typeof(DefaultLambdaOnInitBuilderFactory))]
 public class DefaultLambdaOnInitBuilderFactoryTests
 {
-    private readonly IOptions<LambdaHostOptions> _options = Options.Create(new LambdaHostOptions());
+    private readonly IOptions<LambdaHostOptions> _options =
+        Microsoft.Extensions.Options.Options.Create(new LambdaHostOptions());
 
     private readonly IServiceScopeFactory _scopeFactory = Substitute.For<IServiceScopeFactory>();
     private readonly IServiceProvider _serviceProvider = Substitute.For<IServiceProvider>();
