@@ -1,5 +1,5 @@
-<Project InitialTargets="AwsLambda_Host">
-  <Target Name="AwsLambda_Host">
+<Project InitialTargets="MinimalLambda">
+  <Target Name="MinimalLambda">
     <PropertyGroup>
       <InterceptorsNamespaces>$(InterceptorsPreviewNamespaces);MinimalLambda.Core.Generated</InterceptorsNamespaces>
     </PropertyGroup>
