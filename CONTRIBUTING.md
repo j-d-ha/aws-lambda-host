@@ -1,6 +1,6 @@
 # Contributing to MinimalLambda
 
-Thank you for your interest in contributing to the AWS Lambda Host project! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to the MinimalLambda project! This document provides guidelines and instructions for contributing.
 
 ## Table of Contents
 
@@ -372,4 +372,4 @@ By contributing to this project, you agree that your contributions will be licen
 
 ---
 
-**Thank you for contributing to AWS Lambda Host!** 🚀
+**Thank you for contributing to MinimalLambda!** 🚀

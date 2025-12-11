@@ -12,7 +12,7 @@
     <!-- Generate ready to run images during publishing to improve cold start time. -->
     <PublishReadyToRun>true</PublishReadyToRun>
     <InterceptorsNamespaces>$(InterceptorsNamespaces);MinimalLambda.Generated</InterceptorsNamespaces>
-    <RootNamespace>Lambda.Host.Example.Events</RootNamespace>
+    <RootNamespace>MinimalLambda.Example.Events</RootNamespace>
     <IsPackable>false</IsPackable>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>

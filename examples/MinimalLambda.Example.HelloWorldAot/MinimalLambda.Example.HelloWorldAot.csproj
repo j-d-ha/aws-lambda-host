@@ -20,7 +20,7 @@
     <AssemblyName>bootstrap</AssemblyName>
     <PublishTrimmed>true</PublishTrimmed>
     <InterceptorsNamespaces>$(InterceptorsNamespaces);MinimalLambda.Generated</InterceptorsNamespaces>
-    <RootNamespace>Lambda.Host.Example.HelloWorldAot</RootNamespace>
+    <RootNamespace>MinimalLambda.Example.HelloWorldAot</RootNamespace>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
