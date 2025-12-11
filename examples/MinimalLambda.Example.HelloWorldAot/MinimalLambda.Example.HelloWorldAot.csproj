@@ -19,7 +19,7 @@
     <TrimMode>full</TrimMode>
     <AssemblyName>bootstrap</AssemblyName>
     <PublishTrimmed>true</PublishTrimmed>
-    <InterceptorsNamespaces>$(InterceptorsNamespaces);MinimalLambda</InterceptorsNamespaces>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);MinimalLambda.Generated</InterceptorsNamespaces>
     <RootNamespace>Lambda.Host.Example.HelloWorldAot</RootNamespace>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

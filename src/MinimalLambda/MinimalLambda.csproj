@@ -11,7 +11,6 @@
     <PackageId>MinimalLambda</PackageId>
     <Description>Minimal API-style framework for AWS Lambda functions</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RootNamespace>MinimalLambda.Host</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.Core" />
