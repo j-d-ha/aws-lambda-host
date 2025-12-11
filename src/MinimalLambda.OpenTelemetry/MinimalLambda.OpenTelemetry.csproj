@@ -9,7 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Package Metadata -->
     <PackageId>MinimalLambda.OpenTelemetry</PackageId>
-    <Description>OpenTelemetry for .NET Host for AWS Lambda</Description>
+    <Description>OpenTelemetry integration for MinimalLambda</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>

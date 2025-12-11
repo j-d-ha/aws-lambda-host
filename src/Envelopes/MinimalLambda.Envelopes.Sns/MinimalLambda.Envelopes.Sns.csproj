@@ -9,7 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Package Metadata -->
     <PackageId>MinimalLambda.Envelopes.Sns</PackageId>
-    <Description>Strongly-typed SNS Models for AWS Lambda</Description>
+    <Description>Strongly-typed SNS event envelopes</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

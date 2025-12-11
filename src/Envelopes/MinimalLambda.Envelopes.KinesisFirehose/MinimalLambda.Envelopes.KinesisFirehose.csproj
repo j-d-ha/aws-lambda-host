@@ -9,7 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Package Metadata -->
     <PackageId>MinimalLambda.Envelopes.KinesisFirehose</PackageId>
-    <Description>Strongly-typed Kinesis Firehose Models AWS Lambda</Description>
+    <Description>Strongly-typed Kinesis Firehose event envelopes</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

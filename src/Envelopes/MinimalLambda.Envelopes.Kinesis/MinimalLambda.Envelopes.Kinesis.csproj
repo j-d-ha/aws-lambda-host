@@ -9,7 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Package Metadata -->
     <PackageId>MinimalLambda.Envelopes.Kinesis</PackageId>
-    <Description>Strongly-typed Kinesis Models AWS Lambda</Description>
+    <Description>Strongly-typed Kinesis event envelopes</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

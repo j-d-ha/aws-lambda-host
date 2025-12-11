@@ -9,7 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Package Metadata -->
     <PackageId>MinimalLambda.Abstractions</PackageId>
-    <Description>Abstractions for .NET Host for AWS Lambda</Description>
+    <Description>Core abstractions for MinimalLambda</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>

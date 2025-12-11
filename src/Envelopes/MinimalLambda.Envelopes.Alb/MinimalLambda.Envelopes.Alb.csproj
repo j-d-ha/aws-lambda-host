@@ -9,7 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Package Metadata -->
     <PackageId>MinimalLambda.Envelopes.Alb</PackageId>
-    <Description>Strongly-typed Application Load Balancer Models for AWS Lambda</Description>
+    <Description>Strongly-typed Application Load Balancer event envelopes</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

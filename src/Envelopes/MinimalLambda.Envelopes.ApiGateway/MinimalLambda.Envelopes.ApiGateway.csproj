@@ -9,7 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Package Metadata -->
     <PackageId>MinimalLambda.Envelopes.ApiGateway</PackageId>
-    <Description>Strongly-typed API Gateway Models AWS Lambda</Description>
+    <Description>Strongly-typed API Gateway event envelopes</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 

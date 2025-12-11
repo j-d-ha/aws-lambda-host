@@ -9,7 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Package Metadata -->
     <PackageId>MinimalLambda.Envelopes.Sqs</PackageId>
-    <Description>Strongly-typed SQS Models AWS Lambda</Description>
+    <Description>Strongly-typed SQS event envelopes</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
