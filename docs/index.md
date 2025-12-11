@@ -11,7 +11,7 @@ title: ""
 
 **Minimal API-inspired, Lambda-first hosting.**
 
-MinimalLambda keeps the builder, DI, middleware, and handler mapping patterns you know and love from ASP.NET Core, but is designed for **any Lambda event source** (SQS, SNS, API Gateway, Kinesis, S3, EventBridge, etc.). The framework adds envelopes, lifecycle hooks, source generation, scoped invocations, and cancellation-token handling so you get familiar ergonomics without treating Lambda like a web server.
+MinimalLambda keeps the builder, DI, middleware, and handler mapping patterns you know from ASP.NET Core, but is built from the ground up for **any Lambda event source** (SQS, SNS, API Gateway, Kinesis, S3, EventBridge, etc.). Strongly-typed envelopes, lifecycle hooks, scoped invocations, source generation, and cancellation-token handling shape those familiar patterns to Lambda’s execution model—so you get type-safe events, per-invocation scopes, predictable timeouts, and a smoother developer experience when iterating locally or in CI.
 
 [Get Started](getting-started/index.md){ .md-button .md-button--primary }
 [Guides](guides/index.md){ .md-button }
