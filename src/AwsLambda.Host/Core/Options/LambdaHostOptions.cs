@@ -47,9 +47,9 @@ public class LambdaHostOptions
     /// <summary>Gets or sets the timeout duration for <see cref="ILambdaOnInitBuilder.OnInit" /> handlers.</summary>
     /// <remarks>
     ///     This value is used as the duration of the <see cref="CancellationTokenSource" /> that is
-    ///     passed to <see cref="ILambdaOnInitBuilder.OnInit" /> handlers. Default is 5 seconds.
+    ///     passed to <see cref="ILambdaOnInitBuilder.OnInit" /> handlers. Default is 500 milliseconds.
     /// </remarks>
-    public TimeSpan InitTimeout { get; set; } = TimeSpan.FromSeconds(5);
+    public TimeSpan InitTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
 
     /// <summary>
     ///     Gets or sets the buffer duration subtracted from the Lambda function's remaining
