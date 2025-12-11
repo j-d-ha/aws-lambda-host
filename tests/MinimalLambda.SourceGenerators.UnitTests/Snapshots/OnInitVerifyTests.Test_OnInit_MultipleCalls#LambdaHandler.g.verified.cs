@@ -40,7 +40,7 @@ namespace MinimalLambda.Generated
     file static class GeneratedLambdaOnInitBuilderExtensions
     {
         // Location: InputFile.cs(10,8)
-        [InterceptsLocation(1, "WS5xwmfdbttlkCDwmVN/4dQAAABJbnB1dEZpbGUuY3M=")]
+        [InterceptsLocation(1, "gOjUxL7brRqHQuY3oQ1zfc0AAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnInitBuilder OnInitInterceptor0(
             this ILambdaOnInitBuilder application,
             Delegate handler
@@ -56,9 +56,9 @@ namespace MinimalLambda.Generated
                 return response;
             }
         }
-
+        
         // Location: InputFile.cs(15,8)
-        [InterceptsLocation(1, "WS5xwmfdbttlkCDwmVN/4RwBAABJbnB1dEZpbGUuY3M=")]
+        [InterceptsLocation(1, "gOjUxL7brRqHQuY3oQ1zfRUBAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnInitBuilder OnInitInterceptor1(
             this ILambdaOnInitBuilder application,
             Delegate handler
@@ -78,9 +78,9 @@ namespace MinimalLambda.Generated
                 return response;
             }
         }
-
+        
         // Location: InputFile.cs(22,8)
-        [InterceptsLocation(1, "WS5xwmfdbttlkCDwmVN/4YEBAABJbnB1dEZpbGUuY3M=")]
+        [InterceptsLocation(1, "gOjUxL7brRqHQuY3oQ1zfXoBAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnInitBuilder OnInitInterceptor2(
             this ILambdaOnInitBuilder application,
             Delegate handler

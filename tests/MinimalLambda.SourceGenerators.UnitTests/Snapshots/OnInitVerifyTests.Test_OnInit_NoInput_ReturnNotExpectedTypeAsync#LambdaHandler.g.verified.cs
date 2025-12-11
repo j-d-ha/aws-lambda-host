@@ -40,7 +40,7 @@ namespace MinimalLambda.Generated
     file static class GeneratedLambdaOnInitBuilderExtensions
     {
         // Location: InputFile.cs(10,8)
-        [InterceptsLocation(1, "NcMerHwPBzsgxA7y/XPnH9QAAABJbnB1dEZpbGUuY3M=")]
+        [InterceptsLocation(1, "pi9PolKCGMrmFvoC3ft/Oc0AAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnInitBuilder OnInitInterceptor0(
             this ILambdaOnInitBuilder application,
             Delegate handler

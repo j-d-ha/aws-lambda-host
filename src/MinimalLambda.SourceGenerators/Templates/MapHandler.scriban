@@ -67,7 +67,7 @@ namespace MinimalLambda.Generated
                 {{~ end ~}}
                 {{~ end ~}}
                 {{~ if !call.should_await ~}}
-                return Task.CompletedTask; 
+                return Task.CompletedTask;
                 {{~ end ~}}
             }
         }

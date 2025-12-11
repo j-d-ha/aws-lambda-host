@@ -43,7 +43,7 @@ namespace MinimalLambda.Generated
         private const string ResponseFeatureProviderKey = "__ResponseFeatureProvider";
 
         // Location: InputFile.cs(11,8)
-        [InterceptsLocation(1, "S8za7TGX8LSwYna0cXthvuAAAABJbnB1dEZpbGUuY3M=")]
+        [InterceptsLocation(1, "mCw0TmMoKLslRA4zotAzTtkAAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaInvocationBuilder MapHandlerInterceptor0(
             this ILambdaInvocationBuilder application,
             Delegate handler

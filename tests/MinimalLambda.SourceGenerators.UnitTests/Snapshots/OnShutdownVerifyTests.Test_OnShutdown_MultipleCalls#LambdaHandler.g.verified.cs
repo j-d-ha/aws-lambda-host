@@ -40,7 +40,7 @@ namespace MinimalLambda.Generated
     file static class GeneratedLambdaOnShutdownBuilderExtensions
     {
         // Location: InputFile.cs(10,8)
-        [InterceptsLocation(1, "8z0FL9iGVp57G+1Z1fBD39QAAABJbnB1dEZpbGUuY3M=")]
+        [InterceptsLocation(1, "W852isYQO43ObWn6kxnU5s0AAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnShutdownBuilder OnShutdownInterceptor0(
             this ILambdaOnShutdownBuilder application,
             Delegate handler
@@ -56,9 +56,9 @@ namespace MinimalLambda.Generated
                 return response;
             }
         }
-
+        
         // Location: InputFile.cs(15,8)
-        [InterceptsLocation(1, "8z0FL9iGVp57G+1Z1fBD3xcBAABJbnB1dEZpbGUuY3M=")]
+        [InterceptsLocation(1, "W852isYQO43ObWn6kxnU5hABAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnShutdownBuilder OnShutdownInterceptor1(
             this ILambdaOnShutdownBuilder application,
             Delegate handler
@@ -78,9 +78,9 @@ namespace MinimalLambda.Generated
                 return response;
             }
         }
-
+        
         // Location: InputFile.cs(22,8)
-        [InterceptsLocation(1, "8z0FL9iGVp57G+1Z1fBD34IBAABJbnB1dEZpbGUuY3M=")]
+        [InterceptsLocation(1, "W852isYQO43ObWn6kxnU5nsBAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnShutdownBuilder OnShutdownInterceptor2(
             this ILambdaOnShutdownBuilder application,
             Delegate handler
