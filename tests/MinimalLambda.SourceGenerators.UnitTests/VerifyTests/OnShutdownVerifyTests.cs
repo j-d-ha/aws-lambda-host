@@ -22,8 +22,7 @@ public class OnShutdownVerifyTests
             );
 
             await lambda.RunAsync();
-            """,
-            0
+            """
         );
 
     [Fact]
