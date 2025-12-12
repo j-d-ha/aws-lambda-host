@@ -159,15 +159,24 @@ public class LambdaTestServer : IAsyncDisposable
         if (_state == ServerState.Running)
             await StopAsync();
 
+        // Complete both channels to prevent new items
         _transactionChannel.Writer.TryComplete();
+        _pendingInvocationIds.Writer.TryComplete();
 
+        // Cancel the shutdown token
         await _shutdownCts.CancelAsync();
 
-        if (_host is IAsyncDisposable asyncDisposableHost)
-            await asyncDisposableHost.DisposeAsync();
+        // Dispose the CancellationTokenSource
+        _shutdownCts.Dispose();
 
-        if (_host is IDisposable disposableHost)
-            disposableHost.Dispose();
+        // Dispose the host (prefer async, fallback to sync)
+        if (_host is not null)
+        {
+            if (_host is IAsyncDisposable asyncDisposableHost)
+                await asyncDisposableHost.DisposeAsync();
+            else if (_host is IDisposable disposableHost)
+                disposableHost.Dispose();
+        }
 
         _state = ServerState.Disposed;
     }
