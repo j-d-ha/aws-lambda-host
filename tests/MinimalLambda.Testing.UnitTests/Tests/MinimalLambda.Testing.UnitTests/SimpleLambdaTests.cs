@@ -1,11 +1,13 @@
 ﻿namespace MinimalLambda.Testing.UnitTests;
 
-public class SimpleLambdaTests(LambdaApplicationFactory<SimpleLambda> factory)
-    : IClassFixture<LambdaApplicationFactory<SimpleLambda>>
+public class SimpleLambdaTests
 {
     [Fact]
     public async Task SimpleLambda_ReturnsExpectedValue()
     {
+        await using var factory = new LambdaApplicationFactory<SimpleLambda>().WithCancelationToken(
+            TestContext.Current.CancellationToken
+        );
         var setup = await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
         setup.InitStatus.Should().Be(InitStatus.InitCompleted);
 
