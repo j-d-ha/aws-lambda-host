@@ -76,16 +76,17 @@ public class SimpleLambdaTests : IClassFixture<LambdaApplicationFactory<SimpleLa
     }
 
     [Fact]
-    public async Task SimpleLambda_ReturnsErrorPropperly()
+    public async Task SimpleLambda_ReturnsError()
     {
         var response = await _server.InvokeAsync<string, string>(
-            "World",
+            "",
             TestContext.Current.CancellationToken
         );
 
-        response.WasSuccess.Should().BeTrue();
         response.Should().NotBeNull();
-        response.Response.Should().Be("Hello World!");
+        response.WasSuccess.Should().BeFalse();
+        response.Error.Should().NotBeNull();
+        response.Error.ErrorMessage.Should().Be("Name is required");
     }
 
     [Fact]
@@ -122,7 +123,7 @@ public class SimpleLambdaTests : IClassFixture<LambdaApplicationFactory<SimpleLa
     [Fact]
     public async Task SimpleLambda_WithPreCanceledToken_CancelsInvocation()
     {
-        await using var factory = new LambdaApplicationFactory<Program>().WithCancelationToken(
+        await using var factory = new LambdaApplicationFactory<SimpleLambda>().WithCancelationToken(
             TestContext.Current.CancellationToken
         );
         await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);

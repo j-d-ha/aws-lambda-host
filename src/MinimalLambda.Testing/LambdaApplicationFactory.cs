@@ -462,7 +462,7 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
     {
         var hostBuilder = HostFactoryResolver
             .ResolveHostBuilderFactory<IHostBuilder>(typeof(TEntryPoint).Assembly)
-            ?.Invoke(Array.Empty<string>());
+            ?.Invoke([]);
 
         hostBuilder?.UseEnvironment(Environments.Development);
         return hostBuilder;
