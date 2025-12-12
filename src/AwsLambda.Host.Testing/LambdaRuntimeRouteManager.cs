@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Routing.Template;
 
 namespace AwsLambda.Host.Testing;
 
-internal class LambdaRuntimeRouteManager : ILambdaRuntimeRouteManager
+internal class LambdaRuntimeRouteManager
 {
     private static readonly RouteTemplate[] Routes =
     [
@@ -14,6 +14,15 @@ internal class LambdaRuntimeRouteManager : ILambdaRuntimeRouteManager
             Method = HttpMethod.Get.Method,
             Matcher = new TemplateMatcher(
                 TemplateParser.Parse("{version}/runtime/invocation/next"),
+                new RouteValueDictionary()
+            ),
+        },
+        new()
+        {
+            Type = RequestType.PostInitError,
+            Method = HttpMethod.Post.Method,
+            Matcher = new TemplateMatcher(
+                TemplateParser.Parse("{version}/runtime/init/error"),
                 new RouteValueDictionary()
             ),
         },

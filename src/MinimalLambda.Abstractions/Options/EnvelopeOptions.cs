@@ -1,8 +1,6 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Xml;
 using Amazon.Lambda.Serialization.SystemTextJson;
-using Amazon.Lambda.Serialization.SystemTextJson.Converters;
 using MinimalLambda.Envelopes;
 
 namespace MinimalLambda.Options;
@@ -57,28 +55,8 @@ public class EnvelopeOptions
     ///         not been explicitly configured.
     ///     </para>
     /// </remarks>
-    public JsonSerializerOptions LambdaDefaultJsonOptions
-    {
-        get
-        {
-            if (field is null)
-            {
-                field = new JsonSerializerOptions
-                {
-                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                    PropertyNameCaseInsensitive = true,
-                    PropertyNamingPolicy = new AwsNamingPolicy(),
-                };
-                field.Converters.Add(new DateTimeConverter());
-                field.Converters.Add(new MemoryStreamConverter());
-                field.Converters.Add(new ConstantClassConverter());
-                field.Converters.Add(new ByteArrayConverter());
-            }
-
-            return field;
-        }
-        set;
-    }
+    public JsonSerializerOptions LambdaDefaultJsonOptions { get; set; } =
+        DefaultLambdaJsonSerializerOptions.Create();
 
     /// <summary>Gets or sets the XML reader settings used when deserializing Lambda event payloads.</summary>
     /// <remarks>

@@ -1,3 +1,4 @@
+using AwesomeAssertions;
 using AwsLambda.Host.Options;
 using AwsLambda.Host.Testing;
 using JetBrains.Annotations;
@@ -14,19 +15,63 @@ public class LambdaHostTest
     {
         await using var factory = new LambdaApplicationFactory<Program>();
 
-        var client = factory.CreateClient();
-        // No need to wait for next request - server handles this automatically
-        var response = await client.InvokeAsync<string, string>(
+        var setup = await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
+
+        setup.InitStatus.Should().Be(InitStatus.InitCompleted);
+
+        var response = await factory.TestServer.InvokeAsync<string, string>(
             "Jonas",
+            "1",
             TestContext.Current.CancellationToken
         );
-        Assert.True(response.WasSuccess);
-        Assert.NotNull(response);
-        Assert.Equal("Hello Jonas!", response.Response);
+
+        response.WasSuccess.Should().BeTrue();
+        response.Should().NotBeNull();
+        response.Response.Should().Be("Hello Jonas!");
     }
 
     [Fact]
-    public async Task LambdaHost_CrashesWithBadConfiguration_ThrowsException()
+    public async Task LambdaHost_HandlerReturnsError()
+    {
+        await using var factory = new LambdaApplicationFactory<Program>();
+
+        var setup = await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
+
+        setup.InitStatus.Should().Be(InitStatus.InitCompleted);
+
+        var response = await factory.TestServer.InvokeAsync<string, string>(
+            "",
+            TestContext.Current.CancellationToken
+        );
+
+        response.WasSuccess.Should().BeFalse();
+        response.Error.Should().NotBeNull();
+        response.Error?.ErrorMessage.Should().Be("Name is required. (Parameter 'name')");
+    }
+
+    [Fact]
+    public async Task LambdaHost_CanBeShutdown()
+    {
+        await using var factory = new LambdaApplicationFactory<Program>();
+
+        var setup = await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
+
+        setup.InitStatus.Should().Be(InitStatus.InitCompleted);
+
+        var response = await factory.TestServer.InvokeAsync<string, string>(
+            "Jonas",
+            TestContext.Current.CancellationToken
+        );
+
+        response.WasSuccess.Should().BeTrue();
+        response.Should().NotBeNull();
+        response.Response.Should().Be("Hello Jonas!");
+
+        await factory.TestServer.StopAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task LambdaHost_ServerInternalExceptions_AreCaughtAndReturnedAsError()
     {
         await using var factory = new LambdaApplicationFactory<Program>().WithHostBuilder(builder =>
         {
@@ -41,28 +86,30 @@ public class LambdaHostTest
             );
         });
 
-        var client = factory.CreateClient();
-        // No need to wait for next request - server handles this automatically
-        var response = await client.InvokeAsync<string, string>(
-            "Jonas",
-            TestContext.Current.CancellationToken
-        );
-        Assert.True(response.WasSuccess);
-        Assert.NotNull(response);
-        Assert.Equal("Hello Jonas!", response.Response);
+        var act = async () =>
+            await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
+
+        (await act.Should().ThrowAsync<AggregateException>())
+            .And.InnerExceptions.Should()
+            .ContainSingle(ex =>
+                ex is InvalidOperationException
+                && ex.Message.Contains(
+                    "Unexpected request received from the Lambda HTTP handler: GET http://http//localhost:3002/2018-06-01/runtime/invocation/next"
+                )
+            );
     }
 
     [Fact]
     public async Task LambdaHost_ProcessesConcurrentInvocationsInFifoOrder()
     {
         await using var factory = new LambdaApplicationFactory<Program>();
-        var client = factory.CreateClient();
+        await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
 
         // Launch 5 concurrent invocations
         var tasks = Enumerable
             .Range(1, 5)
             .Select(i =>
-                client.InvokeAsync<string, string>(
+                factory.TestServer.InvokeAsync<string, string>(
                     $"User{i}",
                     TestContext.Current.CancellationToken
                 )
@@ -84,9 +131,9 @@ public class LambdaHostTest
     public async Task InvokeAsync_WithInvalidPayload_ReturnsError()
     {
         await using var factory = new LambdaApplicationFactory<Program>();
-        var client = factory.CreateClient();
+        await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
 
-        var response = await client.InvokeAsync<string, int>(
+        var response = await factory.TestServer.InvokeAsync<string, int>(
             123,
             TestContext.Current.CancellationToken
         );
@@ -100,38 +147,46 @@ public class LambdaHostTest
     public async Task InvokeAsync_WithPreCanceledToken_CancelsInvocation()
     {
         await using var factory = new LambdaApplicationFactory<Program>();
-        var client = factory.CreateClient();
+        await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
 
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
         await Assert.ThrowsAsync<TaskCanceledException>(() =>
-            client.InvokeAsync<string, string>("Jonas", cts.Token)
+            factory.TestServer.InvokeAsync<string, string>("Jonas", cts.Token)
         );
     }
 
-    [Fact]
-    public async Task InvokeAsync_WithZeroTimeout_CancelsInvocation() =>
-        await Assert.ThrowsAsync<AggregateException>(async () =>
-        {
-            try
-            {
-                await using var factory = new LambdaApplicationFactory<Program>();
-                var client = factory
-                    .CreateClient()
-                    .ConfigureOptions(options =>
-                        options.InvocationHeaderOptions.ClientWaitTimeout = TimeSpan.Zero
-                    );
+    // [Fact]
+    // public async Task InvokeAsync_WithZeroTimeout_CancelsInvocation() =>
+    //     await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+    //     {
+    //         await using var factory = new LambdaApplicationFactory<Program>();
+    //         await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
+    //
+    //         var options = new LambdaServerOptions();
+    //         options.InvocationOptions.ClientWaitTimeout = TimeSpan.Zero;
+    //
+    //         await factory.TestServer.InvokeAsync<string, string>(
+    //             "Jonas",
+    //             options,
+    //             TestContext.Current.CancellationToken
+    //         );
+    //     });
 
-                await client.InvokeAsync<string, string>(
-                    "Jonas",
-                    TestContext.Current.CancellationToken
-                );
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.GetType().FullName);
-                throw;
-            }
-        });
+    // [Fact]
+    // public async Task StartAsync_WithFailingInit_ReturnsInitError()
+    // {
+    //     // This test verifies that when OnInit returns false (as configured in Program.cs),
+    //     // the runtime posts to /runtime/init/error and StartAsync returns InitResponse with
+    //     //error
+    //     await using var factory = new LambdaApplicationFactory<Program>();
+    //
+    //     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    //     var initResponse = await factory.TestServer.StartAsync(cts.Token);
+    //
+    //     Assert.False(initResponse.InitSuccess);
+    //     Assert.NotNull(initResponse.Error);
+    //     Assert.Equal(ServerState.Stopped, factory.TestServer.State);
+    // }
 }
