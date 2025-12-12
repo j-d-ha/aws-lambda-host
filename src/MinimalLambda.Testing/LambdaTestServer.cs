@@ -104,7 +104,7 @@ public class LambdaTestServer : IAsyncDisposable
     /// <summary>
     /// Current state of the server used to enforce lifecycle rules.
     /// </summary>
-    private ServerState _state;
+    public ServerState State { get; private set; }
 
     internal LambdaTestServer(
         Task<Exception?>? entryPointCompletion,
@@ -116,7 +116,7 @@ public class LambdaTestServer : IAsyncDisposable
 
         _entryPointCompletion = entryPointCompletion;
         _shutdownCts = CancellationTokenSource.CreateLinkedTokenSource(shutdownToken);
-        _state = ServerState.Created;
+        State = ServerState.Created;
 
         _jsonSerializerOptions = DefaultLambdaJsonSerializerOptions.Create();
         _serverOptions = serverOptions;
@@ -156,7 +156,7 @@ public class LambdaTestServer : IAsyncDisposable
     /// </remarks>
     public async ValueTask DisposeAsync()
     {
-        if (_state == ServerState.Running)
+        if (State == ServerState.Running)
             await StopAsync();
 
         // Complete both channels to prevent new items
@@ -178,7 +178,7 @@ public class LambdaTestServer : IAsyncDisposable
                 disposableHost.Dispose();
         }
 
-        _state = ServerState.Disposed;
+        State = ServerState.Disposed;
     }
 
     internal void SetHost(IHost host)
@@ -222,7 +222,7 @@ public class LambdaTestServer : IAsyncDisposable
     /// </remarks>
     public async Task<InitResponse> StartAsync(CancellationToken cancellationToken = default)
     {
-        if (_state != ServerState.Created)
+        if (State != ServerState.Created)
             throw new InvalidOperationException(
                 "TestServer has already been started and cannot be restarted."
             );
@@ -232,7 +232,7 @@ public class LambdaTestServer : IAsyncDisposable
 
         using var cts = LinkedCts(cancellationToken);
 
-        _state = ServerState.Starting;
+        State = ServerState.Starting;
 
         _applicationLifetime = _host.Services.GetRequiredService<IHostApplicationLifetime>();
 
@@ -251,7 +251,7 @@ public class LambdaTestServer : IAsyncDisposable
 
         if (_initCompletionTcs.Task.IsCompleted)
         {
-            _state =
+            State =
                 _initCompletionTcs.Task.Result.InitStatus == InitStatus.InitCompleted
                     ? ServerState.Running
                     : ServerState.Stopped;
@@ -316,7 +316,7 @@ public class LambdaTestServer : IAsyncDisposable
         CancellationToken cancellationToken = default
     )
     {
-        if (_state != ServerState.Running)
+        if (State != ServerState.Running)
             throw new InvalidOperationException(
                 "TestServer is not Running and as such an event cannot be invoked."
             );
@@ -400,12 +400,12 @@ public class LambdaTestServer : IAsyncDisposable
     /// </remarks>
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        if (_state != ServerState.Running)
+        if (State != ServerState.Running)
             throw new InvalidOperationException(
                 "TestServer is not running and as such cannot be stopped."
             );
 
-        _state = ServerState.Stopping;
+        State = ServerState.Stopping;
 
         await _shutdownCts.CancelAsync();
 
@@ -416,7 +416,7 @@ public class LambdaTestServer : IAsyncDisposable
             .UnwrapAndThrow("Exception(s) encountered while running StopAsync")
             .WaitAsync(cancellationToken);
 
-        _state = ServerState.Stopped;
+        State = ServerState.Stopped;
     }
 
     //      ┌──────────────────────────────────────────────────────────┐
@@ -475,7 +475,7 @@ public class LambdaTestServer : IAsyncDisposable
 
     private async Task HandleGetNextInvocationAsync(LambdaHttpTransaction transaction)
     {
-        if (_state == ServerState.Starting)
+        if (State == ServerState.Starting)
             _initCompletionTcs.SetResult(
                 new InitResponse { InitStatus = InitStatus.InitCompleted }
             );
@@ -520,7 +520,7 @@ public class LambdaTestServer : IAsyncDisposable
 
     private async Task HandlePostInitErrorAsync(LambdaHttpTransaction transaction)
     {
-        if (_state == ServerState.Starting)
+        if (State == ServerState.Starting)
             _initCompletionTcs.SetResult(
                 new InitResponse
                 {
