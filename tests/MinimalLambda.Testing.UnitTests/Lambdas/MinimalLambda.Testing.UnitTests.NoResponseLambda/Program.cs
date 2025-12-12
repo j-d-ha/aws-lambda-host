@@ -5,8 +5,10 @@ var builder = LambdaApplication.CreateBuilder();
 
 await using var lambda = builder.Build();
 
-lambda.MapHandler(([Event] string name) => $"Hello {name}!");
+lambda.MapHandler(([Event] Request request) => { });
 
 await lambda.RunAsync();
 
 public class NoResponseLambda;
+
+internal record Request(string Name);
