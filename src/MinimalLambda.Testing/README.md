@@ -94,11 +94,6 @@ by the simulated Runtime API.
   mirror ASP.NET testing patterns for overriding configuration and locating content roots
 - **Concurrency safe** – Handles multiple pending invocations FIFO with per-request correlation
 
-## Examples
-
-- [examples/AwsLambda.Host.Example.Testing](../../examples/AwsLambda.Host.Example.Testing/) – Full
-  end-to-end tests using `LambdaApplicationFactory` and `LambdaTestServer`
-
 ## Other Packages
 
 Additional packages in the minimal-lambda framework for abstractions, observability, and event
