@@ -59,10 +59,10 @@ public class LambdaTests
 
         await factory.TestServer.StartAsync();
 
-        var response = await factory.TestServer.InvokeAsync<string, string>("Jonas");
+        var response = await factory.TestServer.InvokeAsync<string, string>("World");
 
         Assert.True(response.WasSuccess);
-        Assert.Equal("Hello Jonas!", response.Response);
+        Assert.Equal("Hello World!", response.Response);
     }
 }
 ```
