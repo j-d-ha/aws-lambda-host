@@ -30,10 +30,10 @@ lambda.UseMiddleware(
 );
 
 lambda.MapHandler(
-    ([Event] Request request, IService service, ILogger<DiLambda> logger) =>
+    ([Event] DiLambdaRequest diLambdaRequest, IService service, ILogger<DiLambda> logger) =>
     {
         logger.LogInformation("Lambda handler");
-        return new Response(service.GetMessage(request.Name), DateTime.UtcNow);
+        return new DiLambdaResponse(service.GetMessage(diLambdaRequest.Name), DateTime.UtcNow);
     }
 );
 
@@ -49,9 +49,9 @@ await lambda.RunAsync();
 
 public class DiLambda;
 
-internal record Request(string Name);
+internal record DiLambdaRequest(string Name);
 
-internal record Response(string Message, DateTime TimestampUtc);
+internal record DiLambdaResponse(string Message, DateTime TimestampUtc);
 
 internal interface IService
 {

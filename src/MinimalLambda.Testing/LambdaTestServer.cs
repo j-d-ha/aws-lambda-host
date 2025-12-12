@@ -171,7 +171,14 @@ public class LambdaTestServer : IAsyncDisposable
             return;
 
         if (State == ServerState.Running)
-            await StopAsync();
+            try
+            {
+                await StopAsync();
+            }
+            catch
+            {
+                // Best effort to stop the server, but don't fail the Dispose operation
+            }
 
         // Complete both channels to prevent new items
         _transactionChannel.Writer.TryComplete();
@@ -182,19 +189,6 @@ public class LambdaTestServer : IAsyncDisposable
 
         // Dispose the CancellationTokenSource
         _shutdownCts.Dispose();
-
-        // Dispose the host (prefer async, fallback to sync)
-        switch (_host)
-        {
-            case null:
-                break;
-            case IAsyncDisposable asyncDisposableHost:
-                await asyncDisposableHost.DisposeAsync();
-                break;
-            case IDisposable disposableHost:
-                disposableHost.Dispose();
-                break;
-        }
 
         State = ServerState.Disposed;
         _disposed = true;
@@ -338,7 +332,7 @@ public class LambdaTestServer : IAsyncDisposable
     /// which defaults to AWS Lambda's standard timeout behavior.
     /// </para>
     /// </remarks>
-    public async Task<InvocationResponse<TResponse>> InvokeAsync<TResponse, TEvent>(
+    public async Task<InvocationResponse<TResponse>> InvokeAsync<TEvent, TResponse>(
         TEvent? invokeEvent,
         bool noResponse,
         string? traceId = null,

@@ -4,11 +4,11 @@ public static class LambdaTestServerExtensions
 {
     extension(LambdaTestServer server)
     {
-        public Task<InvocationResponse<TResponse>> InvokeAsync<TResponse, TEvent>(
+        public Task<InvocationResponse<TResponse>> InvokeAsync<TEvent, TResponse>(
             TEvent invokeEvent,
             CancellationToken cancellationToken = default
         ) =>
-            server.InvokeAsync<TResponse, TEvent>(
+            server.InvokeAsync<TEvent, TResponse>(
                 invokeEvent,
                 false,
                 cancellationToken: cancellationToken
@@ -17,7 +17,7 @@ public static class LambdaTestServerExtensions
         public Task<InvocationResponse<TResponse>> InvokeNoEventAsync<TResponse>(
             CancellationToken cancellationToken = default
         ) =>
-            server.InvokeAsync<TResponse, object>(
+            server.InvokeAsync<object, TResponse>(
                 null,
                 false,
                 cancellationToken: cancellationToken
@@ -27,7 +27,7 @@ public static class LambdaTestServerExtensions
             TEvent invokeEvent,
             CancellationToken cancellationToken = default
         ) =>
-            await server.InvokeAsync<object, TEvent>(
+            await server.InvokeAsync<TEvent, object>(
                 invokeEvent,
                 true,
                 cancellationToken: cancellationToken
