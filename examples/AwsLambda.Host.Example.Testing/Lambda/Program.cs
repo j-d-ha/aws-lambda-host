@@ -1,7 +1,7 @@
-﻿using AwsLambda.Host.Builder;
-using AwsLambda.Host.Core;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MinimalLambda;
+using MinimalLambda.Builder;
 
 // Create the application builder
 var builder = LambdaApplication.CreateBuilder();

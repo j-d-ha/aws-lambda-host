@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using MinimalLambda.Options;
 using MinimalLambda.Testing;
 using Xunit;
 

@@ -22,6 +22,8 @@
       ReferenceOutputAssembly="false"
       OutputItemType="Analyzer"
     />
+    <ProjectReference Include="..\..\..\src\MinimalLambda.Abstractions\MinimalLambda.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\src\MinimalLambda\MinimalLambda.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="appsettings.json">
