@@ -270,8 +270,13 @@ public class LambdaTestServer : IAsyncDisposable
     /// <typeparam name="TResponse">The expected type of the Lambda function's response.</typeparam>
     /// <typeparam name="TEvent">The type of the Lambda event to send to the function.</typeparam>
     /// <param name="invokeEvent">The event object to pass to the Lambda function.</param>
+    /// <param name="noResponse">
+    /// Set to <see langword="true"/> when the handler does not return a response body (for example,
+    /// stream writers) to skip reading/deserializing the response.
+    /// </param>
     /// <param name="traceId">
-    /// The AWS X-Ray trace ID to use for this invocation. If <see langword="null"/>, a new GUID will be generated.
+    /// The AWS X-Ray trace ID to use for this invocation. If <see langword="null"/>, a new GUID will be generated and
+    /// surfaced on the `Lambda-Runtime-Trace-Id` header.
     /// </param>
     /// <param name="cancellationToken">
     /// A <see cref="CancellationToken"/> to observe while waiting for the invocation to complete.
@@ -305,7 +310,8 @@ public class LambdaTestServer : IAsyncDisposable
     /// </para>
     /// </remarks>
     public async Task<InvocationResponse<TResponse>> InvokeAsync<TResponse, TEvent>(
-        TEvent invokeEvent,
+        TEvent? invokeEvent,
+        bool noResponse = false,
         string? traceId = null,
         CancellationToken cancellationToken = default
     )
@@ -338,14 +344,15 @@ public class LambdaTestServer : IAsyncDisposable
         var responseMessage = completion.Request;
         var wasSuccess = completion.RequestType == RequestType.PostResponse;
 
-        var response = wasSuccess
-            ? await (
-                responseMessage.Content?.ReadFromJsonAsync<TResponse>(
-                    _jsonSerializerOptions,
-                    cts.Token
-                ) ?? Task.FromResult<TResponse?>(default)
-            )
-            : default;
+        var response =
+            wasSuccess && !noResponse
+                ? await (
+                    responseMessage.Content?.ReadFromJsonAsync<TResponse>(
+                        _jsonSerializerOptions,
+                        cts.Token
+                    ) ?? Task.FromResult<TResponse?>(default)
+                )
+                : default;
 
         var error = !wasSuccess
             ? await (
@@ -532,20 +539,22 @@ public class LambdaTestServer : IAsyncDisposable
     }
 
     private HttpResponseMessage CreateEventResponse<TEvent>(
-        TEvent invokeEvent,
+        TEvent? invokeEvent,
         string requestId,
         string traceId
     )
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(
+            Version = Version.Parse("1.1"),
+        };
+
+        if (invokeEvent is not null)
+            response.Content = new StringContent(
                 JsonSerializer.Serialize(invokeEvent, _jsonSerializerOptions),
                 Encoding.UTF8,
                 "application/json"
-            ),
-            Version = Version.Parse("1.1"),
-        };
+            );
 
         // Add standard HTTP headers
         response.Headers.Date = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero);

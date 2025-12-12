@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MinimalLambda;
 using MinimalLambda.Builder;
 
 // Create the application builder
@@ -23,14 +22,25 @@ var lambda = builder.Build();
 // });
 
 // Map your handler - the event is automatically injected
-lambda.MapHandler(
-    async ([Event] string name, ILambdaHostContext context, CancellationToken cancellationToken) =>
-    {
-        await Task.Delay(TimeSpan.FromSeconds(60), cancellationToken);
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentNullException(nameof(name), "Name is required.");
+// lambda.MapHandler(
+//     async ([Event] string name, ILambdaHostContext context, CancellationToken cancellationToken)
+// =>
+//     {
+//         await Task.Delay(TimeSpan.FromSeconds(60), cancellationToken);
+//         if (string.IsNullOrWhiteSpace(name))
+//             throw new ArgumentNullException(nameof(name), "Name is required.");
+//
+//         return $"Hello {name}!";
+//     }
+// );
 
-        return $"Hello {name}!";
+// lambda.MapHandler(() => "Hello World!");
+
+lambda.MapHandler(
+    ([Event] string name) =>
+    {
+        if (name != "world")
+            throw new Exception("bad");
     }
 );
 

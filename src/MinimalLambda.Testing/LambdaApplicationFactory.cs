@@ -57,6 +57,10 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
     /// </summary>
     public LambdaApplicationFactory() => _configuration = ConfigureWebHost;
 
+    public LambdaApplicationFactory<TEntryPoint> WithCancelationToken(
+        CancellationToken cancellationToken
+    ) => this;
+
     /// <summary>
     /// Gets the <see cref="IReadOnlyList{LambdaApplicationFactory}"/> of factories created from this factory
     /// by further customizing the <see cref="IHostBuilder"/> when calling

@@ -1,0 +1,21 @@
+﻿namespace MinimalLambda.Testing.UnitTests;
+
+public class SimpleLambdaTests(LambdaApplicationFactory<SimpleLambda> factory)
+    : IClassFixture<LambdaApplicationFactory<SimpleLambda>>
+{
+    [Fact]
+    public async Task SimpleLambda_ReturnsExpectedValue()
+    {
+        var setup = await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
+        setup.InitStatus.Should().Be(InitStatus.InitCompleted);
+
+        var response = await factory.TestServer.InvokeAsync<string, string>(
+            "World",
+            cancellationToken: TestContext.Current.CancellationToken
+        );
+
+        response.WasSuccess.Should().BeTrue();
+        response.Should().NotBeNull();
+        response.Response.Should().Be("Hello World!");
+    }
+}

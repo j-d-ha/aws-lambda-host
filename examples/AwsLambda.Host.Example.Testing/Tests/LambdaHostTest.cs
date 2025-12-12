@@ -21,13 +21,49 @@ public class LambdaHostTest
 
         var response = await factory.TestServer.InvokeAsync<string, string>(
             "Jonas",
-            "1",
-            TestContext.Current.CancellationToken
+            traceId: "1",
+            cancellationToken: TestContext.Current.CancellationToken
         );
 
         response.WasSuccess.Should().BeTrue();
         response.Should().NotBeNull();
         response.Response.Should().Be("Hello Jonas!");
+    }
+
+    [Fact]
+    public async Task LambdaHost_NoInput_CanStartWithoutError()
+    {
+        await using var factory = new LambdaApplicationFactory<Program>();
+
+        var setup = await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
+
+        setup.InitStatus.Should().Be(InitStatus.InitCompleted);
+
+        var response = await factory.TestServer.InvokeNoEventAsync<string>(
+            TestContext.Current.CancellationToken
+        );
+
+        response.Should().NotBeNull();
+        response.WasSuccess.Should().BeTrue();
+        response.Response.Should().Be("Hello World!");
+    }
+
+    [Fact]
+    public async Task LambdaHost_NoOutput_CanStartWithoutError()
+    {
+        await using var factory = new LambdaApplicationFactory<Program>();
+
+        var setup = await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
+
+        setup.InitStatus.Should().Be(InitStatus.InitCompleted);
+
+        var response = await factory.TestServer.InvokeNoResponseAsync<string>(
+            "world",
+            TestContext.Current.CancellationToken
+        );
+
+        response.Should().NotBeNull();
+        response.WasSuccess.Should().BeTrue();
     }
 
     [Fact]
