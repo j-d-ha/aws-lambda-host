@@ -31,6 +31,7 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
     private bool _disposedAsync;
     private IHost? _host;
     private LambdaTestServer? _server;
+    private CancellationToken? _stoppingToken;
 
     /// <summary>
     /// <para>
@@ -56,10 +57,6 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
     /// </para>
     /// </summary>
     public LambdaApplicationFactory() => _configuration = ConfigureWebHost;
-
-    public LambdaApplicationFactory<TEntryPoint> WithCancelationToken(
-        CancellationToken cancellationToken
-    ) => this;
 
     /// <summary>
     /// Gets the <see cref="IReadOnlyList{LambdaApplicationFactory}"/> of factories created from this factory
@@ -109,6 +106,12 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
         if (_server != null)
             await _server.DisposeAsync().ConfigureAwait(false);
 
+        if (_host != null)
+        {
+            await _host.StopAsync().ConfigureAwait(false);
+            _host?.Dispose();
+        }
+
         _disposedAsync = true;
 
         Dispose(true);
@@ -121,6 +124,30 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
     {
         Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Configures a cancellation token to propagate test cancellation signals to the Lambda test server
+    /// and its underlying components.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// A <see cref="CancellationToken"/> that will be propagated to the test server, allowing it to
+    /// respond more efficiently to cancellation signals during test execution.
+    /// </param>
+    /// <returns>
+    /// The current <see cref="LambdaApplicationFactory{TEntryPoint}"/> instance for method chaining.
+    /// </returns>
+    /// <remarks>
+    /// This method allows test frameworks to signal cancellation to the Lambda test infrastructure,
+    /// enabling graceful shutdown and faster test cleanup when tests are cancelled or time out.
+    /// The cancellation token is passed to the <see cref="LambdaTestServer"/> during creation.
+    /// </remarks>
+    public LambdaApplicationFactory<TEntryPoint> WithCancelationToken(
+        CancellationToken cancellationToken
+    )
+    {
+        _stoppingToken = cancellationToken;
+        return this;
     }
 
     /// <summary>
@@ -236,7 +263,11 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
         SetContentRoot(hostBuilder);
         _configuration(hostBuilder);
 
-        _server = new LambdaTestServer(entryPointCompletion, ServerOptions);
+        _server = new LambdaTestServer(
+            entryPointCompletion,
+            ServerOptions,
+            _stoppingToken ?? CancellationToken.None
+        );
 
         // set Lambda Bootstrap Http Client
         hostBuilder.ConfigureServices(services =>

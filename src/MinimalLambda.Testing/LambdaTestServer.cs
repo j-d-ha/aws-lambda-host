@@ -69,6 +69,11 @@ public class LambdaTestServer : IAsyncDisposable
     private readonly LambdaServerOptions _serverOptions;
 
     /// <summary>
+    /// Indicates whether the server has been disposed.
+    /// </summary>
+    private bool _disposed;
+
+    /// <summary>
     /// CTS used to signal shutdown of the server and cancellation of pending tasks.
     /// </summary>
     private readonly CancellationTokenSource _shutdownCts;
@@ -153,9 +158,16 @@ public class LambdaTestServer : IAsyncDisposable
     /// <item><description>Disposes the underlying <see cref="IHost"/> instance</description></item>
     /// <item><description>Transitions the server state to <see cref="ServerState.Disposed"/></description></item>
     /// </list>
+    /// <para>
+    /// This method is safe to call multiple times. Subsequent calls after the first will return immediately
+    /// without performing any operations.
+    /// </para>
     /// </remarks>
     public async ValueTask DisposeAsync()
     {
+        if (_disposed)
+            return;
+
         if (State == ServerState.Running)
             await StopAsync();
 
@@ -179,6 +191,9 @@ public class LambdaTestServer : IAsyncDisposable
         }
 
         State = ServerState.Disposed;
+        _disposed = true;
+
+        GC.SuppressFinalize(this);
     }
 
     internal void SetHost(IHost host)
