@@ -11,6 +11,11 @@ internal class PendingInvocation
     internal DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
     /// <summary>
+    /// Absolute time when this invocation should be considered expired.
+    /// </summary>
+    internal required DateTimeOffset DeadlineUtc { get; init; }
+
+    /// <summary>
     /// The HTTP response containing the serialized event payload and Lambda headers
     /// to send to Bootstrap when it polls for the next invocation.
     /// </summary>
@@ -26,11 +31,6 @@ internal class PendingInvocation
     /// Completed when Bootstrap posts response or error with the HTTP request containing the result payload.
     /// </summary>
     internal required TaskCompletionSource<InvocationCompletion> ResponseTcs { get; init; }
-
-    /// <summary>
-    /// Absolute time when this invocation should be considered expired.
-    /// </summary>
-    internal required DateTimeOffset DeadlineUtc { get; init; }
 
     /// <summary>
     /// Creates a pending invocation with proper TCS configuration.

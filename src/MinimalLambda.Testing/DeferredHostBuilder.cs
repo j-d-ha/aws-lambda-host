@@ -16,16 +16,16 @@ namespace MinimalLambda.Testing;
 // ConfigureHostBuilder
 internal sealed class DeferredHostBuilder : IHostBuilder
 {
+    private readonly TaskCompletionSource<Exception?> _entryPointCompletionTcs = new(
+        TaskCreationOptions.RunContinuationsAsynchronously
+    );
+
     private readonly ConfigurationManager _hostConfiguration = new();
 
     // This task represents a call to IHost.Start, we create it here preemptively in case the
     // application
     // exits due to an exception or because it didn't wait for the shutdown signal
     private readonly TaskCompletionSource _hostStartTcs = new(
-        TaskCreationOptions.RunContinuationsAsynchronously
-    );
-
-    private readonly TaskCompletionSource<Exception?> _entryPointCompletionTcs = new(
         TaskCreationOptions.RunContinuationsAsynchronously
     );
 
@@ -41,9 +41,9 @@ internal sealed class DeferredHostBuilder : IHostBuilder
                 b.Properties[pair.Key] = pair.Value;
         };
 
-    public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
-
     public Task<Exception?> EntryPointCompletion => _entryPointCompletionTcs.Task;
+
+    public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
     public IHost Build()
     {
