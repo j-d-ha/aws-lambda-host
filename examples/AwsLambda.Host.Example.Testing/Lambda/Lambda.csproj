@@ -11,19 +11,18 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!-- Generate ready to run images during publishing to improve cold start time. -->
     <PublishReadyToRun>true</PublishReadyToRun>
-    <InterceptorsNamespaces>$(InterceptorsNamespaces);AwsLambda.Host</InterceptorsNamespaces>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);MinimalLambda</InterceptorsNamespaces>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\AwsLambda.Host\AwsLambda.Host.csproj" />
+    <ProjectReference Include="..\..\..\src\MinimalLambda\MinimalLambda.csproj" />
     <ProjectReference
-      Include="..\..\..\src\AwsLambda.Host.SourceGenerators\AwsLambda.Host.SourceGenerators.csproj"
+      Include="..\..\..\src\MinimalLambda.SourceGenerators\MinimalLambda.SourceGenerators.csproj"
       ReferenceOutputAssembly="false"
       OutputItemType="Analyzer"
     />
     <ProjectReference Include="..\..\..\src\MinimalLambda.Abstractions\MinimalLambda.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\src\MinimalLambda\MinimalLambda.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="appsettings.json">

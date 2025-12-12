@@ -5,7 +5,7 @@ using MinimalLambda.Options;
 using MinimalLambda.Testing;
 using Xunit;
 
-namespace Lambda.Host.Example.HelloWorld;
+namespace MinimalLambda.Example.HelloWorld;
 
 [TestSubject(typeof(Program))]
 public class LambdaHostTest
