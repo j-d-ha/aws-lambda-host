@@ -71,11 +71,8 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.AWSLambda" Version="1.14.0" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0-rc.2.25502.107" />
-    <PackageVersion
-      Include="Microsoft.Extensions.Hosting.Abstractions"
-      Version="10.0.0-rc.2.25502.107"
-    />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AWSLambda" Version="1.12.1" />
   </ItemGroup>
 </Project>
