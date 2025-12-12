@@ -46,7 +46,7 @@ internal class LambdaRuntimeRouteManager
         },
     ];
 
-    public bool TryMatch(
+    internal bool TryMatch(
         HttpRequestMessage request,
         [NotNullWhen(true)] out RequestType? routeType,
         [NotNullWhen(true)] out RouteValueDictionary? values
@@ -56,7 +56,6 @@ internal class LambdaRuntimeRouteManager
         values = null;
 
         var method = request.Method.Method;
-        // var path = request.RequestUri?.AbsolutePath.TrimStart('/') ?? string.Empty;
         var path = request.RequestUri?.AbsolutePath ?? string.Empty;
 
         foreach (var route in Routes)
@@ -76,7 +75,7 @@ internal class LambdaRuntimeRouteManager
         return false;
     }
 
-    private class RouteTemplate
+    private sealed class RouteTemplate
     {
         internal required TemplateMatcher Matcher { get; init; }
         internal required string Method { get; init; }

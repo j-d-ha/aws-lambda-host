@@ -32,7 +32,7 @@ internal class LambdaTestingHttpHandler(Channel<LambdaHttpTransaction> transacti
         var transaction = LambdaHttpTransaction.Create(request);
 
         // Register cancellation to cancel the transaction TCS
-        using var registration = cancellationToken.Register(() => transaction.Cancel());
+        await using var registration = cancellationToken.Register(() => transaction.Cancel());
 
         // Send transaction to server
         try
@@ -45,7 +45,7 @@ internal class LambdaTestingHttpHandler(Channel<LambdaHttpTransaction> transacti
             var canceled = new TaskCompletionSource<HttpResponseMessage>(
                 TaskCreationOptions.RunContinuationsAsynchronously
             );
-            canceled.TrySetCanceled();
+            canceled.TrySetCanceled(cancellationToken);
             return await canceled.Task;
         }
 
