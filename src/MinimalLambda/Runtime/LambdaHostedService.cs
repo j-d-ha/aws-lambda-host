@@ -117,14 +117,15 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
         }
         catch (TaskCanceledException)
         {
-            // if the task completes due to the cancellation token triggering, then we need to tell
-            // the user that shutdown failed
-            exceptions.Add(
-                new OperationCanceledException(
-                    "Graceful shutdown of the Lambda function failed: the bootstrap operation did "
-                        + "not complete within the allocated timeout period."
-                )
-            );
+            // If cancellation was requested, the task timed out during shutdown - report error.
+            // Otherwise, the TaskCanceledException came from LambdaBootstrap and can be ignored.
+            if (cancellationToken.IsCancellationRequested)
+                exceptions.Add(
+                    new OperationCanceledException(
+                        "Graceful shutdown of the Lambda function failed: the bootstrap operation did "
+                            + "not complete within the allocated timeout period."
+                    )
+                );
         }
         catch (Exception ex)
         {
