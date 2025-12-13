@@ -106,17 +106,10 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
         if (_server != null)
             await _server.DisposeAsync().ConfigureAwait(false);
 
-        if (_host != null)
+        if (_host is not null)
         {
-            switch (_host)
-            {
-                case IAsyncDisposable asyncDisposableHost:
-                    await asyncDisposableHost.DisposeAsync();
-                    break;
-                case IDisposable disposableHost:
-                    disposableHost.Dispose();
-                    break;
-            }
+            await _host.StopAsync().ConfigureAwait(false);
+            _host?.Dispose();
         }
 
         _disposedAsync = true;
