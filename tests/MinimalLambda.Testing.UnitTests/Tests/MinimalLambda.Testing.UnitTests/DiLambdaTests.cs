@@ -52,10 +52,15 @@ public class DiLambdaTests
     [Fact]
     internal async Task DiLambda_InitThrowsException()
     {
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(
+            TestContext.Current.CancellationToken
+        );
+        cts.CancelAfter(TimeSpan.FromSeconds(5));
+
         var lifecycleService = Substitute.For<ILifecycleService>();
 
         await using var factory = new LambdaApplicationFactory<DiLambda>()
-            .WithCancellationToken(TestContext.Current.CancellationToken)
+            .WithCancellationToken(cts.Token)
             .WithHostBuilder(builder =>
                 builder.ConfigureServices(
                     (_, services) =>
@@ -68,7 +73,7 @@ public class DiLambdaTests
 
         lifecycleService.OnStart().Throws(new Exception("Test init error"));
 
-        var initResult = await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
+        var initResult = await factory.TestServer.StartAsync(cts.Token);
         initResult.InitStatus.Should().Be(InitStatus.InitError);
         initResult.Error.Should().NotBeNull();
         initResult

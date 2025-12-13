@@ -58,8 +58,10 @@ internal sealed class DeferredHostBuilder : IHostBuilder
         // This will never be null if the case where Build is being called
         var host = (IHost)_hostFactory!(args.ToArray());
 
+        var applicationLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
+
         // We can't return the host directly since we need to defer the call to StartAsync
-        return new DeferredHost(host, _hostStartTcs);
+        return new DeferredHost(host, _hostStartTcs, applicationLifetime);
     }
 
     public IHostBuilder ConfigureAppConfiguration(
@@ -122,20 +124,22 @@ internal sealed class DeferredHostBuilder : IHostBuilder
         if (exception is not null)
         {
             _hostStartTcs.TrySetException(exception);
-            _entryPointCompletionTcs.TrySetResult(exception);
         }
         else
         {
             _hostStartTcs.TrySetResult();
-            _entryPointCompletionTcs.TrySetResult(null);
         }
+
+        _entryPointCompletionTcs.TrySetResult(exception);
     }
 
     public void SetHostFactory(Func<string[], object> hostFactory) => _hostFactory = hostFactory;
 
-    private sealed class DeferredHost(IHost host, TaskCompletionSource hostStartedTcs)
-        : IHost,
-            IAsyncDisposable
+    private sealed class DeferredHost(
+        IHost host,
+        TaskCompletionSource hostStartedTcs,
+        IHostApplicationLifetime applicationLifetime
+    ) : IHost, IAsyncDisposable
     {
         public async ValueTask DisposeAsync()
         {
@@ -154,20 +158,19 @@ internal sealed class DeferredHostBuilder : IHostBuilder
 
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
-            IHostApplicationLifetime? lifetime = null;
-            try
-            {
-                lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
-            }
-            catch (ObjectDisposedException)
-            {
-                // Best effort
-            }
+            // Wait on the existing host to start running and have this call wait on that. This
+            // avoids starting the actual host too early and
+            // leaves the application in charge of calling start.
+
+            await using var reg = cancellationToken.UnsafeRegister(
+                _ => hostStartedTcs.TrySetCanceled(),
+                null
+            );
 
             // Wait on the existing host to start running and have this call wait on that. This
             // avoids starting the actual host too early and
             // leaves the application in charge of calling start.
-            await using var reg2 = lifetime?.ApplicationStarted.UnsafeRegister(
+            await using var reg2 = applicationLifetime.ApplicationStarted.UnsafeRegister(
                 _ => hostStartedTcs.TrySetResult(),
                 null
             );

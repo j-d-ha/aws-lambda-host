@@ -245,15 +245,7 @@ public class LambdaTestServer : IAsyncDisposable
 
             State = ServerState.Starting;
 
-            try
-            {
-                _applicationLifetime =
-                    _host.Services.GetRequiredService<IHostApplicationLifetime>();
-            }
-            catch (ObjectDisposedException)
-            {
-                // Best effort
-            }
+            _applicationLifetime = _host.Services.GetRequiredService<IHostApplicationLifetime>();
 
             // Start the host
             await _host.StartAsync(cts.Token);
