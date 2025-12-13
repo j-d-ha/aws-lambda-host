@@ -1,0 +1,184 @@
+// Portions of this file are derived from aspnetcore
+// Source:
+// https://github.com/dotnet/aspnetcore/blob/v10.0.0/src/Mvc/Mvc.Testing/src/DeferredHostBuilder.cs
+// Copyright (c) .NET Foundation and Contributors
+// Licensed under the MIT License
+// See THIRD-PARTY-LICENSES.txt file in the project root or visit
+// https://github.com/dotnet/aspnetcore/blob/v10.0.0/LICENSE.txt
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+namespace MinimalLambda.Testing;
+
+// This host builder captures calls to the IHostBuilder then replays them in the call to
+// ConfigureHostBuilder
+internal sealed class DeferredHostBuilder : IHostBuilder
+{
+    private readonly TaskCompletionSource<Exception?> _entryPointCompletionTcs = new(
+        TaskCreationOptions.RunContinuationsAsynchronously
+    );
+
+    private readonly ConfigurationManager _hostConfiguration = new();
+
+    // This task represents a call to IHost.Start, we create it here preemptively in case the
+    // application
+    // exits due to an exception or because it didn't wait for the shutdown signal
+    private readonly TaskCompletionSource _hostStartTcs = new(
+        TaskCreationOptions.RunContinuationsAsynchronously
+    );
+
+    private Action<IHostBuilder> _configure;
+    private Func<string[], object>? _hostFactory;
+
+    public DeferredHostBuilder() =>
+        _configure = b =>
+        {
+            // Copy the properties from this builder into the builder
+            // that we're going to receive
+            foreach (var pair in Properties)
+                b.Properties[pair.Key] = pair.Value;
+        };
+
+    public Task<Exception?> EntryPointCompletion => _entryPointCompletionTcs.Task;
+
+    public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
+
+    public IHost Build()
+    {
+        // Hosting configuration is being provided by args so that
+        // we can impact WebApplicationBuilder based applications.
+        var args = new List<string>();
+
+        // Transform the host configuration into command line arguments
+        foreach (var (key, value) in _hostConfiguration.AsEnumerable())
+            args.Add($"--{key}={value}");
+
+        // This will never be null if the case where Build is being called
+        var host = (IHost)_hostFactory!(args.ToArray());
+
+        var applicationLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
+
+        // We can't return the host directly since we need to defer the call to StartAsync
+        return new DeferredHost(host, _hostStartTcs, applicationLifetime);
+    }
+
+    public IHostBuilder ConfigureAppConfiguration(
+        Action<HostBuilderContext, IConfigurationBuilder> configureDelegate
+    )
+    {
+        _configure += b => b.ConfigureAppConfiguration(configureDelegate);
+        return this;
+    }
+
+    public IHostBuilder ConfigureContainer<TContainerBuilder>(
+        Action<HostBuilderContext, TContainerBuilder> configureDelegate
+    )
+    {
+        _configure += b => b.ConfigureContainer(configureDelegate);
+        return this;
+    }
+
+    public IHostBuilder ConfigureHostConfiguration(Action<IConfigurationBuilder> configureDelegate)
+    {
+        // Run this immediately so that we can capture the host configuration
+        // before we pass it to the application. We can do this for app configuration
+        // as well if it becomes necessary.
+        configureDelegate(_hostConfiguration);
+        return this;
+    }
+
+    public IHostBuilder ConfigureServices(
+        Action<HostBuilderContext, IServiceCollection> configureDelegate
+    )
+    {
+        _configure += b => b.ConfigureServices(configureDelegate);
+        return this;
+    }
+
+    public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(
+        IServiceProviderFactory<TContainerBuilder> factory
+    )
+        where TContainerBuilder : notnull
+    {
+        _configure += b => b.UseServiceProviderFactory(factory);
+        return this;
+    }
+
+    public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(
+        Func<HostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory
+    )
+        where TContainerBuilder : notnull
+    {
+        _configure += b => b.UseServiceProviderFactory(factory);
+        return this;
+    }
+
+    public void ConfigureHostBuilder(object hostBuilder) => _configure((IHostBuilder)hostBuilder);
+
+    public void EntryPointCompleted(Exception? exception)
+    {
+        // If the entry point completed we'll set the tcs just in case the application doesn't call
+        // IHost.Start/StartAsync.
+        if (exception is not null)
+        {
+            _hostStartTcs.TrySetException(exception);
+        }
+        else
+        {
+            _hostStartTcs.TrySetResult();
+        }
+
+        _entryPointCompletionTcs.TrySetResult(exception);
+    }
+
+    public void SetHostFactory(Func<string[], object> hostFactory) => _hostFactory = hostFactory;
+
+    private sealed class DeferredHost(
+        IHost host,
+        TaskCompletionSource hostStartedTcs,
+        IHostApplicationLifetime applicationLifetime
+    ) : IHost, IAsyncDisposable
+    {
+        public async ValueTask DisposeAsync()
+        {
+            if (host is IAsyncDisposable disposable)
+            {
+                await disposable.DisposeAsync().ConfigureAwait(false);
+                return;
+            }
+
+            Dispose();
+        }
+
+        public IServiceProvider Services => host.Services;
+
+        public void Dispose() => host.Dispose();
+
+        public async Task StartAsync(CancellationToken cancellationToken = default)
+        {
+            // Wait on the existing host to start running and have this call wait on that. This
+            // avoids starting the actual host too early and
+            // leaves the application in charge of calling start.
+
+            await using var reg = cancellationToken.UnsafeRegister(
+                _ => hostStartedTcs.TrySetCanceled(),
+                null
+            );
+
+            // Wait on the existing host to start running and have this call wait on that. This
+            // avoids starting the actual host too early and
+            // leaves the application in charge of calling start.
+            await using var reg2 = applicationLifetime.ApplicationStarted.UnsafeRegister(
+                _ => hostStartedTcs.TrySetResult(),
+                null
+            );
+
+            await hostStartedTcs.Task.ConfigureAwait(false);
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken = default) =>
+            host.StopAsync(cancellationToken);
+    }
+}

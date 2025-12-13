@@ -1,14 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
-    <LangVersion>preview</LangVersion>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="AutoFixture.AutoNSubstitute" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" />
     <PackageReference Include="AutoFixture.Xunit3" />
     <PackageReference Include="JetBrains.Annotations" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -16,23 +15,23 @@
     <PackageReference Include="AutoFixture" />
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="coverlet.collector" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
+    <PackageReference Include="AutoFixture.AutoNSubstitute" />
     <PackageReference Include="NSubstitute.Analyzers.CSharp">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
-    <PackageReference Include="System.Net.Http" />
-    <PackageReference Include="System.Text.RegularExpressions" />
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="xunit.v3" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\src\MinimalLambda.OpenTelemetry\MinimalLambda.OpenTelemetry.csproj" />
-    <ProjectReference Include="..\..\src\MinimalLambda.Abstractions\MinimalLambda.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\src\MinimalLambda.Testing\MinimalLambda.Testing.csproj" />
+    <ProjectReference Include="..\..\Lambdas\MinimalLambda.Testing.UnitTests.DiLambda\MinimalLambda.Testing.UnitTests.DiLambda.csproj" />
+    <ProjectReference Include="..\..\Lambdas\MinimalLambda.Testing.UnitTests.NoEventLambda\MinimalLambda.Testing.UnitTests.NoEventLambda.csproj" />
+    <ProjectReference Include="..\..\Lambdas\MinimalLambda.Testing.UnitTests.NoResponseLambda\MinimalLambda.Testing.UnitTests.NoResponseLambda.csproj" />
+    <ProjectReference Include="..\..\Lambdas\MinimalLambda.Testing.UnitTests.SimpleLambda\MinimalLambda.Testing.UnitTests.SimpleLambda.csproj" />
   </ItemGroup>
 </Project>
