@@ -76,6 +76,38 @@ public class SimpleLambdaTests : IClassFixture<LambdaApplicationFactory<SimpleLa
     }
 
     [Fact]
+    public async Task SimpleLambda_WorksWhenInvokeCalledMultipleTimes_WithoutStart()
+    {
+        await _server.StartAsync(TestContext.Current.CancellationToken);
+
+        // Launch 5 concurrent invocations
+        var tasks = Enumerable
+            .Range(1, 5)
+            .Select(i =>
+                _server.InvokeAsync<string, string>(
+                    $"User{i}",
+                    TestContext.Current.CancellationToken
+                )
+            )
+            .ToArray();
+
+        var responses = await Task.WhenAll(tasks);
+
+        responses.Should().AllSatisfy(r => r.WasSuccess.Should().BeTrue());
+
+        responses
+            .Select(r => r.Response)
+            .Should()
+            .ContainInOrder(
+                "Hello User1!",
+                "Hello User2!",
+                "Hello User3!",
+                "Hello User4!",
+                "Hello User5!"
+            );
+    }
+
+    [Fact]
     public async Task SimpleLambda_ReturnsError()
     {
         var response = await _server.InvokeAsync<string, string>(
