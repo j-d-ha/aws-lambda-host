@@ -59,11 +59,6 @@ public class LambdaTestServer : IAsyncDisposable
     private readonly ConcurrentDictionary<string, PendingInvocation> _pendingInvocations = new();
 
     /// <summary>
-    /// Route manager to determine the route of the incoming request from the Lambda.
-    /// </summary>
-    private readonly LambdaRuntimeRouteManager _routeManager = new();
-
-    /// <summary>
     /// Options used to configure how the server interacts with the Lambda.
     /// </summary>
     private readonly LambdaServerOptions _serverOptions;
@@ -475,7 +470,7 @@ public class LambdaTestServer : IAsyncDisposable
             )
             {
                 if (
-                    !_routeManager.TryMatch(
+                    !LambdaRuntimeRouteManager.TryMatch(
                         transaction.Request,
                         out var requestType,
                         out var routeValues

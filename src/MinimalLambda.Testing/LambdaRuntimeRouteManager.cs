@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Routing.Template;
 
 namespace MinimalLambda.Testing;
 
-internal class LambdaRuntimeRouteManager
+internal static class LambdaRuntimeRouteManager
 {
     private static readonly RouteTemplate[] Routes =
     [
@@ -46,7 +46,7 @@ internal class LambdaRuntimeRouteManager
         },
     ];
 
-    internal bool TryMatch(
+    internal static bool TryMatch(
         HttpRequestMessage request,
         [NotNullWhen(true)] out RequestType? routeType,
         [NotNullWhen(true)] out RouteValueDictionary? values
