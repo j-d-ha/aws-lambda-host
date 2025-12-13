@@ -171,14 +171,8 @@ public class LambdaTestServer : IAsyncDisposable
             return;
 
         if (State == ServerState.Running)
-            try
-            {
-                await StopAsync();
-            }
-            catch
-            {
-                // Best effort to stop the server, but don't fail the Dispose operation
-            }
+            // Best effort to stop the server, but don't fail the Dispose operation
+            await StopAsync().ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
         // Complete both channels to prevent new items
         _transactionChannel.Writer.TryComplete();
