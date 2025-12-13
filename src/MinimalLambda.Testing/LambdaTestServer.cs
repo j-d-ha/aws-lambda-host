@@ -236,7 +236,7 @@ public class LambdaTestServer : IAsyncDisposable
         {
             if (State != ServerState.Created)
                 throw new InvalidOperationException(
-                    "TestServer has already been started and cannot be restarted."
+                    $"{nameof(LambdaTestServer)} has already been started and cannot be restarted."
                 );
 
             if (_host is null)
@@ -280,7 +280,7 @@ public class LambdaTestServer : IAsyncDisposable
             }
 
             throw new InvalidOperationException(
-                "TestServer initialization failed with neither an error nor completion."
+                $"{nameof(LambdaTestServer)} initialization failed with neither an error nor completion."
             );
         }
         finally
@@ -353,7 +353,7 @@ public class LambdaTestServer : IAsyncDisposable
 
         if (State != ServerState.Running)
             throw new InvalidOperationException(
-                "TestServer is not Running and as such an event cannot be invoked."
+                $"{nameof(LambdaTestServer)} is in state {State} and cannot invoke an event. Expected state: Running."
             );
 
         using var cts = LinkedCtsWithInvocationDeadline(cancellationToken);
@@ -436,7 +436,9 @@ public class LambdaTestServer : IAsyncDisposable
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
         if (State is <= ServerState.Created or >= ServerState.Stopping)
-            throw new InvalidOperationException($"TestServer cannot be stopped in state {State}.");
+            throw new InvalidOperationException(
+                $"{nameof(LambdaTestServer)} cannot be stopped in state {State}."
+            );
 
         State = ServerState.Stopping;
 
@@ -570,7 +572,7 @@ public class LambdaTestServer : IAsyncDisposable
         }
 
         throw new InvalidOperationException(
-            "TestServer is already started and as such an initialization error cannot be reported."
+            $"{nameof(LambdaTestServer)} is already started and as such an initialization error cannot be reported."
         );
     }
 
