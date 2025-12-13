@@ -45,6 +45,7 @@ jobs:
             github
             core
             docs
+            testing
           requireScope: false
           subjectPattern: ^[a-z].*
           subjectPatternError: Subject must start with lowercase letter
