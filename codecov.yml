@@ -18,3 +18,5 @@ ignore:
   - "examples/**"
   - "benchmarks/**"
   - "**/Program.cs"
+  - "**/Program.cs"
+  - "src/MinimalLambda.Testing/HostFactoryResolver.cs"
