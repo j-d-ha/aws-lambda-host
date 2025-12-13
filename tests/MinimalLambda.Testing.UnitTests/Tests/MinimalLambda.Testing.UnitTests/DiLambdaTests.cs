@@ -7,20 +7,16 @@ using NSubstitute.ExceptionExtensions;
 
 namespace MinimalLambda.Testing.UnitTests;
 
-public class DiLambdaTests : IClassFixture<LambdaApplicationFactory<DiLambda>>
+public class DiLambdaTests
 {
-    private readonly LambdaTestServer _server;
-
-    public DiLambdaTests(LambdaApplicationFactory<DiLambda> factory)
-    {
-        factory.WithCancellationToken(TestContext.Current.CancellationToken);
-        _server = factory.TestServer;
-    }
-
     [Fact]
     public async Task DiLambda_ReturnsExpectedValue()
     {
-        var response = await _server.InvokeAsync<DiLambdaRequest, DiLambdaResponse>(
+        await using var factory = new LambdaApplicationFactory<DiLambda>().WithCancellationToken(
+            TestContext.Current.CancellationToken
+        );
+
+        var response = await factory.TestServer.InvokeAsync<DiLambdaRequest, DiLambdaResponse>(
             new DiLambdaRequest("World"),
             TestContext.Current.CancellationToken
         );

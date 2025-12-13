@@ -2,20 +2,17 @@ using Microsoft.Extensions.Configuration;
 
 namespace MinimalLambda.Testing.UnitTests;
 
-public class NoEventLambdaTests : IClassFixture<LambdaApplicationFactory<NoEventLambda>>
+public class NoEventLambdaTests
 {
-    private readonly LambdaTestServer _server;
-
-    public NoEventLambdaTests(LambdaApplicationFactory<NoEventLambda> factory)
-    {
-        factory.WithCancellationToken(TestContext.Current.CancellationToken);
-        _server = factory.TestServer;
-    }
-
     [Fact]
     public async Task NoEvent_ReturnsExpectedValue()
     {
-        var response = await _server.InvokeNoEventAsync<NoEventLambdaResponse>(
+        await using var factory =
+            new LambdaApplicationFactory<NoEventLambda>().WithCancellationToken(
+                TestContext.Current.CancellationToken
+            );
+
+        var response = await factory.TestServer.InvokeNoEventAsync<NoEventLambdaResponse>(
             TestContext.Current.CancellationToken
         );
 
@@ -28,7 +25,7 @@ public class NoEventLambdaTests : IClassFixture<LambdaApplicationFactory<NoEvent
     [Fact]
     public async Task NoEvent_ConfigurationCanBeOverwritten()
     {
-        var factory = new LambdaApplicationFactory<NoEventLambda>()
+        await using var factory = new LambdaApplicationFactory<NoEventLambda>()
             .WithCancellationToken(TestContext.Current.CancellationToken)
             .WithHostBuilder(builder =>
                 builder.ConfigureAppConfiguration(
