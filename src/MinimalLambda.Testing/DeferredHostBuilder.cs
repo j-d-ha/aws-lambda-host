@@ -154,21 +154,23 @@ internal sealed class DeferredHostBuilder : IHostBuilder
 
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
+            IHostApplicationLifetime? lifetime = null;
+            try
+            {
+                lifetime = host.Services.GetService<IHostApplicationLifetime>();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Best effort
+            }
+
             // Wait on the existing host to start running and have this call wait on that. This
             // avoids starting the actual host too early and
             // leaves the application in charge of calling start.
-
-            await using var reg = cancellationToken.UnsafeRegister(
-                _ => hostStartedTcs.TrySetCanceled(),
+            await using var reg2 = lifetime?.ApplicationStarted.UnsafeRegister(
+                _ => hostStartedTcs.TrySetResult(),
                 null
             );
-
-            // REVIEW: This will deadlock if the application creates the host but never calls start.
-            // This is mitigated by the cancellationToken
-            // but it's rarely a valid token for Start
-            await using var reg2 = host
-                .Services.GetRequiredService<IHostApplicationLifetime>()
-                .ApplicationStarted.UnsafeRegister(_ => hostStartedTcs.TrySetResult(), null);
 
             await hostStartedTcs.Task.ConfigureAwait(false);
         }
