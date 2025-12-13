@@ -157,7 +157,7 @@ internal sealed class DeferredHostBuilder : IHostBuilder
             IHostApplicationLifetime? lifetime = null;
             try
             {
-                lifetime = host.Services.GetService<IHostApplicationLifetime>();
+                lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
             }
             catch (ObjectDisposedException)
             {
