@@ -269,10 +269,10 @@ public class LambdaTestServer : IAsyncDisposable
 
             if (_initCompletionTcs.Task.IsCompleted)
             {
-                State =
-                    _initCompletionTcs.Task.Result.InitStatus == InitStatus.InitCompleted
-                        ? ServerState.Running
-                        : ServerState.Stopped;
+                if (_initCompletionTcs.Task.Result.InitStatus == InitStatus.InitCompleted)
+                    State = ServerState.Running;
+                else
+                    await StopAsync(CancellationToken.None);
 
                 return _initCompletionTcs.Task.Result;
             }
@@ -433,19 +433,19 @@ public class LambdaTestServer : IAsyncDisposable
     /// </remarks>
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
-        if (State != ServerState.Running)
-            throw new InvalidOperationException(
-                "TestServer is not running and as such cannot be stopped."
-            );
+        if (State is <= ServerState.Created or >= ServerState.Stopping)
+            throw new InvalidOperationException($"TestServer cannot be stopped in state {State}.");
 
         State = ServerState.Stopping;
 
         await _shutdownCts.CancelAsync();
 
+        var shutdownTask = _host?.WaitForShutdownAsync(cancellationToken) ?? Task.CompletedTask;
+
         _applicationLifetime!.StopApplication();
 
         await TaskHelpers
-            .WhenAll(_entryPointCompletion, _processingTask!)
+            .WhenAll(_entryPointCompletion, _processingTask!, shutdownTask)
             .UnwrapAndThrow("Exception(s) encountered while running StopAsync")
             .WaitAsync(cancellationToken);
 
@@ -554,6 +554,7 @@ public class LambdaTestServer : IAsyncDisposable
     private async Task HandlePostInitErrorAsync(LambdaHttpTransaction transaction)
     {
         if (State == ServerState.Starting)
+        {
             _initCompletionTcs.SetResult(
                 new InitResponse
                 {
@@ -565,6 +566,8 @@ public class LambdaTestServer : IAsyncDisposable
                     InitStatus = InitStatus.InitError,
                 }
             );
+            return;
+        }
 
         throw new InvalidOperationException(
             "TestServer is already started and as such an initialization error cannot be reported."
