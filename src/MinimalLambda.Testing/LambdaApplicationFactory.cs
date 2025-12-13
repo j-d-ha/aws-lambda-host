@@ -406,7 +406,7 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
             );
 
             // Find the list of projects
-            var projects = context.CompileLibraries.Where(l => l.Type == "project");
+            _ = context.CompileLibraries.Where(l => l.Type == "project");
 
             var entryPointAssemblyName = typeof(TEntryPoint).Assembly.GetName().Name;
 
