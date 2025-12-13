@@ -256,7 +256,7 @@ public class LambdaTestServer : IAsyncDisposable
             }
 
             // Start the host
-            _host.Start();
+            await _host.StartAsync(cts.Token);
 
             // Start background processing
             _processingTask = Task.Run(ProcessTransactionsAsync, cts.Token);
