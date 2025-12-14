@@ -101,6 +101,7 @@ Write comprehensive tests for your Lambda functions using xUnit, NSubstitute, an
 - Testing handlers and middleware
 - Integration testing
 - Test naming conventions
+ - In-memory end-to-end testing with `MinimalLambda.Testing` (`WebApplicationFactory`-style runtime shim)
 
 ## Learning Path
 
