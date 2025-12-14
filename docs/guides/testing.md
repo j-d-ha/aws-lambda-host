@@ -23,6 +23,10 @@ dotnet add package MinimalLambda
 dotnet add package MinimalLambda.Testing
 ```
 
+!!! warning "Package Versions"
+    Ensure `MinimalLambda.Testing` version matches your `MinimalLambda` version.
+    Mismatched versions may cause runtime errors or unexpected behavior.
+
 Write an end-to-end test with xUnit v3:
 
 ```csharp title="HelloWorldTests.cs" linenums="1"
@@ -38,7 +42,8 @@ public class HelloWorldTests
             .WithCancellationToken(TestContext.Current.CancellationToken);
 
         // Optional: StartAsync mirrors Lambda init; InvokeAsync will start on demand if you skip this.
-        await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
+        var initResult = await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(InitStatus.InitCompleted, initResult.InitStatus);
 
         var response = await factory.TestServer.InvokeAsync<string, string>(
             "World",
@@ -59,21 +64,38 @@ public class HelloWorldTests
 - `InvokeNoEventAsync<TResponse>(token)` – Invoke a handler that does not take an event payload.
 - `InvokeNoResponseAsync<TEvent>(event, token)` – Fire-and-forget style; skips response
   deserialization for handlers that return `void`/`Task` or write directly to streams.
-- **Trace IDs** – Pass `traceId` into `InvokeAsync` to control the `Lambda-Runtime-Trace-Id` header
-  (defaults to a new GUID).
 
 `InvocationResponse`/`InvocationResponse<T>` include `WasSuccess`, `Response`, and structured
 `Error` information that mirrors Lambda runtime error payloads—assert on these to verify failures.
 
+### Trace IDs
+
+Pass a custom `traceId` to control the `Lambda-Runtime-Trace-Id` header for correlation in logs and telemetry:
+
+```csharp
+var response = await factory.TestServer.InvokeAsync<Request, Response>(
+    new Request(),
+    TestContext.Current.CancellationToken,
+    traceId: "custom-trace-id-12345"
+);
+
+// Verify trace ID was used in logging/telemetry
+```
+
+If omitted, a new GUID is generated for each invocation.
+
 ## Working with Cancellation
 
 - **Propagate test cancellation** – Call `WithCancellationToken(...)` on the factory to flow your
-  test framework’s token into the in-memory runtime. All server operations observe it.
+  test framework's token into the in-memory runtime. All server operations observe it.
 - **Per-call tokens** – Pass tokens to `StartAsync` and `Invoke*` to bound individual operations.
 - **Pre-canceled tokens** – A pre-canceled token will fail the invocation immediately (see
   `SimpleLambda_WithPreCanceledToken_CancelsInvocation` in the test suite).
-- **Timeouts** – Combine short tokens with `LambdaServerOptions.FunctionTimeout` to mirror Lambda’s
-  deadline behavior and catch slow handlers.
+- **Automatic timeouts** – Every invocation automatically times out after
+  `LambdaServerOptions.FunctionTimeout` (defaults to 3 seconds, matching AWS Lambda's default).
+  The test server creates a linked cancellation token for each invocation that enforces this deadline,
+  mirroring Lambda's actual timeout behavior. Adjust `factory.ServerOptions.FunctionTimeout` before
+  invoking to test different timeout scenarios or catch slow handlers.
 
 ## Host Customization and Fixtures
 
@@ -122,20 +144,289 @@ test-specific values.
 - `StopAsync` triggers OnShutdown and aggregates any exceptions (surfaced as `AggregateException`).
 - `DisposeAsync` is idempotent; safe to call multiple times.
 
-## Patterns and Troubleshooting
+!!! tip "StartAsync is Optional"
+    `InvokeAsync` will automatically call `StartAsync` if you haven't called it explicitly.
+
+    **When to call StartAsync explicitly:**
+
+    - To inspect `InitStatus` before invoking
+    - To measure cold start time separately
+    - To ensure OnInit completes before tests run
+
+    **When to skip StartAsync:**
+
+    - Simple handler tests where init success is assumed
+    - Tests focused on invocation behavior, not initialization
+
+## Testing Patterns
+
+### Testing Error Responses
+
+Validate error handling by asserting on `InvocationResponse.Error`:
+
+```csharp
+[Fact]
+public async Task Handler_WithInvalidInput_ReturnsStructuredError()
+{
+    await using var factory = new LambdaApplicationFactory<Program>()
+        .WithCancellationToken(TestContext.Current.CancellationToken);
+
+    var response = await factory.TestServer.InvokeAsync<string, string>(
+        "", // Invalid input
+        TestContext.Current.CancellationToken
+    );
+
+    response.WasSuccess.Should().BeFalse();
+    response.Error.Should().NotBeNull();
+    response.Error.ErrorMessage.Should().Contain("Name is required");
+    // Error.ErrorType and Error.StackTrace also available
+}
+```
+
+### Testing Concurrent Invocations
+
+The test server handles concurrent invocations safely with FIFO ordering:
+
+```csharp
+[Fact]
+public async Task ConcurrentInvocations_AreHandledInOrder()
+{
+    await using var factory = new LambdaApplicationFactory<Program>()
+        .WithCancellationToken(TestContext.Current.CancellationToken);
+
+    // Launch multiple concurrent invocations
+    var tasks = Enumerable.Range(1, 10)
+        .Select(i => factory.TestServer.InvokeAsync<int, string>(
+            i,
+            TestContext.Current.CancellationToken))
+        .ToArray();
+
+    var responses = await Task.WhenAll(tasks);
+
+    // All invocations succeed
+    responses.Should().AllSatisfy(r => r.WasSuccess.Should().BeTrue());
+
+    // Responses maintain FIFO order
+    responses.Select(r => r.Response)
+        .Should().ContainInOrder("Hello 1!", "Hello 2!", "Hello 3!", "Hello 4!", "Hello 5!",
+                                  "Hello 6!", "Hello 7!", "Hello 8!", "Hello 9!", "Hello 10!");
+}
+```
+
+### Testing Middleware
+
+Verify middleware behavior by inspecting response metadata or side effects:
+
+```csharp
+[Fact]
+public async Task CustomMiddleware_AddsExpectedHeaders()
+{
+    await using var factory = new LambdaApplicationFactory<Program>()
+        .WithCancellationToken(TestContext.Current.CancellationToken);
+
+    var response = await factory.TestServer.InvokeAsync<Request, Response>(
+        new Request(),
+        TestContext.Current.CancellationToken
+    );
+
+    response.WasSuccess.Should().BeTrue();
+
+    // Verify middleware added metadata to response
+    response.Response.Headers.Should().ContainKey("X-Request-Id");
+}
+```
+
+### Testing Lifecycle Hooks
+
+#### OnInit That Signals Shutdown
+
+```csharp
+[Fact]
+public async Task OnInit_WhenReturningFalse_ShutsDownGracefully()
+{
+    var mockService = Substitute.For<IMyService>();
+    mockService.Initialize().Returns(false); // Signal shutdown
+
+    await using var factory = new LambdaApplicationFactory<Program>()
+        .WithHostBuilder(builder =>
+            builder.ConfigureServices((_, services) =>
+            {
+                services.RemoveAll<IMyService>();
+                services.AddSingleton(mockService);
+            }));
+
+    var initResult = await factory.TestServer.StartAsync(
+        TestContext.Current.CancellationToken
+    );
+
+    initResult.InitStatus.Should().Be(InitStatus.HostExited);
+}
+```
+
+#### OnInit That Throws Exceptions
+
+```csharp
+[Fact]
+public async Task OnInit_WhenThrowingException_ReturnsInitError()
+{
+    var mockService = Substitute.For<IMyService>();
+    mockService.Initialize().Throws(new Exception("Database unavailable"));
+
+    await using var factory = new LambdaApplicationFactory<Program>()
+        .WithHostBuilder(builder =>
+            builder.ConfigureServices((_, services) =>
+            {
+                services.RemoveAll<IMyService>();
+                services.AddSingleton(mockService);
+            }));
+
+    var initResult = await factory.TestServer.StartAsync(
+        TestContext.Current.CancellationToken
+    );
+
+    initResult.InitStatus.Should().Be(InitStatus.InitError);
+    initResult.Error.ErrorMessage.Should().Contain("Database unavailable");
+}
+```
+
+#### OnShutdown Exception Handling
+
+```csharp
+[Fact]
+public async Task OnShutdown_WhenThrowingException_AggregatesExceptions()
+{
+    var mockService = Substitute.For<IMyService>();
+    mockService.When(x => x.Cleanup()).Do(_ => throw new Exception("Cleanup failed"));
+
+    await using var factory = new LambdaApplicationFactory<Program>()
+        .WithHostBuilder(builder =>
+            builder.ConfigureServices((_, services) =>
+            {
+                services.RemoveAll<IMyService>();
+                services.AddSingleton(mockService);
+            }));
+
+    await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
+
+    var act = async () => await factory.TestServer.StopAsync(
+        TestContext.Current.CancellationToken
+    );
+
+    (await act.Should().ThrowAsync<AggregateException>())
+        .WithInnerException<Exception>()
+        .WithMessage("*Cleanup failed*");
+}
+```
+
+### Inspecting Services After Invocation
+
+Resolve singleton services from `factory.TestServer.Services` to validate state:
+
+```csharp
+[Fact]
+public async Task AfterInvocation_CanInspectSingletonState()
+{
+    await using var factory = new LambdaApplicationFactory<Program>()
+        .WithCancellationToken(TestContext.Current.CancellationToken);
+
+    await factory.TestServer.InvokeAsync<Request, Response>(
+        new Request("test"),
+        TestContext.Current.CancellationToken
+    );
+
+    // Inspect singleton services after invocation
+    var metricsCollector = factory.TestServer.Services
+        .GetRequiredService<IMetricsCollector>();
+
+    metricsCollector.InvocationCount.Should().Be(1);
+}
+```
+
+### Alternative DI Containers
+
+Replace the default DI container with Autofac, DryIoc, or other containers:
+
+```csharp
+[Fact]
+public async Task WithAutofac_CustomContainerWorks()
+{
+    await using var factory = new LambdaApplicationFactory<Program>()
+        .WithHostBuilder(builder =>
+            builder
+                .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+                .ConfigureContainer<ContainerBuilder>((_, containerBuilder) =>
+                {
+                    containerBuilder.RegisterType<MyService>().As<IMyService>();
+                }));
+
+    var response = await factory.TestServer.InvokeAsync<Request, Response>(
+        new Request(),
+        TestContext.Current.CancellationToken
+    );
+
+    response.WasSuccess.Should().BeTrue();
+}
+```
+
+### Custom JSON Serialization
+
+Override JSON serialization options to match your Lambda's configuration:
+
+```csharp
+[Fact]
+public async Task CustomJsonOptions_AreRespected()
+{
+    await using var factory = new LambdaApplicationFactory<Program>()
+        .WithHostBuilder(builder =>
+            builder.ConfigureServices((_, services) =>
+            {
+                services.Configure<JsonOptions>(options =>
+                {
+                    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+                });
+            }));
+
+    var response = await factory.TestServer.InvokeAsync<Request, Response>(
+        new Request { UserName = "test" },
+        TestContext.Current.CancellationToken
+    );
+
+    response.WasSuccess.Should().BeTrue();
+}
+```
+
+### Performance and Cold Start Testing
+
+Measure initialization and invocation performance:
+
+```csharp
+[Fact]
+public async Task ColdStart_InitCompletesWithinTimeout()
+{
+    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+    await using var factory = new LambdaApplicationFactory<Program>()
+        .WithCancellationToken(cts.Token);
+
+    var stopwatch = Stopwatch.StartNew();
+    var initResult = await factory.TestServer.StartAsync(cts.Token);
+    stopwatch.Stop();
+
+    initResult.InitStatus.Should().Be(InitStatus.InitCompleted);
+    stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3));
+}
+```
+
+## Best Practices
 
 - **Reuse factories per class** – Creating a new factory per test is fine; reuse within a class to
   speed up suites that share the same host configuration.
-- **Parallel invocations** – The test server is concurrency-safe; the concurrent invocation test in
-  the suite shows FIFO ordering.
-- **Assert via DI** – Resolve services from `factory.TestServer.Services` to inspect metrics,
-  in-memory stores, or other state after invocations.
-- **Error assertions** – Check `InvocationResponse.Error` for message and stack trace data; it
-  mirrors what the Lambda Runtime API returns.
 - **Runtime headers** – Responses include the same headers Lambda sends (`Lambda-Runtime-*` plus any
   `AdditionalHeaders` you set); assert on them if you need to prove deadline/ARN behavior.
+- **Fresh factory per test for lifecycle testing** – When testing OnInit/OnShutdown, create a new
+  factory per test so lifecycle hooks run predictably.
 
-!!! warning "Fixture reuse pitfalls"
+!!! warning "Fixture Reuse Pitfalls"
     - Using `IClassFixture`/`ICollectionFixture` with a single `LambdaApplicationFactory` means one
       host instance is shared across all tests in that scope. Avoid this pattern if you need to test
       startup/shutdown logic—use a fresh factory per test so OnInit/OnShutdown run predictably.
@@ -144,6 +435,14 @@ test-specific values.
       side effects. Choose one approach (per-test or shared fixture) for a given test class/collection
       and clean up via `DisposeAsync`/`StopAsync` when done.
 
-Ready to go deeper? The MinimalLambda.Testing source (`src/MinimalLambda.Testing/`) and its unit
-tests (`tests/MinimalLambda.Testing.UnitTests/`) contain more examples of host overrides,
-cancellation, and error handling patterns.
+## Complete Examples
+
+For comprehensive examples covering all scenarios, see the **[MinimalLambda.Testing test suite](https://github.com/j-d-ha/minimal-lambda/tree/main/tests/MinimalLambda.Testing.UnitTests)**:
+
+- `SimpleLambdaTests.cs` – Basic invocation patterns and concurrent invocations
+- `DiLambdaTests.cs` – DI container replacement and lifecycle testing
+- `NoEventLambdaTests.cs` – Configuration overrides and handlers without events
+- `NoResponseLambdaTests.cs` – Fire-and-forget handlers
+
+The MinimalLambda.Testing source (`src/MinimalLambda.Testing/`) also contains additional examples of
+host overrides, cancellation, and error handling patterns.
