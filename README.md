@@ -106,7 +106,8 @@ public class GreetingService : IGreetingService
 ```
 
 See the [examples directory](./examples/) for more complete examples, including middleware and
-OpenTelemetry integration.
+OpenTelemetry integration. For in-memory integration tests, use
+[MinimalLambda.Testing](./docs/guides/testing.md) (a `WebApplicationFactory`-style runtime shim).
 
 ## Documentation
 
