@@ -43,7 +43,17 @@ public class DiLambdaTests
                 )
             );
 
-        lifecycleService.OnStart().Returns(false);
+        // due to how the dependencies are resolved within the test server, if we dont add a delay
+        // here, there is a small chance that the DI container will be disposed of before the test
+        // server can resolve the IHostedApplicationLifetime. This is only the issue if OnInit
+        // signals that the init phase should exit.
+        lifecycleService
+            .OnStart()
+            .Returns(false)
+            .AndDoes(_ =>
+                Task.Delay(TimeSpan.FromMilliseconds(100), TestContext.Current.CancellationToken)
+                    .Wait(TestContext.Current.CancellationToken)
+            );
 
         var initResult = await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
         initResult.InitStatus.Should().Be(InitStatus.HostExited);
@@ -52,15 +62,10 @@ public class DiLambdaTests
     [Fact]
     internal async Task DiLambda_InitThrowsException()
     {
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(
-            TestContext.Current.CancellationToken
-        );
-        cts.CancelAfter(TimeSpan.FromSeconds(5));
-
         var lifecycleService = Substitute.For<ILifecycleService>();
 
         await using var factory = new LambdaApplicationFactory<DiLambda>()
-            .WithCancellationToken(cts.Token)
+            .WithCancellationToken(TestContext.Current.CancellationToken)
             .WithHostBuilder(builder =>
                 builder.ConfigureServices(
                     (_, services) =>
@@ -71,9 +76,16 @@ public class DiLambdaTests
                 )
             );
 
-        lifecycleService.OnStart().Throws(new Exception("Test init error"));
+        // See DiLambda_InitStopped for why the delay is needed here
+        lifecycleService
+            .OnStart()
+            .Throws(new Exception("Test init error"))
+            .AndDoes(_ =>
+                Task.Delay(TimeSpan.FromMilliseconds(100), TestContext.Current.CancellationToken)
+                    .Wait(TestContext.Current.CancellationToken)
+            );
 
-        var initResult = await factory.TestServer.StartAsync(cts.Token);
+        var initResult = await factory.TestServer.StartAsync(TestContext.Current.CancellationToken);
         initResult.InitStatus.Should().Be(InitStatus.InitError);
         initResult.Error.Should().NotBeNull();
         initResult
