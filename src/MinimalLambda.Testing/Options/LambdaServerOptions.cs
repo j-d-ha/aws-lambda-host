@@ -23,5 +23,5 @@ public class LambdaServerOptions
     ///     seconds, the default function
     ///     <a href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-timeout.html">timeout</a>.
     /// </summary>
-    public TimeSpan FunctionTimeout { get; set; } = TimeSpan.FromMinutes(3);
+    public TimeSpan FunctionTimeout { get; set; } = TimeSpan.FromSeconds(3);
 }
