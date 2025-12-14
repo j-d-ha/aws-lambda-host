@@ -1,37 +1,23 @@
 namespace MinimalLambda.Testing;
 
-/// <summary>
-/// Represents the lifecycle state of a LambdaTestServer.
-/// </summary>
+/// <summary>Represents the lifecycle state of a LambdaTestServer.</summary>
 public enum ServerState
 {
-    /// <summary>
-    /// TestServer created but not started.
-    /// </summary>
+    /// <summary>TestServer created but not started.</summary>
     Created,
 
-    /// <summary>
-    /// TestServer is starting (building host).
-    /// </summary>
+    /// <summary>TestServer is starting (building host).</summary>
     Starting,
 
-    /// <summary>
-    /// TestServer is running and accepting invocations.
-    /// </summary>
+    /// <summary>TestServer is running and accepting invocations.</summary>
     Running,
 
-    /// <summary>
-    /// TestServer is stopping.
-    /// </summary>
+    /// <summary>TestServer is stopping.</summary>
     Stopping,
 
-    /// <summary>
-    /// TestServer has stopped cleanly.
-    /// </summary>
+    /// <summary>TestServer has stopped cleanly.</summary>
     Stopped,
 
-    /// <summary>
-    /// TestServer has been disposed.
-    /// </summary>
+    /// <summary>TestServer has been disposed.</summary>
     Disposed,
 }

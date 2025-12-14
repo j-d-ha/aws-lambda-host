@@ -17,11 +17,11 @@ using MinimalLambda.Options;
 
 namespace MinimalLambda.Testing;
 
-/// <summary>
-/// Factory for bootstrapping an application in memory for functional end to end tests.
-/// </summary>
-/// <typeparam name="TEntryPoint">A type in the entry point assembly of the application.
-/// Typically the Startup or Program classes can be used.</typeparam>
+/// <summary>Factory for bootstrapping an application in memory for functional end to end tests.</summary>
+/// <typeparam name="TEntryPoint">
+///     A type in the entry point assembly of the application. Typically the
+///     Startup or Program classes can be used.
+/// </typeparam>
 public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposable
     where TEntryPoint : class
 {
@@ -34,52 +34,58 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
     private CancellationToken? _stoppingToken;
 
     /// <summary>
-    /// <para>
-    /// Creates an instance of <see cref="LambdaApplicationFactory{TEntryPoint}"/>. This factory can be used to
-    /// create a <see cref="LambdaTestServer"/> instance for testing Lambda applications defined by <typeparamref name="TEntryPoint"/>
-    /// in-memory without deploying to AWS.
-    /// The <see cref="LambdaApplicationFactory{TEntryPoint}"/> will find the entry point class of <typeparamref name="TEntryPoint"/>
-    /// assembly and initialize the application by calling <c>IHostBuilder CreateHostBuilder(string[] args)</c>
-    /// on <typeparamref name="TEntryPoint"/>.
-    /// </para>
-    /// <para>
-    /// This constructor will infer the application content root path by searching for a
-    /// <see cref="LambdaApplicationFactoryContentRootAttribute"/> on the assembly containing the functional tests with
-    /// a key equal to the <typeparamref name="TEntryPoint"/> assembly <see cref="Assembly.FullName"/>.
-    /// In case an attribute with the right key can't be found, <see cref="LambdaApplicationFactory{TEntryPoint}"/>
-    /// will fall back to searching for a solution file (*.sln) and then appending <typeparamref name="TEntryPoint"/> assembly name
-    /// to the solution directory. The application root directory will be used to discover views and content files.
-    /// </para>
-    /// <para>
-    /// The application assemblies will be loaded from the dependency context of the assembly containing
-    /// <typeparamref name="TEntryPoint" />. This means that project dependencies of the assembly containing
-    /// <typeparamref name="TEntryPoint" /> will be loaded as application assemblies.
-    /// </para>
+    ///     <para>
+    ///         Creates an instance of <see cref="LambdaApplicationFactory{TEntryPoint}" />. This factory
+    ///         can be used to create a <see cref="LambdaTestServer" /> instance for testing Lambda
+    ///         applications defined by <typeparamref name="TEntryPoint" /> in-memory without deploying to
+    ///         AWS. The <see cref="LambdaApplicationFactory{TEntryPoint}" /> will find the entry point
+    ///         class of <typeparamref name="TEntryPoint" /> assembly and initialize the application by
+    ///         calling <c>IHostBuilder CreateHostBuilder(string[] args)</c> on
+    ///         <typeparamref name="TEntryPoint" />.
+    ///     </para>
+    ///     <para>
+    ///         This constructor will infer the application content root path by searching for a
+    ///         <see cref="LambdaApplicationFactoryContentRootAttribute" /> on the assembly containing the
+    ///         functional tests with a key equal to the <typeparamref name="TEntryPoint" /> assembly
+    ///         <see cref="Assembly.FullName" />. In case an attribute with the right key can't be found,
+    ///         <see cref="LambdaApplicationFactory{TEntryPoint}" /> will fall back to searching for a
+    ///         solution file (*.sln) and then appending <typeparamref name="TEntryPoint" /> assembly name
+    ///         to the solution directory. The application root directory will be used to discover views
+    ///         and content files.
+    ///     </para>
+    ///     <para>
+    ///         The application assemblies will be loaded from the dependency context of the assembly
+    ///         containing <typeparamref name="TEntryPoint" />. This means that project dependencies of the
+    ///         assembly containing <typeparamref name="TEntryPoint" /> will be loaded as application
+    ///         assemblies.
+    ///     </para>
     /// </summary>
     public LambdaApplicationFactory() => _configuration = ConfigureWebHost;
 
     /// <summary>
-    /// Gets the <see cref="IReadOnlyList{LambdaApplicationFactory}"/> of factories created from this factory
-    /// by further customizing the <see cref="IHostBuilder"/> when calling
-    /// <see cref="WithHostBuilder"/>.
+    ///     Gets the <see cref="IReadOnlyList{LambdaApplicationFactory}" /> of factories created from
+    ///     this factory by further customizing the <see cref="IHostBuilder" /> when calling
+    ///     <see cref="WithHostBuilder" />.
     /// </summary>
     public IReadOnlyList<LambdaApplicationFactory<TEntryPoint>> Factories =>
         _derivedFactories.AsReadOnly();
 
     /// <summary>
-    /// Gets the <see cref="LambdaServerOptions"/> used to configure the <see cref="LambdaTestServer"/>.
-    /// These options control Lambda-specific testing behavior such as function timeout, ARN, and custom headers
-    /// included in Lambda runtime HTTP responses.
+    ///     Gets the <see cref="LambdaServerOptions" /> used to configure the
+    ///     <see cref="LambdaTestServer" />. These options control Lambda-specific testing behavior such as
+    ///     function timeout, ARN, and custom headers included in Lambda runtime HTTP responses.
     /// </summary>
     public LambdaServerOptions ServerOptions { get; private init; } = new();
 
     /// <summary>
-    /// Gets the <see cref="IServiceProvider"/> created by the server associated with this <see cref="LambdaApplicationFactory{TEntryPoint}"/>.
+    ///     Gets the <see cref="IServiceProvider" /> created by the server associated with this
+    ///     <see cref="LambdaApplicationFactory{TEntryPoint}" />.
     /// </summary>
     public virtual IServiceProvider Services => TestServer.Services;
 
     /// <summary>
-    /// Gets the <see cref="LambdaTestServer"/> created by this <see cref="LambdaApplicationFactory{TEntryPoint}"/>.
+    ///     Gets the <see cref="LambdaTestServer" /> created by this
+    ///     <see cref="LambdaApplicationFactory{TEntryPoint}" />.
     /// </summary>
     public LambdaTestServer TestServer
     {
@@ -123,20 +129,23 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
     }
 
     /// <summary>
-    /// Configures a cancellation token to propagate test cancellation signals to the Lambda test server
-    /// and its underlying components.
+    ///     Configures a cancellation token to propagate test cancellation signals to the Lambda test
+    ///     server and its underlying components.
     /// </summary>
     /// <param name="cancellationToken">
-    /// A <see cref="CancellationToken"/> that will be propagated to the test server, allowing it to
-    /// respond more efficiently to cancellation signals during test execution.
+    ///     A <see cref="CancellationToken" /> that will be propagated to the
+    ///     test server, allowing it to respond more efficiently to cancellation signals during test
+    ///     execution.
     /// </param>
     /// <returns>
-    /// The current <see cref="LambdaApplicationFactory{TEntryPoint}"/> instance for method chaining.
+    ///     The current <see cref="LambdaApplicationFactory{TEntryPoint}" /> instance for method
+    ///     chaining.
     /// </returns>
     /// <remarks>
-    /// This method allows test frameworks to signal cancellation to the Lambda test infrastructure,
-    /// enabling graceful shutdown and faster test cleanup when tests are cancelled or time out.
-    /// The cancellation token is passed to the <see cref="LambdaTestServer"/> during creation.
+    ///     This method allows test frameworks to signal cancellation to the Lambda test
+    ///     infrastructure, enabling graceful shutdown and faster test cleanup when tests are cancelled or
+    ///     time out. The cancellation token is passed to the <see cref="LambdaTestServer" /> during
+    ///     creation.
     /// </remarks>
     public LambdaApplicationFactory<TEntryPoint> WithCancellationToken(
         CancellationToken cancellationToken
@@ -146,39 +155,42 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
         return this;
     }
 
-    /// <summary>
-    /// Finalizes an instance of the <see cref="LambdaApplicationFactory{TEntryPoint}"/> class.
-    /// </summary>
+    /// <summary>Finalizes an instance of the <see cref="LambdaApplicationFactory{TEntryPoint}" /> class.</summary>
     ~LambdaApplicationFactory() => Dispose(false);
 
     /// <summary>
-    /// Creates a new <see cref="LambdaApplicationFactory{TEntryPoint}"/> with a <see cref="IHostBuilder"/>
-    /// that is further customized by <paramref name="configuration"/>.
+    ///     Creates a new <see cref="LambdaApplicationFactory{TEntryPoint}" /> with a
+    ///     <see cref="IHostBuilder" /> that is further customized by <paramref name="configuration" />.
     /// </summary>
     /// <param name="configuration">
-    /// An <see cref="Action{IHostBuilder}"/> to configure the <see cref="IHostBuilder"/>.
+    ///     An <see cref="Action{IHostBuilder}" /> to configure the
+    ///     <see cref="IHostBuilder" />.
     /// </param>
-    /// <returns>A new <see cref="LambdaApplicationFactory{TEntryPoint}"/>.</returns>
+    /// <returns>A new <see cref="LambdaApplicationFactory{TEntryPoint}" />.</returns>
     public LambdaApplicationFactory<TEntryPoint> WithHostBuilder(
         Action<IHostBuilder> configuration
     ) => WithHostBuilderCore(configuration);
 
     /// <summary>
-    /// Core implementation of <see cref="WithHostBuilder"/> that creates a derived factory with additional configuration.
-    /// This method creates a <see cref="DelegatedLambdaApplicationFactory"/> that chains the parent factory's configuration
-    /// with the new configuration provided in <paramref name="configuration"/>. The derived factory is tracked in the
-    /// <see cref="Factories"/> list for proper disposal.
+    ///     Core implementation of <see cref="WithHostBuilder" /> that creates a derived factory with
+    ///     additional configuration. This method creates a
+    ///     <see cref="DelegatedLambdaApplicationFactory" /> that chains the parent factory's configuration
+    ///     with the new configuration provided in <paramref name="configuration" />. The derived factory
+    ///     is tracked in the <see cref="Factories" /> list for proper disposal.
     /// </summary>
     /// <param name="configuration">
-    /// An <see cref="Action{IHostBuilder}"/> to configure the <see cref="IHostBuilder"/>.
-    /// This configuration will be applied after the parent factory's configuration.
+    ///     An <see cref="Action{IHostBuilder}" /> to configure the
+    ///     <see cref="IHostBuilder" />. This configuration will be applied after the parent factory's
+    ///     configuration.
     /// </param>
     /// <returns>
-    /// A new <see cref="LambdaApplicationFactory{TEntryPoint}"/> that applies both the parent factory's
-    /// configuration and the additional configuration specified in <paramref name="configuration"/>.
+    ///     A new <see cref="LambdaApplicationFactory{TEntryPoint}" /> that applies both the parent
+    ///     factory's configuration and the additional configuration specified in
+    ///     <paramref name="configuration" />.
     /// </returns>
     /// <remarks>
-    /// This method is <see langword="virtual"/> to allow derived classes to customize the factory creation behavior.
+    ///     This method is <see langword="virtual" /> to allow derived classes to customize the
+    ///     factory creation behavior.
     /// </remarks>
     protected virtual LambdaApplicationFactory<TEntryPoint> WithHostBuilderCore(
         Action<IHostBuilder> configuration
@@ -379,12 +391,11 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
     }
 
     /// <summary>
-    /// Gets the assemblies containing the functional tests. The
-    /// <see cref="LambdaApplicationFactoryContentRootAttribute"/> applied to these
-    /// assemblies defines the content root to use for the given
-    /// <typeparamref name="TEntryPoint"/>.
+    ///     Gets the assemblies containing the functional tests. The
+    ///     <see cref="LambdaApplicationFactoryContentRootAttribute" /> applied to these assemblies defines
+    ///     the content root to use for the given <typeparamref name="TEntryPoint" />.
     /// </summary>
-    /// <returns>The list of <see cref="Assembly"/> containing tests.</returns>
+    /// <returns>The list of <see cref="Assembly" /> containing tests.</returns>
     protected virtual IEnumerable<Assembly> GetTestAssemblies()
     {
         try
@@ -445,28 +456,28 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
     }
 
     /// <summary>
-    /// Creates the <see cref="IHost"/> with the bootstrapped application in <paramref name="builder"/>.
-    /// The host is built but not started. The <see cref="LambdaTestServer"/> will start the host
-    /// when <see cref="LambdaTestServer.StartAsync"/> is called.
+    ///     Creates the <see cref="IHost" /> with the bootstrapped application in
+    ///     <paramref name="builder" />. The host is built but not started. The
+    ///     <see cref="LambdaTestServer" /> will start the host when
+    ///     <see cref="LambdaTestServer.StartAsync" /> is called.
     /// </summary>
-    /// <param name="builder">The <see cref="IHostBuilder"/> used to create the host.</param>
-    /// <returns>The <see cref="IHost"/> with the bootstrapped application.</returns>
+    /// <param name="builder">The <see cref="IHostBuilder" /> used to create the host.</param>
+    /// <returns>The <see cref="IHost" /> with the bootstrapped application.</returns>
     protected virtual IHost CreateHost(IHostBuilder builder) =>
         // Build the host but DON'T start it - LambdaTestServer.StartAsync() will start it
         builder.Build();
 
-    /// <summary>
-    /// Gives a fixture an opportunity to configure the application before it gets built.
-    /// </summary>
-    /// <param name="builder">The <see cref="IHostBuilder"/> for the application.</param>
+    /// <summary>Gives a fixture an opportunity to configure the application before it gets built.</summary>
+    /// <param name="builder">The <see cref="IHostBuilder" /> for the application.</param>
     protected virtual void ConfigureWebHost(IHostBuilder builder) { }
 
     /// <summary>
-    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+    ///     Performs application-defined tasks associated with freeing, releasing, or resetting
+    ///     unmanaged resources.
     /// </summary>
     /// <param name="disposing">
-    /// <see langword="true" /> to release both managed and unmanaged resources;
-    /// <see langword="false" /> to release only unmanaged resources.
+    ///     <see langword="true" /> to release both managed and unmanaged resources;
+    ///     <see langword="false" /> to release only unmanaged resources.
     /// </param>
     protected virtual void Dispose(bool disposing)
     {
@@ -480,15 +491,16 @@ public class LambdaApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposab
     }
 
     /// <summary>
-    /// Internal implementation of <see cref="LambdaApplicationFactory{TEntryPoint}"/> that delegates virtual method calls
-    /// to callbacks provided at construction. This class is used by <see cref="LambdaApplicationFactory{TEntryPoint}.WithHostBuilder"/> to create derived
-    /// factories with customized behavior without creating additional subclasses.
+    ///     Internal implementation of <see cref="LambdaApplicationFactory{TEntryPoint}" /> that
+    ///     delegates virtual method calls to callbacks provided at construction. This class is used by
+    ///     <see cref="LambdaApplicationFactory{TEntryPoint}.WithHostBuilder" /> to create derived
+    ///     factories with customized behavior without creating additional subclasses.
     /// </summary>
     /// <remarks>
-    /// This class implements the delegation pattern to allow runtime customization of virtual methods.
-    /// Each virtual method (<see cref="CreateHost"/>, <see cref="GetTestAssemblies"/>,
-    /// and <see cref="ConfigureWebHost"/>) delegates to a callback function provided in the constructor,
-    /// enabling configuration chaining while reusing the base factory infrastructure.
+    ///     This class implements the delegation pattern to allow runtime customization of virtual
+    ///     methods. Each virtual method (<see cref="CreateHost" />, <see cref="GetTestAssemblies" />, and
+    ///     <see cref="ConfigureWebHost" />) delegates to a callback function provided in the constructor,
+    ///     enabling configuration chaining while reusing the base factory infrastructure.
     /// </remarks>
     private sealed class DelegatedLambdaApplicationFactory : LambdaApplicationFactory<TEntryPoint>
     {

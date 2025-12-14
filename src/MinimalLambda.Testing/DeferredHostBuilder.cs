@@ -122,13 +122,9 @@ internal sealed class DeferredHostBuilder : IHostBuilder
         // If the entry point completed we'll set the tcs just in case the application doesn't call
         // IHost.Start/StartAsync.
         if (exception is not null)
-        {
             _hostStartTcs.TrySetException(exception);
-        }
         else
-        {
             _hostStartTcs.TrySetResult();
-        }
 
         _entryPointCompletionTcs.TrySetResult(exception);
     }

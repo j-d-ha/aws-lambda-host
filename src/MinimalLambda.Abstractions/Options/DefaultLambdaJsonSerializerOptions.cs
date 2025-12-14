@@ -13,8 +13,14 @@ public static class DefaultLambdaJsonSerializerOptions
     ///     <see cref="DefaultLambdaJsonSerializer" />.
     /// </summary>
     /// <remarks>
-    ///     <para>Configures null-value ignoring, case-insensitive property names, and the AWS naming policy.</para>
-    ///     <para>Adds the AWS-provided converters for dates, memory streams, constant classes, and byte arrays.</para>
+    ///     <para>
+    ///         Configures null-value ignoring, case-insensitive property names, and the AWS naming
+    ///         policy.
+    ///     </para>
+    ///     <para>
+    ///         Adds the AWS-provided converters for dates, memory streams, constant classes, and byte
+    ///         arrays.
+    ///     </para>
     /// </remarks>
     /// <returns>Configured JSON serializer options suitable for AWS Lambda payloads.</returns>
     public static JsonSerializerOptions Create()

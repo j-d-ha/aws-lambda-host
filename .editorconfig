@@ -15,6 +15,6 @@ trim_trailing_whitespace = true
 [*.xml]
 indent_size = 4
 
-[src/AwsLambda.Host.Testing/HostFactoryResolver.cs]
+[*HostFactoryResolver.cs]
 ij_formatter_enabled = false
 resharper_disable_formatter = true

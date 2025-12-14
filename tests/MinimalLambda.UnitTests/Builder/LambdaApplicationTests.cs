@@ -8,7 +8,7 @@ public class LambdaApplicationTests
 {
     private static IHost CreateHostWithServices()
     {
-        var builder = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder();
+        var builder = Host.CreateDefaultBuilder();
         builder.ConfigureServices(services =>
         {
             services.ConfigureLambdaHostOptions(_ => { });

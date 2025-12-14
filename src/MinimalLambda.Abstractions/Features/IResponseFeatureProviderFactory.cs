@@ -4,9 +4,9 @@ namespace MinimalLambda;
 /// <remarks>
 ///     <para>
 ///         <see cref="IResponseFeatureProviderFactory" /> creates <see cref="IFeatureProvider" />
-///         instances for specific response types during Lambda invocations. The factory enables
-///         lazy registration of response feature providers. This factory is registered automatically
-///         at startup.
+///         instances for specific response types during Lambda invocations. The factory enables lazy
+///         registration of response feature providers. This factory is registered automatically at
+///         startup.
 ///     </para>
 /// </remarks>
 public interface IResponseFeatureProviderFactory
