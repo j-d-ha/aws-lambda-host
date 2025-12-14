@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
 using Amazon.Lambda.APIGatewayEvents;
-using AwsLambda.Host.Options;
 using Microsoft.AspNetCore.Http;
+using MinimalLambda.Options;
 
-namespace AwsLambda.Host.Envelopes.ApiGateway;
+namespace MinimalLambda.Envelopes.ApiGateway;
 
 public sealed class ApiGatewayResult : APIGatewayProxyResponse, IResponseEnvelope
 {
