@@ -17,7 +17,7 @@ public class SimpleLambdaTests
 
         var response = await factory.TestServer.InvokeAsync<string, string>(
             "World",
-            cancellationToken: TestContext.Current.CancellationToken
+            TestContext.Current.CancellationToken
         );
 
         response.WasSuccess.Should().BeTrue();

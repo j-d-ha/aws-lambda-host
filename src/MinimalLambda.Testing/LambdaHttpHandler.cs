@@ -3,8 +3,8 @@ using System.Threading.Channels;
 namespace MinimalLambda.Testing;
 
 /// <summary>
-/// HTTP message handler that intercepts Lambda Bootstrap HTTP calls and
-/// routes them through the test server via transactions.
+///     HTTP message handler that intercepts Lambda Bootstrap HTTP calls and routes them through
+///     the test server via transactions.
 /// </summary>
 internal class LambdaTestingHttpHandler(
     Channel<LambdaHttpTransaction> transactionChannel,

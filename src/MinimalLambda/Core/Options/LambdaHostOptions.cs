@@ -1,5 +1,4 @@
 using Amazon.Lambda.RuntimeSupport.Bootstrap;
-using MinimalLambda.Builder.Extensions;
 
 namespace MinimalLambda.Options;
 

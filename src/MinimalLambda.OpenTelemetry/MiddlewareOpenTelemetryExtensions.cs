@@ -16,12 +16,12 @@ public static class MiddlewareOpenTelemetryExtensions
         /// <remarks>
         ///     <para>
         ///         Adds middleware that wraps each Lambda invocation with distributed tracing using the
-        ///        <see cref="AWSLambdaWrapper" /> from the OpenTelemetry AWS Lambda instrumentation
-        ///         package. A root span is created for each invocation with Lambda context information.
+        ///         <see cref="AWSLambdaWrapper" /> from the OpenTelemetry AWS Lambda instrumentation package.
+        ///         A root span is created for each invocation with Lambda context information.
         ///     </para>
         ///     <para>
-        ///         <b>Middleware Placement:</b> Call this method early in the middleware pipeline to
-        ///         capture the execution time of all subsequent middleware and handler logic.
+        ///         <b>Middleware Placement:</b> Call this method early in the middleware pipeline to capture
+        ///         the execution time of all subsequent middleware and handler logic.
         ///     </para>
         ///     <para>
         ///         <b>TracerProvider Registration Required:</b> A <see cref="TracerProvider" /> must be
