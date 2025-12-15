@@ -5,6 +5,14 @@ namespace MinimalLambda.Envelopes.ApiGateway;
 public interface IHttpResult<out TSelf> : IResponseEnvelope
     where TSelf : IHttpResult<TSelf>
 {
+    public int StatusCode { get; set; }
+
+    public IDictionary<string, string> Headers { get; set; }
+
+    public string Body { get; set; }
+
+    public bool IsBase64Encoded { get; set; }
+
     static abstract TSelf Create<TResponse>(
         int statusCode,
         TResponse? bodyContent,
@@ -143,5 +151,21 @@ public static class HttpResultExtensions
                 StatusCodes.Status500InternalServerError,
                 bodyContent
             );
+    }
+}
+
+public static class UpdateHttpResultExtensions
+{
+    extension<THttpResult>(THttpResult result)
+        where THttpResult : IHttpResult<THttpResult>
+    {
+        public THttpResult AddHeader(string key, string value)
+        {
+            result.Headers[key] = value;
+            return result;
+        }
+
+        public THttpResult AddContentType(string contentType) =>
+            result.AddHeader("Content-Type", contentType);
     }
 }
