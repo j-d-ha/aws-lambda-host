@@ -21,7 +21,6 @@ namespace MinimalLambda.Builder;
 /// </remarks>
 /// <example>
 ///     <code>
-///     <code>
 ///     lambda.MapHandler(([Event] MyEvent myEvent) => $"Hello, {myEvent.Name}!");
 ///     </code>
 /// </example>
