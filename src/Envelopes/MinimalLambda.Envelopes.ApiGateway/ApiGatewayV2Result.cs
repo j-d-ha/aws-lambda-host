@@ -31,12 +31,14 @@ public sealed class ApiGatewayV2Result
         Body = ((APIGatewayHttpApiV2ProxyResponse)_inner).Body;
     }
 
+    /// <inheritdoc />
     public ApiGatewayV2Result Customize(Action<ApiGatewayV2Result> customizer)
     {
         customizer(this);
         return this;
     }
 
+    /// <inheritdoc />
     public static ApiGatewayV2Result Create<T>(
         int statusCode,
         T? bodyContent,

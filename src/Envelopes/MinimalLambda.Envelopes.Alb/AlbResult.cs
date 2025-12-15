@@ -31,12 +31,14 @@ public sealed class AlbResult : ApplicationLoadBalancerResponse, IHttpResult<Alb
         Body = ((ApplicationLoadBalancerResponse)_inner).Body;
     }
 
+    /// <inheritdoc />
     public AlbResult Customize(Action<AlbResult> customizer)
     {
         customizer(this);
         return this;
     }
 
+    /// <inheritdoc />
     public static AlbResult Create<T>(
         int statusCode,
         T? bodyContent,
