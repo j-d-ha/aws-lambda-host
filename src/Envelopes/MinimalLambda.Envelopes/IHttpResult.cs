@@ -20,11 +20,7 @@ public interface IHttpResult<out TSelf> : IResponseEnvelope
     /// <summary>Gets or sets the HTTP status code.</summary>
     public int StatusCode { get; set; }
 
-    /// <summary>Creates a new HTTP result instance.</summary>
-    /// <remarks>
-    ///     Provide either <paramref name="bodyContent" /> for automatic serialization or
-    ///     <paramref name="body" /> for pre-serialized content.
-    /// </remarks>
+    /// <summary>Creates a new HTTP result instance with a strongly typed body.</summary>
     /// <typeparam name="TResponse">The type of content being returned.</typeparam>
     /// <param name="statusCode">The HTTP status code.</param>
     /// <param name="bodyContent">The typed content to serialize into the body.</param>
