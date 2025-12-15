@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <LangVersion>preview</LangVersion>
@@ -8,21 +8,17 @@
     <IncludeBuildOutput>true</IncludeBuildOutput>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Package Metadata -->
-    <PackageId>MinimalLambda.Envelopes.Alb</PackageId>
-    <Description>Strongly-typed Application Load Balancer event envelopes</Description>
+    <PackageId>MinimalLambda.Envelopes</PackageId>
+    <Description>Core components for MinimalLambda envelopes</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Amazon.Lambda.ApplicationLoadBalancerEvents" />
-    <PackageReference Include="Amazon.Lambda.Core" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\MinimalLambda.Abstractions\MinimalLambda.Abstractions.csproj" />
-    <ProjectReference Include="..\MinimalLambda.Envelopes\MinimalLambda.Envelopes.csproj" />
-  </ItemGroup>
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\MinimalLambda.Abstractions\MinimalLambda.Abstractions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
   </ItemGroup>
 </Project>

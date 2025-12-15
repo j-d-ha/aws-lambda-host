@@ -1,115 +1,29 @@
-# MinimalLambda.Envelopes.Sns
+# MinimalLambda.Envelopes
 
-Strongly-typed SNS event handling for the MinimalLambda framework.
+Shared infrastructure and abstractions for envelope packages.
+
+> 📚 **[View Full Documentation](https://j-d-ha.github.io/minimal-lambda/)**
 
 ## Overview
 
-This package provides `SnsEnvelope<T>`, which extends the base [
-`SNSEvent`](https://github.com/aws/aws-lambda-dotnet/blob/master/Libraries/src/Amazon.Lambda.SNSEvents/README.md)
-class with strongly-typed `Records` collection that deserializes message bodies into strongly-typed
-objects. Instead of manually parsing JSON from `record.Sns.Message`, you access deserialized
-payloads directly via `record.Sns.MessageContent`.
-
-| Envelope Class   | Base Class | Use Case                                   |
-|------------------|------------|--------------------------------------------|
-| `SnsEnvelope<T>` | `SNSEvent` | SNS event with deserialized message bodies |
-
-## Quick Start
-
-Define your message type and handler:
-
-```csharp
-using Amazon.Lambda.SNSEvents;
-using MinimalLambda.Builder;
-using MinimalLambda.Envelopes.Sns;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-
-var builder = LambdaApplication.CreateBuilder();
-var lambda = builder.Build();
-
-// SnsEnvelope<Message> provides access to the SNS event and deserialized Message payloads
-lambda.MapHandler(
-    ([Event] SnsEnvelope<Message> envelope, ILogger<Program> logger) =>
-    {
-        foreach (var record in envelope.Records)
-        {
-            logger.LogInformation("Message: {Content}", record.Sns.MessageContent?.Content);
-        }
-    }
-);
-
-await lambda.RunAsync();
-
-// Your message payload - will be deserialized from SNS message body
-internal record Message(string Content);
-```
-
-## Custom Envelopes
-
-To implement custom deserialization logic, extend `SnsEnvelopeBase<T>` and override the
-`ExtractPayload` method:
-
-```csharp
-// Example: Custom XML deserialization
-public sealed class SnsXmlEnvelope<T> : SnsEnvelopeBase<T>
-{
-    private static readonly XmlSerializer Serializer = new(typeof(T));
-
-    public override void ExtractPayload(EnvelopeOptions options)
-    {
-        foreach (var record in Records)
-        {
-            using var stringReader = new StringReader(record.Sns.Message);
-            using var xmlReader = XmlReader.Create(stringReader, options.XmlReaderSettings);
-            record.Sns.MessageContent = (T)Serializer.Deserialize(xmlReader)!;
-        }
-    }
-}
-```
-
-This pattern allows you to support multiple serialization formats while maintaining the same
-envelope interface.
-
-## AOT Support
-
-When using .NET Native AOT, register both the envelope and payload types in your
-`JsonSerializerContext`:
-
-```csharp
-[JsonSerializable(typeof(SnsEnvelope<Message>))]
-[JsonSerializable(typeof(Message))]
-internal partial class SerializerContext : JsonSerializerContext;
-```
-
-Register the serializer and configure envelope options to use the context:
-
-```csharp
-builder.Services.AddLambdaSerializerWithContext<SerializerContext>();
-
-builder.Services.ConfigureEnvelopeOptions(options =>
-{
-    options.JsonOptions.TypeInfoResolver = SerializerContext.Default;
-});
-```
+This package contains shared infrastructure and common abstractions used across envelope packages in the MinimalLambda framework.
 
 > [!NOTE]
-> The context must be registered as the type resolver for both the envelope options and the Lambda
-> serializer because the Lambda event and envelope payload are deserialized at different steps: the
-> Lambda serializer deserializes the raw event, and the envelope options deserialize the envelope
-> content into your payload type.
+> This is an infrastructure package automatically referenced by other envelope packages.
+
+## What's Included
+
+- `IHttpResult<TSelf>` interface and extension methods for HTTP response building
 
 ## Other Packages
 
-Additional packages in the minimal-lambda framework for abstractions, observability, and event
-source handling.
+Additional packages in the minimal-lambda framework for abstractions, observability, and event source handling.
 
 | Package                                                                                               | NuGet                                                                                                                                                            | Downloads                                                                                                                                                              |
 |-------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [**MinimalLambda**](../../MinimalLambda/README.md)                                                  | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.svg)](https://www.nuget.org/packages/MinimalLambda)                                                     | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.svg)](https://www.nuget.org/packages/MinimalLambda/)                                                     |
 | [**MinimalLambda.Abstractions**](../../MinimalLambda.Abstractions/README.md)                        | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.Abstractions.svg)](https://www.nuget.org/packages/MinimalLambda.Abstractions)                           | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.Abstractions.svg)](https://www.nuget.org/packages/MinimalLambda.Abstractions/)                           |
 | [**MinimalLambda.OpenTelemetry**](../../MinimalLambda.OpenTelemetry/README.md)                      | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.OpenTelemetry.svg)](https://www.nuget.org/packages/MinimalLambda.OpenTelemetry)                         | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.OpenTelemetry.svg)](https://www.nuget.org/packages/MinimalLambda.OpenTelemetry/)                         |
-| [**MinimalLambda.Envelopes**](../MinimalLambda.Envelopes/README.md)                                 | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.Envelopes.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes)                                 | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.Envelopes.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes/)                                 |
 | [**MinimalLambda.Envelopes.Sqs**](../MinimalLambda.Envelopes.Sqs/README.md)                         | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.Envelopes.Sqs.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes.Sqs)                         | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.Envelopes.Sqs.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes.Sqs/)                         |
 | [**MinimalLambda.Envelopes.ApiGateway**](../MinimalLambda.Envelopes.ApiGateway/README.md)           | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.Envelopes.ApiGateway.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes.ApiGateway)           | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.Envelopes.ApiGateway.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes.ApiGateway/)           |
 | [**MinimalLambda.Envelopes.Sns**](../MinimalLambda.Envelopes.Sns/README.md)                         | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.Envelopes.Sns.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes.Sns)                         | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.Envelopes.Sns.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes.Sns/)                         |

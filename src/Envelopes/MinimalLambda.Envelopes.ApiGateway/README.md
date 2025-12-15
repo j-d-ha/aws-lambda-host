@@ -21,6 +21,8 @@ serialization:
 | `ApiGatewayResponseEnvelope<T>`   | `APIGatewayProxyResponse`          | REST API, HTTP API payload format 1.0, or WebSocket API responses with typed body       |
 | `ApiGatewayV2RequestEnvelope<T>`  | `APIGatewayHttpApiV2ProxyRequest`  | HTTP API payload format 2.0 requests with deserialized body                             |
 | `ApiGatewayV2ResponseEnvelope<T>` | `APIGatewayHttpApiV2ProxyResponse` | HTTP API payload format 2.0 responses with typed body                                   |
+| `ApiGatewayResult`                | `APIGatewayProxyResponse`          | REST/HTTP/WebSocket API responses with fluent API                                       |
+| `ApiGatewayV2Result`              | `APIGatewayHttpApiV2ProxyResponse` | HTTP API v2 responses with fluent API                                                   |
 
 ## Quick Start
 
@@ -63,6 +65,51 @@ internal record Response(string Message, DateTime TimestampUtc);
 
 For HTTP API v2, use `ApiGatewayV2RequestEnvelope<T>` and `ApiGatewayV2ResponseEnvelope<T>` in the
 same way.
+
+## Response Builder API
+
+The `ApiGatewayResult` and `ApiGatewayV2Result` classes provide fluent APIs for building HTTP
+responses. **Key benefit**: Return multiple strongly typed models from the same handler (e.g.,
+success vs. error responses with different types).
+
+```csharp
+// REST API / HTTP API v1 / WebSocket
+lambda.MapHandler(([Event] ApiGatewayRequestEnvelope<Request> request) =>
+{
+    if (string.IsNullOrEmpty(request.BodyContent?.Name))
+        return ApiGatewayResult.BadRequest(new ErrorResponse("Name is required"));
+
+    return ApiGatewayResult.Ok(new SuccessResponse($"Hello {request.BodyContent.Name}!"));
+});
+
+// HTTP API v2
+lambda.MapHandler(([Event] ApiGatewayV2RequestEnvelope<Request> request) =>
+{
+    if (string.IsNullOrEmpty(request.BodyContent?.Name))
+        return ApiGatewayV2Result.BadRequest(new ErrorResponse("Name is required"));
+
+    return ApiGatewayV2Result.Ok(new SuccessResponse($"Hello {request.BodyContent.Name}!"));
+});
+```
+
+Available methods: `Ok()`, `Created()`, `NoContent()`, `BadRequest()`, `Unauthorized()`,
+`NotFound()`, `Conflict()`, `UnprocessableEntity()`, `InternalServerError()`, `StatusCode(int)`,
+`Text(int, string)`, `Json<T>(int, T)`.
+
+All methods have overloads with and without body content. Use `.Customize()` for fluent header
+customization.
+
+> [!NOTE]
+> Both result classes use their respective envelope classes internally.
+
+## Choosing Between Envelopes and Results
+
+**Use `ApiGatewayResult` / `ApiGatewayV2Result`** when you need to return multiple strongly typed
+models from the same handler (e.g., different success and error types). Provides convenient methods
+for common HTTP status codes.
+
+**Use envelope classes directly** when you need custom serialization (e.g., XML) or want to extend
+envelope base classes for custom behavior.
 
 ## Custom Envelopes
 
@@ -111,6 +158,17 @@ When using .NET Native AOT, register all envelope and payload types in your `Jso
 internal partial class SerializerContext : JsonSerializerContext;
 ```
 
+**When using `ApiGatewayResult` / `ApiGatewayV2Result` with multiple return types**, register each type separately:
+
+```csharp
+[JsonSerializable(typeof(ApiGatewayRequestEnvelope<Request>))]
+[JsonSerializable(typeof(ApiGatewayResult))]
+[JsonSerializable(typeof(Request))]
+[JsonSerializable(typeof(SuccessResponse))]
+[JsonSerializable(typeof(ErrorResponse))]
+internal partial class SerializerContext : JsonSerializerContext;
+```
+
 Register the serializer and configure envelope options to use the context:
 
 ```csharp
@@ -138,6 +196,7 @@ source handling.
 | [**MinimalLambda**](../../MinimalLambda/README.md)                                                  | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.svg)](https://www.nuget.org/packages/MinimalLambda)                                                     | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.svg)](https://www.nuget.org/packages/MinimalLambda/)                                                     |
 | [**MinimalLambda.Abstractions**](../../MinimalLambda.Abstractions/README.md)                        | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.Abstractions.svg)](https://www.nuget.org/packages/MinimalLambda.Abstractions)                           | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.Abstractions.svg)](https://www.nuget.org/packages/MinimalLambda.Abstractions/)                           |
 | [**MinimalLambda.OpenTelemetry**](../../MinimalLambda.OpenTelemetry/README.md)                      | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.OpenTelemetry.svg)](https://www.nuget.org/packages/MinimalLambda.OpenTelemetry)                         | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.OpenTelemetry.svg)](https://www.nuget.org/packages/MinimalLambda.OpenTelemetry/)                         |
+| [**MinimalLambda.Envelopes**](../MinimalLambda.Envelopes/README.md)                                 | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.Envelopes.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes)                                 | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.Envelopes.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes/)                                 |
 | [**MinimalLambda.Envelopes.Sqs**](../MinimalLambda.Envelopes.Sqs/README.md)                         | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.Envelopes.Sqs.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes.Sqs)                         | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.Envelopes.Sqs.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes.Sqs/)                         |
 | [**MinimalLambda.Envelopes.ApiGateway**](../MinimalLambda.Envelopes.ApiGateway/README.md)           | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.Envelopes.ApiGateway.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes.ApiGateway)           | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.Envelopes.ApiGateway.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes.ApiGateway/)           |
 | [**MinimalLambda.Envelopes.Sns**](../MinimalLambda.Envelopes.Sns/README.md)                         | [![NuGet](https://img.shields.io/nuget/v/MinimalLambda.Envelopes.Sns.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes.Sns)                         | [![Downloads](https://img.shields.io/nuget/dt/MinimalLambda.Envelopes.Sns.svg)](https://www.nuget.org/packages/MinimalLambda.Envelopes.Sns/)                         |
