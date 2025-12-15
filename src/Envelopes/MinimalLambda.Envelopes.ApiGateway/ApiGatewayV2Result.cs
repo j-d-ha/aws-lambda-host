@@ -4,6 +4,15 @@ using MinimalLambda.Options;
 
 namespace MinimalLambda.Envelopes.ApiGateway;
 
+/// <summary>
+///     Represents an HTTP response for AWS Lambda functions invoked by Amazon API Gateway HTTP
+///     API (v2).
+/// </summary>
+/// <remarks>
+///     This class wraps <see cref="APIGatewayHttpApiV2ProxyResponse" /> and provides support for
+///     response envelope customization through <see cref="IHttpResult{TSelf}" />. Use this type when
+///     returning responses from Lambda proxy integrations with API Gateway HTTP APIs.
+/// </remarks>
 public sealed class ApiGatewayV2Result
     : APIGatewayHttpApiV2ProxyResponse,
         IHttpResult<ApiGatewayV2Result>

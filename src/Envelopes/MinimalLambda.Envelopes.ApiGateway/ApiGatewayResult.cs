@@ -4,6 +4,15 @@ using MinimalLambda.Options;
 
 namespace MinimalLambda.Envelopes.ApiGateway;
 
+/// <summary>
+///     Represents an HTTP response for AWS Lambda functions invoked by Amazon API Gateway REST
+///     API (v1).
+/// </summary>
+/// <remarks>
+///     This class wraps <see cref="APIGatewayProxyResponse" /> and provides support for response
+///     envelope customization through <see cref="IHttpResult{TSelf}" />. Use this type when returning
+///     responses from Lambda proxy integrations with API Gateway REST APIs.
+/// </remarks>
 public sealed class ApiGatewayResult : APIGatewayProxyResponse, IHttpResult<ApiGatewayResult>
 {
     [JsonIgnore]

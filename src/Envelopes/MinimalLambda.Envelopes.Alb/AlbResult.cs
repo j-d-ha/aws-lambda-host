@@ -5,6 +5,15 @@ using MinimalLambda.Options;
 
 namespace MinimalLambda.Envelopes.Alb;
 
+/// <summary>
+///     Represents an HTTP response for AWS Lambda functions invoked by an Application Load
+///     Balancer (ALB).
+/// </summary>
+/// <remarks>
+///     This class wraps <see cref="ApplicationLoadBalancerResponse" /> and provides support for
+///     response envelope customization through <see cref="IHttpResult{TSelf}" />. Use this type when
+///     returning responses from Lambda functions triggered by ALB target groups.
+/// </remarks>
 public sealed class AlbResult : ApplicationLoadBalancerResponse, IHttpResult<AlbResult>
 {
     [JsonIgnore]
