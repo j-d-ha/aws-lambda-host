@@ -3,7 +3,7 @@ namespace MinimalLambda.Envelopes;
 /// <summary>Provides factory extension methods for creating HTTP results.</summary>
 public static class BaseHttpResultExtensions
 {
-    extension<THttpResult>(IHttpResult<THttpResult> result)
+    extension<THttpResult>(IHttpResult<THttpResult>)
         where THttpResult : IHttpResult<THttpResult>
     {
         /// <summary>Creates an HTTP result with the specified status code.</summary>
