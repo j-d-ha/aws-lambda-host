@@ -73,6 +73,36 @@ public class HttpResultExtensionsTests
     }
 
     [Fact]
+    public void Accepted_ReturnsStatus202()
+    {
+        // Act
+        var result = AlbResult.Accepted();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.StatusCode.Should().Be(202);
+    }
+
+    [Fact]
+    public void Accepted_WithBodyContent_ReturnsStatus202WithJson()
+    {
+        // Arrange
+        var payload = _fixture.Create<TestPayload>();
+        var options = new EnvelopeOptions();
+
+        // Act
+        var result = AlbResult.Accepted(payload);
+        result.PackPayload(options);
+
+        // Assert
+        result.StatusCode.Should().Be(202);
+        result.Headers.Should().ContainKey("Content-Type");
+        result.Headers["Content-Type"].Should().Be("application/json; charset=utf-8");
+        result.Body.Should().NotBeNull();
+        result.Body.Should().Contain(payload.Name);
+    }
+
+    [Fact]
     public void NoContent_ReturnsStatus204()
     {
         // Act
@@ -81,6 +111,58 @@ public class HttpResultExtensionsTests
         // Assert
         result.Should().NotBeNull();
         result.StatusCode.Should().Be(204);
+    }
+
+    [Fact]
+    public void MovedPermanently_ReturnsStatus301()
+    {
+        // Act
+        var result = AlbResult.MovedPermanently();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.StatusCode.Should().Be(301);
+    }
+
+    [Fact]
+    public void MovedPermanently_WithLocation_ReturnsStatus301WithLocationHeader()
+    {
+        // Arrange
+        var location = "https://example.com/new-location";
+
+        // Act
+        var result = AlbResult.MovedPermanently(location);
+
+        // Assert
+        result.StatusCode.Should().Be(301);
+        result.Headers.Should().ContainKey("Location");
+        result.Headers["Location"].Should().Be(location);
+    }
+
+    [Fact]
+    public void Found_ReturnsStatus302()
+    {
+        // Act
+        var result = AlbResult.Found();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.StatusCode.Should().Be(302);
+    }
+
+    [Fact]
+    public void Found_WithLocation_ReturnsStatus302WithLocationHeader()
+    {
+        // Arrange
+        var location = "https://example.com/temporary-location";
+
+        // Act
+        var result = AlbResult.Found(location);
+
+        // Assert
+        result.StatusCode.Should().Be(302);
+        result.Headers.Should().ContainKey("Location");
+        result.Headers["Location"].Should().Be(location);
     }
 
     [Fact]
@@ -122,6 +204,36 @@ public class HttpResultExtensionsTests
         // Assert
         result.Should().NotBeNull();
         result.StatusCode.Should().Be(401);
+    }
+
+    [Fact]
+    public void Forbidden_ReturnsStatus403()
+    {
+        // Act
+        var result = AlbResult.Forbidden();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.StatusCode.Should().Be(403);
+    }
+
+    [Fact]
+    public void Forbidden_WithBodyContent_ReturnsStatus403WithJson()
+    {
+        // Arrange
+        var payload = _fixture.Create<TestPayload>();
+        var options = new EnvelopeOptions();
+
+        // Act
+        var result = AlbResult.Forbidden(payload);
+        result.PackPayload(options);
+
+        // Assert
+        result.StatusCode.Should().Be(403);
+        result.Headers.Should().ContainKey("Content-Type");
+        result.Headers["Content-Type"].Should().Be("application/json; charset=utf-8");
+        result.Body.Should().NotBeNull();
+        result.Body.Should().Contain(payload.Name);
     }
 
     [Fact]

@@ -39,12 +39,59 @@ public static class HttpResultExtensions
                 bodyContent
             );
 
+        // ── 202 Accepted ─────────────────────────────────────────────────────────────────
+
+        /// <summary>Creates a 202 Accepted response.</summary>
+        /// <returns>An HTTP 202 result.</returns>
+        public static THttpResult Accepted() =>
+            BaseHttpResultExtensions.StatusCode<THttpResult>(StatusCodes.Status202Accepted);
+
+        /// <summary>Creates a 202 Accepted response with content.</summary>
+        /// <typeparam name="T">The type of content to return.</typeparam>
+        /// <param name="bodyContent">The response content to serialize.</param>
+        /// <returns>An HTTP 202 result with JSON content.</returns>
+        public static THttpResult Accepted<T>(T bodyContent) =>
+            BaseHttpResultExtensions.Json<THttpResult, T>(
+                StatusCodes.Status202Accepted,
+                bodyContent
+            );
+
         // ── 204 No Content ───────────────────────────────────────────────────────────────
 
         /// <summary>Creates a 204 No Content response.</summary>
         /// <returns>An HTTP 204 result.</returns>
         public static THttpResult NoContent() =>
             BaseHttpResultExtensions.StatusCode<THttpResult>(StatusCodes.Status204NoContent);
+
+        // ── 301 Moved Permanently ────────────────────────────────────────────────────────
+
+        /// <summary>Creates a 301 Moved Permanently response.</summary>
+        /// <returns>An HTTP 301 result.</returns>
+        public static THttpResult MovedPermanently() =>
+            BaseHttpResultExtensions.StatusCode<THttpResult>(StatusCodes.Status301MovedPermanently);
+
+        /// <summary>Creates a 301 Moved Permanently response with a location.</summary>
+        /// <param name="location">The URI of the redirect target.</param>
+        /// <returns>An HTTP 301 result with Location header.</returns>
+        public static THttpResult MovedPermanently(string location) =>
+            BaseHttpResultExtensions
+                .StatusCode<THttpResult>(StatusCodes.Status301MovedPermanently)
+                .Customize(result => result.Headers["Location"] = location);
+
+        // ── 302 Found ────────────────────────────────────────────────────────────────────
+
+        /// <summary>Creates a 302 Found response.</summary>
+        /// <returns>An HTTP 302 result.</returns>
+        public static THttpResult Found() =>
+            BaseHttpResultExtensions.StatusCode<THttpResult>(StatusCodes.Status302Found);
+
+        /// <summary>Creates a 302 Found response with a location.</summary>
+        /// <param name="location">The URI of the redirect target.</param>
+        /// <returns>An HTTP 302 result with Location header.</returns>
+        public static THttpResult Found(string location) =>
+            BaseHttpResultExtensions
+                .StatusCode<THttpResult>(StatusCodes.Status302Found)
+                .Customize(result => result.Headers["Location"] = location);
 
         // ── 400 Bad Request ──────────────────────────────────────────────────────────────
 
@@ -69,6 +116,23 @@ public static class HttpResultExtensions
         /// <returns>An HTTP 401 result.</returns>
         public static THttpResult Unauthorized() =>
             BaseHttpResultExtensions.StatusCode<THttpResult>(StatusCodes.Status401Unauthorized);
+
+        // ── 403 Forbidden ────────────────────────────────────────────────────────────────
+
+        /// <summary>Creates a 403 Forbidden response.</summary>
+        /// <returns>An HTTP 403 result.</returns>
+        public static THttpResult Forbidden() =>
+            BaseHttpResultExtensions.StatusCode<THttpResult>(StatusCodes.Status403Forbidden);
+
+        /// <summary>Creates a 403 Forbidden response with content.</summary>
+        /// <typeparam name="T">The type of content to return.</typeparam>
+        /// <param name="bodyContent">The response content to serialize.</param>
+        /// <returns>An HTTP 403 result with JSON content.</returns>
+        public static THttpResult Forbidden<T>(T bodyContent) =>
+            BaseHttpResultExtensions.Json<THttpResult, T>(
+                StatusCodes.Status403Forbidden,
+                bodyContent
+            );
 
         // ── 404 Not Found ────────────────────────────────────────────────────────────────
 
