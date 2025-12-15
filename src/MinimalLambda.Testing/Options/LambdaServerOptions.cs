@@ -29,8 +29,8 @@ public class LambdaServerOptions
     public TimeSpan FunctionTimeout { get; set; } = TimeSpan.FromSeconds(3);
 
     /// <summary>
-    ///     Gets or sets the JSON serializer options used for Lambda event and response serialization.
-    ///     Defaults to the standard Lambda JSON configuration settings.
+    ///     Gets or sets the JSON serializer options used for Lambda event and response
+    ///     serialization. Defaults to the standard Lambda JSON configuration settings.
     /// </summary>
     public JsonSerializerOptions SerializerOptions { get; set; } =
         DefaultLambdaJsonSerializerOptions.Create();
