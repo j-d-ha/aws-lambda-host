@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MinimalLambda.Builder;
@@ -6,20 +7,27 @@ internal class LambdaOnShutdownBuilder : ILambdaOnShutdownBuilder
 {
     private readonly IList<LambdaShutdownDelegate> _handlers = [];
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILambdaLifecycleContextFactory _contextFactory;
 
     public LambdaOnShutdownBuilder(
         IServiceProvider serviceProvider,
-        IServiceScopeFactory scopeFactory
+        IServiceScopeFactory scopeFactory,
+        ILambdaLifecycleContextFactory contextFactory
     )
     {
         ArgumentNullException.ThrowIfNull(serviceProvider);
         ArgumentNullException.ThrowIfNull(scopeFactory);
+        ArgumentNullException.ThrowIfNull(contextFactory);
 
         Services = serviceProvider;
         _scopeFactory = scopeFactory;
+        _contextFactory = contextFactory;
     }
 
     public IServiceProvider Services { get; }
+
+    public ConcurrentDictionary<string, object?> Properties { get; } = new();
+
     public IReadOnlyList<LambdaShutdownDelegate> ShutdownHandlers => _handlers.AsReadOnly();
 
     public ILambdaOnShutdownBuilder OnShutdown(LambdaShutdownDelegate handler)
@@ -55,9 +63,14 @@ internal class LambdaOnShutdownBuilder : ILambdaOnShutdownBuilder
     {
         try
         {
-            using var scope = _scopeFactory.CreateScope();
-            await handler(scope.ServiceProvider, cancellationToken).ConfigureAwait(false);
-            return null;
+            var context = _contextFactory.Create(Properties, cancellationToken);
+
+            await using (context as IAsyncDisposable)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                await handler(context).ConfigureAwait(false);
+                return null;
+            }
         }
         catch (Exception ex)
         {

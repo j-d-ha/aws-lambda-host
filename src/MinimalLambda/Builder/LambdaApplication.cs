@@ -137,6 +137,10 @@ public sealed class LambdaApplication
         _onShutdownBuilder.ShutdownHandlers;
 
     /// <inheritdoc />
+    ConcurrentDictionary<string, object?> ILambdaOnShutdownBuilder.Properties =>
+        _onInitBuilder.Properties;
+
+    /// <inheritdoc />
     public ILambdaOnShutdownBuilder OnShutdown(LambdaShutdownDelegate handler)
     {
         _onShutdownBuilder.OnShutdown(handler);
