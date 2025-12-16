@@ -5,6 +5,7 @@ internal enum ParameterSource
     Event,
     KeyedService,
     CancellationToken,
-    Context,
+    HostContext,
+    LifecycleContext,
     Service,
 }

@@ -7,6 +7,8 @@ internal static class TypeConstants
 
     internal const string ILambdaHostContext = "global::MinimalLambda.ILambdaHostContext";
 
+    internal const string ILambdaLifecycleContext = "global::MinimalLambda.ILambdaLifecycleContext";
+
     internal const string CancellationToken = "global::System.Threading.CancellationToken";
 
     internal const string Task = "global::System.Threading.Tasks.Task";

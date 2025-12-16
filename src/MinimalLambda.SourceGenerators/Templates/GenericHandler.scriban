@@ -23,7 +23,7 @@ namespace MinimalLambda.Generated
 
             return application.{{ name }}({{ name }});
 
-            {{ if call.should_await ~}} async {{ end ~}}{{ call.wrapper_return_type }} {{ name }}(IServiceProvider serviceProvider, CancellationToken cancellationToken)
+            {{ if call.should_await ~}} async {{ end ~}}{{ call.wrapper_return_type }} {{ name }}(ILambdaLifecycleContext context)
             {
                 {{~ if call.has_any_keyed_service_parameter ~}}
                 if (serviceProvider.GetService<IServiceProviderIsService>() is not IServiceProviderIsKeyedService)

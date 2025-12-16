@@ -4,7 +4,7 @@ namespace MinimalLambda;
 
 internal sealed class LifetimeStopwatch
 {
-    private readonly Stopwatch _stopwatch = new();
+    private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
 
     internal TimeSpan Elapsed
     {

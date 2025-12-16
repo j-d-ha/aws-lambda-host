@@ -68,7 +68,7 @@ namespace MinimalLambda.Generated
                 }
                 // ParameterInfo { Type = string, Name = request, Source = Event, IsNullable = False, IsOptional = False}
                 var arg0 = context.GetRequiredEvent<string>();
-                // ParameterInfo { Type = global::Amazon.Lambda.Core.ILambdaContext, Name = context, Source = Context, IsNullable = False, IsOptional = False}
+                // ParameterInfo { Type = global::Amazon.Lambda.Core.ILambdaContext, Name = context, Source = HostContext, IsNullable = False, IsOptional = False}
                 var arg1 = context;
                 // ParameterInfo { Type = global::System.Threading.CancellationToken, Name = cancellationToken, Source = CancellationToken, IsNullable = False, IsOptional = False}
                 var arg2 = context.CancellationToken;

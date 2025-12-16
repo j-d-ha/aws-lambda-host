@@ -11,6 +11,7 @@
     <PackageId>MinimalLambda</PackageId>
     <Description>Minimal API-style framework for AWS Lambda functions</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);MinimalLambda.Generated</InterceptorsNamespaces>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.Core" />
@@ -37,6 +38,7 @@
     <ProjectReference
       Include="..\MinimalLambda.SourceGenerators\MinimalLambda.SourceGenerators.csproj"
       ReferenceOutputAssembly="false"
+      OutputItemType="Analyzer"
     />
   </ItemGroup>
   <Target Name="IncludeSourceGenerator" BeforeTargets="_GetPackageFiles">

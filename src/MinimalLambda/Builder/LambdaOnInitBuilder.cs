@@ -53,7 +53,17 @@ internal class LambdaOnInitBuilder : ILambdaOnInitBuilder
 
                 var tasks = _handlers.Select(h => RunInitHandler(h, cts.Token));
 
-                var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+                (Exception? Error, bool ShouldContinue)[] results;
+                try
+                {
+                    results = await Task.WhenAll(tasks).WaitAsync(cts.Token).ConfigureAwait(false);
+                }
+                catch (TaskCanceledException) when (cts.Token.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException(
+                        "Running OnInit handlers did not complete within the allocated timeout period."
+                    );
+                }
 
                 var (errors, shouldContinue) = results.Aggregate(
                     (errors: new List<Exception>(), shouldContinue: true),

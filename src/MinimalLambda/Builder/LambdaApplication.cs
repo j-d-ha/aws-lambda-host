@@ -126,7 +126,7 @@ public sealed class LambdaApplication
     }
 
     /// <inheritdoc />
-    Func<CancellationToken, Task<bool>> ILambdaOnInitBuilder.Build() => _onInitBuilder.Build();
+    Func<CancellationToken, Task<bool>>? ILambdaOnInitBuilder.Build() => _onInitBuilder.Build();
 
     //      ┌──────────────────────────────────────────────────────────┐
     //      │                 ILambdaOnShutdownBuilder                 │

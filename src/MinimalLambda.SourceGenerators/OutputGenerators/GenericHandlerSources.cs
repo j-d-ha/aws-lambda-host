@@ -129,22 +129,26 @@ internal static class GenericHandlerSources
                 Assignment = param.Source switch
                 {
                     // CancellationToken -> get directly from arguments
-                    ParameterSource.CancellationToken => "cancellationToken",
+                    ParameterSource.CancellationToken => "context.CancellationToken",
+
+                    // ILambdaLifecycleContext -> get directly from arguments
+                    ParameterSource.LifecycleContext => "context",
 
                     // inject keyed service from the DI container - required
                     ParameterSource.KeyedService when param.IsRequired =>
-                        $"serviceProvider.GetRequiredKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
+                        $"context.ServiceProvider.GetRequiredKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
 
                     // inject keyed service from the DI container - optional
                     ParameterSource.KeyedService =>
-                        $"serviceProvider.GetKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
+                        $"context.ServiceProvider.GetKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
 
                     // default: inject service from the DI container - required
                     _ when param.IsRequired =>
-                        $"serviceProvider.GetRequiredService<{param.TypeInfo.FullyQualifiedType}>()",
+                        $"context.ServiceProvider.GetRequiredService<{param.TypeInfo.FullyQualifiedType}>()",
 
                     // default: inject service from the DI container - optional
-                    _ => $"serviceProvider.GetService<{param.TypeInfo.FullyQualifiedType}>()",
+                    _ =>
+                        $"context.ServiceProvider.GetService<{param.TypeInfo.FullyQualifiedType}>()",
                 },
             })
             .ToArray();
