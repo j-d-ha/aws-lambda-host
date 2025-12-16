@@ -40,7 +40,7 @@ internal static class GenericHandlerSources
             .Select(higherOrderMethodInfo =>
             {
                 // build handler function signature
-                var handlerSignature = higherOrderMethodInfo.DelegateInfo.BuildHandlerSignature();
+                var handlerSignature = higherOrderMethodInfo.DelegateInfo.BuildHandlerCastCall();
 
                 // get arguments for handler
                 var handlerArgs =

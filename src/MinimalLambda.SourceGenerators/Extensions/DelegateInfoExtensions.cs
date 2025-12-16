@@ -44,4 +44,33 @@ internal static class DelegateInfoExtensions
 
         return handlerSignature;
     }
+
+    extension(DelegateInfo delegateInfo)
+    {
+        internal string BuildHandlerCastCall()
+        {
+            var signatureBuilder = new StringBuilder();
+            signatureBuilder.Append("Cast(handler, ");
+
+            signatureBuilder.Append(delegateInfo.ReturnTypeInfo.FullyQualifiedType);
+
+            signatureBuilder.Append(" (");
+
+            signatureBuilder.Append(
+                string.Join(
+                    ", ",
+                    delegateInfo.Parameters.Select(
+                        (p, i) =>
+                            $"{p.TypeInfo.FullyQualifiedType} arg{i}{(p.IsOptional ? " = default" : "")}"
+                    )
+                )
+            );
+
+            signatureBuilder.Append(") => throw null!)");
+
+            var handlerSignature = signatureBuilder.ToString();
+
+            return handlerSignature;
+        }
+    }
 }
