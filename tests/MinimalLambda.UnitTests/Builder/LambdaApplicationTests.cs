@@ -14,6 +14,7 @@ public class LambdaApplicationTests
             services.ConfigureLambdaHostOptions(_ => { });
             services.AddLambdaHostCoreServices();
             services.TryAddLambdaHostDefaultServices();
+            services.AddSingleton<ILifetimeStopwatch, LifetimeStopwatch>();
         });
 
         return builder.Build();
@@ -526,7 +527,7 @@ public class LambdaApplicationTests
         // Arrange
         var host = CreateHostWithServices();
         var app = new LambdaApplication(host);
-        LambdaInitDelegate handler = async (_, _) => true;
+        LambdaInitDelegate handler = async _ => true;
 
         // Act
         app.OnInit(handler);
@@ -541,7 +542,7 @@ public class LambdaApplicationTests
         // Arrange
         var host = CreateHostWithServices();
         var app = new LambdaApplication(host);
-        LambdaInitDelegate handler = async (_, _) => true;
+        LambdaInitDelegate handler = async _ => true;
 
         // Act
         var result = app.OnInit(handler);
@@ -556,7 +557,7 @@ public class LambdaApplicationTests
         // Arrange
         var host = CreateHostWithServices();
         var app = new LambdaApplication(host);
-        LambdaInitDelegate handler = async (_, _) => true;
+        LambdaInitDelegate handler = async _ => true;
 
         // Act
         var result = app.OnInit(handler).OnInit(handler);
@@ -572,7 +573,7 @@ public class LambdaApplicationTests
         // Arrange
         var host = CreateHostWithServices();
         var app = new LambdaApplication(host);
-        LambdaInitDelegate handler = async (_, _) => true;
+        LambdaInitDelegate handler = async _ => true;
         app.OnInit(handler);
 
         // Act
@@ -699,7 +700,7 @@ public class LambdaApplicationTests
         var host = CreateHostWithServices();
         var app = new LambdaApplication(host);
         LambdaInvocationDelegate invocationHandler = async _ => await Task.CompletedTask;
-        LambdaInitDelegate initHandler = async (_, _) => true;
+        LambdaInitDelegate initHandler = async _ => true;
         LambdaShutdownDelegate shutdownHandler = async (_, _) => await Task.CompletedTask;
 
         // Act

@@ -5,7 +5,7 @@ namespace MinimalLambda;
 
 internal class LambdaLifecycleContextFactory(
     IServiceScopeFactory scopeFactory,
-    LifetimeStopwatch stopwatch,
+    ILifetimeStopwatch stopwatch,
     IConfiguration configuration
 ) : ILambdaLifecycleContextFactory
 {

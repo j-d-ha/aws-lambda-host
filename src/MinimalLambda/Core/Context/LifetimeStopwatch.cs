@@ -2,11 +2,11 @@ using System.Diagnostics;
 
 namespace MinimalLambda;
 
-internal sealed class LifetimeStopwatch
+internal sealed class LifetimeStopwatch : ILifetimeStopwatch
 {
     private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
 
-    internal TimeSpan Elapsed
+    public TimeSpan Elapsed
     {
         get
         {

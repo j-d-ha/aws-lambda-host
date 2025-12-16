@@ -14,6 +14,7 @@ public class OutputFormattingLambdaApplicationExtensionsTests
             services.ConfigureLambdaHostOptions(_ => { });
             services.AddLambdaHostCoreServices();
             services.TryAddLambdaHostDefaultServices();
+            services.AddSingleton<ILifetimeStopwatch, LifetimeStopwatch>();
         });
 
         return builder.Build();

@@ -12,21 +12,27 @@ public class DefaultLambdaOnInitBuilderFactoryTests
     private readonly IServiceScopeFactory _scopeFactory = Substitute.For<IServiceScopeFactory>();
     private readonly IServiceProvider _serviceProvider = Substitute.For<IServiceProvider>();
 
+    private readonly ILambdaLifecycleContextFactory _contextFactory =
+        Substitute.For<ILambdaLifecycleContextFactory>();
+
     [Theory]
     [InlineData(0)] // ServiceProvider
     [InlineData(1)] // ScopeFactory
     [InlineData(2)] // Options
+    [InlineData(3)] // ContextFactory
     public void CreateBuilder_WithNullParameter_ThrowsArgumentNullException(int parameterIndex)
     {
         // Arrange
         var serviceProvider = parameterIndex == 0 ? null : _serviceProvider;
         var scopeFactory = parameterIndex == 1 ? null : _scopeFactory;
         var options = parameterIndex == 2 ? null : _options;
+        var contextFactory = parameterIndex == 3 ? null : _contextFactory;
 
         var factory = new DefaultLambdaOnInitBuilderFactory(
             serviceProvider!,
             scopeFactory!,
-            options!
+            options!,
+            contextFactory!
         );
 
         // Act & Assert - validation happens in LambdaOnInitBuilder constructor
@@ -41,7 +47,8 @@ public class DefaultLambdaOnInitBuilderFactoryTests
         var factory = new DefaultLambdaOnInitBuilderFactory(
             _serviceProvider,
             _scopeFactory,
-            _options
+            _options,
+            _contextFactory
         );
 
         // Assert
@@ -55,7 +62,8 @@ public class DefaultLambdaOnInitBuilderFactoryTests
         var factory = new DefaultLambdaOnInitBuilderFactory(
             _serviceProvider,
             _scopeFactory,
-            _options
+            _options,
+            _contextFactory
         );
 
         // Act
@@ -73,7 +81,8 @@ public class DefaultLambdaOnInitBuilderFactoryTests
         var factory = new DefaultLambdaOnInitBuilderFactory(
             _serviceProvider,
             _scopeFactory,
-            _options
+            _options,
+            _contextFactory
         );
 
         // Act
@@ -90,7 +99,8 @@ public class DefaultLambdaOnInitBuilderFactoryTests
         var factory = new DefaultLambdaOnInitBuilderFactory(
             _serviceProvider,
             _scopeFactory,
-            _options
+            _options,
+            _contextFactory
         );
 
         // Act

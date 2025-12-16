@@ -53,7 +53,7 @@ internal class LambdaLifecycleContext(
 
     internal class Core
     {
-        internal required LifetimeStopwatch Stopwatch { get; init; }
+        internal required ILifetimeStopwatch Stopwatch { get; init; }
         internal string? Region { get; init; }
         internal string? ExecutionEnvironment { get; init; }
         internal string? FunctionName { get; init; }

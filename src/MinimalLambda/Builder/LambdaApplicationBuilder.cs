@@ -99,7 +99,7 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
 
         // Register core services that are required for Lambda Host to run
         Services.AddLambdaHostCoreServices();
-        Services.AddSingleton(lifetimeStopwatch);
+        Services.AddSingleton<ILifetimeStopwatch>(lifetimeStopwatch);
     }
 
     /// <inheritdoc />

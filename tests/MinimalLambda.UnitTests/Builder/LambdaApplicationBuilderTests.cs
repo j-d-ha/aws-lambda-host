@@ -297,8 +297,8 @@ public class LambdaApplicationBuilderTests
         var app = builder.Build();
 
         // Register init handlers on the app
-        LambdaInitDelegate handler1 = (_, _) => Task.FromResult(true);
-        LambdaInitDelegate handler2 = (_, _) => Task.FromResult(false);
+        LambdaInitDelegate handler1 = _ => Task.FromResult(true);
+        LambdaInitDelegate handler2 = _ => Task.FromResult(false);
         app.OnInit(handler1);
         app.OnInit(handler2);
 
@@ -513,7 +513,7 @@ public class LambdaApplicationBuilderTests
         // Arrange
         var builder = LambdaApplication.CreateBuilder();
         var app = builder.Build();
-        LambdaInitDelegate handler = (_, _) => Task.FromResult(true);
+        LambdaInitDelegate handler = _ => Task.FromResult(true);
 
         // Act
         var result = app.OnInit(handler);
@@ -529,8 +529,8 @@ public class LambdaApplicationBuilderTests
         // Arrange
         var builder = LambdaApplication.CreateBuilder();
         var app = builder.Build();
-        LambdaInitDelegate handler1 = (_, _) => Task.FromResult(true);
-        LambdaInitDelegate handler2 = (_, _) => Task.FromResult(false);
+        LambdaInitDelegate handler1 = _ => Task.FromResult(true);
+        LambdaInitDelegate handler2 = _ => Task.FromResult(false);
 
         // Act
         app.OnInit(handler1);
