@@ -18,7 +18,7 @@ namespace MinimalLambda.Builder;
 public interface ILambdaOnInitBuilder
 {
     /// <summary>Gets the read-only list of registered Init handlers.</summary>
-    IReadOnlyList<LambdaInitDelegate2> InitHandlers { get; }
+    IReadOnlyList<LambdaInitDelegate> InitHandlers { get; }
 
     /// <summary>Gets a dictionary for storing state that is shared across Init handlers.</summary>
     ConcurrentDictionary<string, object?> Properties { get; }
@@ -29,7 +29,7 @@ public interface ILambdaOnInitBuilder
     /// <summary>Registers a handler to execute during the Lambda Init phase.</summary>
     /// <param name="handler">The <see cref="LambdaInitDelegate" /> to register.</param>
     /// <returns>The current <see cref="ILambdaOnInitBuilder" /> instance for method chaining.</returns>
-    ILambdaOnInitBuilder OnInit(LambdaInitDelegate2 handler);
+    ILambdaOnInitBuilder OnInit(LambdaInitDelegate handler);
 
     /// <summary>Builds the final init delegate by composing all registered handlers.</summary>
     /// <remarks>

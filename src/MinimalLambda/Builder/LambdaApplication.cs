@@ -112,14 +112,14 @@ public sealed class LambdaApplication
     //      └──────────────────────────────────────────────────────────┘
 
     /// <inheritdoc />
-    public IReadOnlyList<LambdaInitDelegate2> InitHandlers => _onInitBuilder.InitHandlers;
+    public IReadOnlyList<LambdaInitDelegate> InitHandlers => _onInitBuilder.InitHandlers;
 
     /// <inheritdoc />
     ConcurrentDictionary<string, object?> ILambdaOnInitBuilder.Properties =>
         _onInitBuilder.Properties;
 
     /// <inheritdoc />
-    public ILambdaOnInitBuilder OnInit(LambdaInitDelegate2 handler)
+    public ILambdaOnInitBuilder OnInit(LambdaInitDelegate handler)
     {
         _onInitBuilder.OnInit(handler);
         return this;

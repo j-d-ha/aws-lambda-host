@@ -6,7 +6,7 @@ namespace MinimalLambda.Builder;
 
 internal class LambdaOnInitBuilder : ILambdaOnInitBuilder
 {
-    private readonly IList<LambdaInitDelegate2> _handlers = [];
+    private readonly IList<LambdaInitDelegate> _handlers = [];
     private readonly LambdaHostOptions _options;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILambdaLifecycleContextFactory _contextFactory;
@@ -33,9 +33,9 @@ internal class LambdaOnInitBuilder : ILambdaOnInitBuilder
 
     public ConcurrentDictionary<string, object?> Properties { get; } = new();
 
-    public IReadOnlyList<LambdaInitDelegate2> InitHandlers => _handlers.AsReadOnly();
+    public IReadOnlyList<LambdaInitDelegate> InitHandlers => _handlers.AsReadOnly();
 
-    public ILambdaOnInitBuilder OnInit(LambdaInitDelegate2 handler)
+    public ILambdaOnInitBuilder OnInit(LambdaInitDelegate handler)
     {
         ArgumentNullException.ThrowIfNull(handler);
 
@@ -88,7 +88,7 @@ internal class LambdaOnInitBuilder : ILambdaOnInitBuilder
             };
 
     private async Task<(Exception? Error, bool ShouldContinue)> RunInitHandler(
-        LambdaInitDelegate2 handler,
+        LambdaInitDelegate handler,
         CancellationToken cancellationToken
     )
     {
