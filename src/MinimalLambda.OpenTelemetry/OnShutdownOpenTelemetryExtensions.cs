@@ -79,7 +79,7 @@ public static class OnShutdownOpenTelemetryExtensions
                 ?? NullLogger.Instance;
 
             application.OnShutdown(
-                (_, cancellationToken) =>
+                (CancellationToken cancellationToken) =>
                     RunForceFlush(
                         "tracer",
                         tracerProvider.ForceFlush,
@@ -123,7 +123,7 @@ public static class OnShutdownOpenTelemetryExtensions
                 ?? NullLogger.Instance;
 
             application.OnShutdown(
-                (_, cancellationToken) =>
+                (CancellationToken cancellationToken) =>
                     RunForceFlush(
                         "meter",
                         meterProvider.ForceFlush,
