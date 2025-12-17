@@ -55,7 +55,7 @@ namespace MinimalLambda.Generated
 
             return application;
 
-            async Task InvocationDelegate(ILambdaHostContext context)
+            async Task InvocationDelegate(ILambdaInvocationContext context)
             {
                 await castHandler.Invoke();
             }
