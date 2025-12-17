@@ -8,13 +8,14 @@ public class LambdaOnInitBuilderTests
 {
     [Theory]
     [AutoNSubstituteData]
-    public void Constructor_WithNullServiceProvider_ThrowsArgumentNullException(
+    internal void Constructor_WithNullServiceProvider_ThrowsArgumentNullException(
         IServiceScopeFactory scopeFactory,
-        IOptions<LambdaHostOptions> options
+        IOptions<LambdaHostOptions> options,
+        ILambdaLifecycleContextFactory contextFactory
     )
     {
         // Act
-        var act = () => new LambdaOnInitBuilder(null!, scopeFactory, options);
+        var act = () => new LambdaOnInitBuilder(null!, scopeFactory, options, contextFactory);
 
         // Assert
         act.Should().ThrowExactly<ArgumentNullException>().WithParameterName("serviceProvider");
@@ -22,13 +23,14 @@ public class LambdaOnInitBuilderTests
 
     [Theory]
     [AutoNSubstituteData]
-    public void Constructor_WithNullScopeFactory_ThrowsArgumentNullException(
+    internal void Constructor_WithNullScopeFactory_ThrowsArgumentNullException(
         IServiceProvider serviceProvider,
-        IOptions<LambdaHostOptions> options
+        IOptions<LambdaHostOptions> options,
+        ILambdaLifecycleContextFactory contextFactory
     )
     {
         // Act
-        var act = () => new LambdaOnInitBuilder(serviceProvider, null!, options);
+        var act = () => new LambdaOnInitBuilder(serviceProvider, null!, options, contextFactory);
 
         // Assert
         act.Should().ThrowExactly<ArgumentNullException>().WithParameterName("scopeFactory");
@@ -36,13 +38,15 @@ public class LambdaOnInitBuilderTests
 
     [Theory]
     [AutoNSubstituteData]
-    public void Constructor_WithNullOptions_ThrowsArgumentNullException(
+    internal void Constructor_WithNullOptions_ThrowsArgumentNullException(
         IServiceProvider serviceProvider,
-        IServiceScopeFactory scopeFactory
+        IServiceScopeFactory scopeFactory,
+        ILambdaLifecycleContextFactory contextFactory
     )
     {
         // Act
-        var act = () => new LambdaOnInitBuilder(serviceProvider, scopeFactory, null!);
+        var act = () =>
+            new LambdaOnInitBuilder(serviceProvider, scopeFactory, null!, contextFactory);
 
         // Assert
         act.Should().ThrowExactly<ArgumentNullException>().WithParameterName("options");
@@ -50,14 +54,20 @@ public class LambdaOnInitBuilderTests
 
     [Theory]
     [AutoNSubstituteData]
-    public void Constructor_WithValidParameters_Succeeds(
+    internal void Constructor_WithValidParameters_Succeeds(
         IServiceProvider serviceProvider,
         IServiceScopeFactory scopeFactory,
-        IOptions<LambdaHostOptions> options
+        IOptions<LambdaHostOptions> options,
+        ILambdaLifecycleContextFactory contextFactory
     )
     {
         // Act
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, options);
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            options,
+            contextFactory
+        );
 
         // Assert
         builder.Should().NotBeNull();
@@ -66,14 +76,20 @@ public class LambdaOnInitBuilderTests
 
     [Theory]
     [AutoNSubstituteData]
-    public void Services_ReturnsServiceProvider(
+    internal void Services_ReturnsServiceProvider(
         IServiceProvider serviceProvider,
         IServiceScopeFactory scopeFactory,
-        IOptions<LambdaHostOptions> options
+        IOptions<LambdaHostOptions> options,
+        ILambdaLifecycleContextFactory contextFactory
     )
     {
         // Arrange
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, options);
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            options,
+            contextFactory
+        );
 
         // Act
         var result = builder.Services;
@@ -84,14 +100,20 @@ public class LambdaOnInitBuilderTests
 
     [Theory]
     [AutoNSubstituteData]
-    public void InitHandlers_ReturnsReadOnlyList(
+    internal void InitHandlers_ReturnsReadOnlyList(
         IServiceProvider serviceProvider,
         IServiceScopeFactory scopeFactory,
-        IOptions<LambdaHostOptions> options
+        IOptions<LambdaHostOptions> options,
+        ILambdaLifecycleContextFactory contextFactory
     )
     {
         // Arrange
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, options);
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            options,
+            contextFactory
+        );
 
         // Act
         var handlers = builder.InitHandlers;
@@ -104,14 +126,20 @@ public class LambdaOnInitBuilderTests
 
     [Theory]
     [AutoNSubstituteData]
-    public void OnInit_WithNullHandler_ThrowsArgumentNullException(
+    internal void OnInit_WithNullHandler_ThrowsArgumentNullException(
         IServiceProvider serviceProvider,
         IServiceScopeFactory scopeFactory,
-        IOptions<LambdaHostOptions> options
+        IOptions<LambdaHostOptions> options,
+        ILambdaLifecycleContextFactory contextFactory
     )
     {
         // Arrange
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, options);
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            options,
+            contextFactory
+        );
 
         // Act
         var act = () => builder.OnInit(null!);
@@ -122,15 +150,21 @@ public class LambdaOnInitBuilderTests
 
     [Theory]
     [AutoNSubstituteData]
-    public void OnInit_WithValidHandler_AddsHandlerAndReturnsBuilder(
+    internal void OnInit_WithValidHandler_AddsHandlerAndReturnsBuilder(
         IServiceProvider serviceProvider,
         IServiceScopeFactory scopeFactory,
-        IOptions<LambdaHostOptions> options
+        IOptions<LambdaHostOptions> options,
+        ILambdaLifecycleContextFactory contextFactory
     )
     {
         // Arrange
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, options);
-        LambdaInitDelegate handler = (_, _) => Task.FromResult(true);
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            options,
+            contextFactory
+        );
+        LambdaInitDelegate handler = _ => Task.FromResult(true);
 
         // Act
         var result = builder.OnInit(handler);
@@ -142,17 +176,23 @@ public class LambdaOnInitBuilderTests
 
     [Theory]
     [AutoNSubstituteData]
-    public void OnInit_MultipleHandlers_AllAdded(
+    internal void OnInit_MultipleHandlers_AllAdded(
         IServiceProvider serviceProvider,
         IServiceScopeFactory scopeFactory,
-        IOptions<LambdaHostOptions> options
+        IOptions<LambdaHostOptions> options,
+        ILambdaLifecycleContextFactory contextFactory
     )
     {
         // Arrange
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, options);
-        LambdaInitDelegate handler1 = (_, _) => Task.FromResult(true);
-        LambdaInitDelegate handler2 = (_, _) => Task.FromResult(true);
-        LambdaInitDelegate handler3 = (_, _) => Task.FromResult(true);
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            options,
+            contextFactory
+        );
+        LambdaInitDelegate handler1 = _ => Task.FromResult(true);
+        LambdaInitDelegate handler2 = _ => Task.FromResult(true);
+        LambdaInitDelegate handler3 = _ => Task.FromResult(true);
 
         // Act
         builder.OnInit(handler1);
@@ -166,21 +206,26 @@ public class LambdaOnInitBuilderTests
 
     [Theory]
     [AutoNSubstituteData]
-    public async Task Build_WithoutHandlers_ReturnsAlwaysTrueFunction(
+    internal async Task Build_WithoutHandlers_ReturnsNull(
         IServiceProvider serviceProvider,
         IServiceScopeFactory scopeFactory,
-        IOptions<LambdaHostOptions> options
+        IOptions<LambdaHostOptions> options,
+        ILambdaLifecycleContextFactory contextFactory
     )
     {
         // Arrange
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, options);
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            options,
+            contextFactory
+        );
 
         // Act
         var buildFunc = builder.Build();
-        var result = await buildFunc(CancellationToken.None);
 
         // Assert
-        result.Should().BeTrue();
+        buildFunc.Should().BeNull();
     }
 
     [Fact]
@@ -192,10 +237,16 @@ public class LambdaOnInitBuilderTests
         var lambdaHostOptions = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions()
         );
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, lambdaHostOptions);
+        var contextFactory = Substitute.For<ILambdaLifecycleContextFactory>();
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            lambdaHostOptions,
+            contextFactory
+        );
         var handlerCalled = false;
 
-        LambdaInitDelegate handler = (_, _) =>
+        LambdaInitDelegate handler = _ =>
         {
             handlerCalled = true;
             return Task.FromResult(true);
@@ -205,6 +256,7 @@ public class LambdaOnInitBuilderTests
 
         // Act
         var buildFunc = builder.Build();
+        buildFunc.Should().NotBeNull();
         var result = await buildFunc(CancellationToken.None);
 
         // Assert
@@ -221,9 +273,15 @@ public class LambdaOnInitBuilderTests
         var lambdaHostOptions = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions()
         );
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, lambdaHostOptions);
+        var contextFactory = Substitute.For<ILambdaLifecycleContextFactory>();
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            lambdaHostOptions,
+            contextFactory
+        );
 
-        LambdaInitDelegate handler = (_, _) => Task.FromResult(false);
+        LambdaInitDelegate handler = _ => Task.FromResult(false);
 
         builder.OnInit(handler);
 
@@ -244,24 +302,30 @@ public class LambdaOnInitBuilderTests
         var lambdaHostOptions = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions()
         );
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, lambdaHostOptions);
+        var contextFactory = Substitute.For<ILambdaLifecycleContextFactory>();
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            lambdaHostOptions,
+            contextFactory
+        );
         var handler1Called = false;
         var handler2Called = false;
         var handler3Called = false;
 
-        LambdaInitDelegate handler1 = (_, _) =>
+        LambdaInitDelegate handler1 = _ =>
         {
             handler1Called = true;
             return Task.FromResult(true);
         };
 
-        LambdaInitDelegate handler2 = (_, _) =>
+        LambdaInitDelegate handler2 = _ =>
         {
             handler2Called = true;
             return Task.FromResult(true);
         };
 
-        LambdaInitDelegate handler3 = (_, _) =>
+        LambdaInitDelegate handler3 = _ =>
         {
             handler3Called = true;
             return Task.FromResult(true);
@@ -291,11 +355,17 @@ public class LambdaOnInitBuilderTests
         var lambdaHostOptions = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions()
         );
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, lambdaHostOptions);
+        var contextFactory = Substitute.For<ILambdaLifecycleContextFactory>();
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            lambdaHostOptions,
+            contextFactory
+        );
 
-        LambdaInitDelegate handler1 = (_, _) => Task.FromResult(true);
-        LambdaInitDelegate handler2 = (_, _) => Task.FromResult(false);
-        LambdaInitDelegate handler3 = (_, _) => Task.FromResult(true);
+        LambdaInitDelegate handler1 = _ => Task.FromResult(true);
+        LambdaInitDelegate handler2 = _ => Task.FromResult(false);
+        LambdaInitDelegate handler3 = _ => Task.FromResult(true);
 
         builder.OnInit(handler1);
         builder.OnInit(handler2);
@@ -318,10 +388,16 @@ public class LambdaOnInitBuilderTests
         var lambdaHostOptions = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions()
         );
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, lambdaHostOptions);
+        var contextFactory = Substitute.For<ILambdaLifecycleContextFactory>();
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            lambdaHostOptions,
+            contextFactory
+        );
         var testException = new InvalidOperationException("Test error");
 
-        LambdaInitDelegate handler = (_, _) => throw testException;
+        LambdaInitDelegate handler = _ => throw testException;
 
         builder.OnInit(handler);
 
@@ -342,13 +418,19 @@ public class LambdaOnInitBuilderTests
         var lambdaHostOptions = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions()
         );
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, lambdaHostOptions);
+        var contextFactory = Substitute.For<ILambdaLifecycleContextFactory>();
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            lambdaHostOptions,
+            contextFactory
+        );
         var exception1 = new InvalidOperationException("Error 1");
         var exception2 = new ArgumentException("Error 2");
 
-        LambdaInitDelegate handler1 = (_, _) => throw exception1;
+        LambdaInitDelegate handler1 = _ => throw exception1;
 
-        LambdaInitDelegate handler2 = (_, _) => throw exception2;
+        LambdaInitDelegate handler2 = _ => throw exception2;
 
         builder.OnInit(handler1);
         builder.OnInit(handler2);
@@ -363,18 +445,26 @@ public class LambdaOnInitBuilderTests
 
     [Theory]
     [AutoNSubstituteData]
-    public async Task Build_RespectsInitTimeout(IServiceScopeFactory scopeFactory)
+    internal async Task Build_RespectsInitTimeout(
+        IServiceScopeFactory scopeFactory,
+        ILambdaLifecycleContextFactory contextFactory
+    )
     {
         // Arrange
         var lambdaHostOptions = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions { InitTimeout = TimeSpan.FromMilliseconds(50) }
         );
         var serviceProvider = new ServiceCollection().BuildServiceProvider();
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, lambdaHostOptions);
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            lambdaHostOptions,
+            contextFactory
+        );
 
-        LambdaInitDelegate slowHandler = async (_, cancellationToken) =>
+        LambdaInitDelegate slowHandler = async context =>
         {
-            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+            await Task.Delay(TimeSpan.FromSeconds(10), context.CancellationToken);
             return true;
         };
 
@@ -390,22 +480,28 @@ public class LambdaOnInitBuilderTests
 
     [Theory]
     [AutoNSubstituteData]
-    public async Task Build_CreatesServiceScopeForEachHandler(
+    internal async Task Build_CreatesServiceScopeForEachHandler(
         IServiceProvider serviceProvider,
-        IServiceScopeFactory scopeFactory
+        IServiceScopeFactory scopeFactory,
+        ILambdaLifecycleContextFactory contextFactory
     )
     {
         // Arrange
         var lambdaHostOptions = Microsoft.Extensions.Options.Options.Create(
             new LambdaHostOptions()
         );
-        var builder = new LambdaOnInitBuilder(serviceProvider, scopeFactory, lambdaHostOptions);
+        var builder = new LambdaOnInitBuilder(
+            serviceProvider,
+            scopeFactory,
+            lambdaHostOptions,
+            contextFactory
+        );
 
         var scopeUsed = false;
 
-        LambdaInitDelegate handler = (scope, _) =>
+        LambdaInitDelegate handler = context =>
         {
-            scopeUsed = scope != serviceProvider;
+            scopeUsed = context.ServiceProvider != serviceProvider;
             return Task.FromResult(true);
         };
 

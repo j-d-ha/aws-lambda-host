@@ -39,22 +39,23 @@ namespace MinimalLambda.Generated
     [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
     file static class GeneratedLambdaOnShutdownBuilderExtensions
     {
-        // Location: InputFile.cs(10,8)
         [InterceptsLocation(1, "F/zSODBMGX3Xez9u/iwpl80AAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnShutdownBuilder OnShutdownInterceptor0(
             this ILambdaOnShutdownBuilder application,
             Delegate handler
         )
         {
-            var castHandler = (global::System.Func<global::System.Threading.Tasks.Task>)handler;
+            var castHandler = Cast(handler, global::System.Threading.Tasks.Task () => throw null!);
 
             return application.OnShutdown(OnShutdown);
 
-            Task OnShutdown(IServiceProvider serviceProvider, CancellationToken cancellationToken)
+            Task OnShutdown(ILambdaLifecycleContext context)
             {
                 var response = castHandler.Invoke();
                 return response;
             }
         }
+        
+        private static T Cast<T>(Delegate d, T _) where T : Delegate => (T)d;
     }
 }

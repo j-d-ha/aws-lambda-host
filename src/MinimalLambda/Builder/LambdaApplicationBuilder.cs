@@ -46,6 +46,8 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
     /// <summary>Main internal constructor.</summary>
     internal LambdaApplicationBuilder(LambdaApplicationOptions? settings)
     {
+        var lifetimeStopwatch = new LifetimeStopwatch();
+
         settings ??= new LambdaApplicationOptions();
 
         if (!settings.DisableDefaults)
@@ -97,6 +99,7 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
 
         // Register core services that are required for Lambda Host to run
         Services.AddLambdaHostCoreServices();
+        Services.AddSingleton<ILifetimeStopwatch>(lifetimeStopwatch);
     }
 
     /// <inheritdoc />
@@ -307,6 +310,9 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
 
         foreach (var handlers in _builtApplication.InitHandlers)
             builder.OnInit(handlers);
+
+        foreach (var property in ((ILambdaOnInitBuilder)_builtApplication).Properties)
+            builder.Properties[property.Key] = property.Value;
     }
 
     private void ConfigureOnShutdownBuilder(ILambdaOnShutdownBuilder builder)
@@ -316,5 +322,8 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
 
         foreach (var handlers in _builtApplication.ShutdownHandlers)
             builder.OnShutdown(handlers);
+
+        foreach (var property in ((ILambdaOnShutdownBuilder)_builtApplication).Properties)
+            builder.Properties[property.Key] = property.Value;
     }
 }

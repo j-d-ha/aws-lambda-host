@@ -42,7 +42,6 @@ namespace MinimalLambda.Generated
         private const string EventFeatureProviderKey = "__EventFeatureProvider";
         private const string ResponseFeatureProviderKey = "__ResponseFeatureProvider";
 
-        // Location: InputFile.cs(10,8)
         [InterceptsLocation(1, "FpwfFi8HLWXcIbdaQfstO+AAAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaInvocationBuilder MapHandlerInterceptor0(
             this ILambdaInvocationBuilder application,
@@ -64,7 +63,7 @@ namespace MinimalLambda.Generated
             {
                 // ParameterInfo { Type = global::System.Threading.CancellationToken, Name = ct, Source = CancellationToken, IsNullable = False, IsOptional = False}
                 var arg0 = context.CancellationToken;
-                // ParameterInfo { Type = global::MinimalLambda.ILambdaHostContext, Name = ctx, Source = Context, IsNullable = False, IsOptional = False}
+                // ParameterInfo { Type = global::MinimalLambda.ILambdaHostContext, Name = ctx, Source = HostContext, IsNullable = False, IsOptional = False}
                 var arg1 = context;
                 var response = castHandler.Invoke(arg0, arg1);
                 if (context.Features.Get<IResponseFeature>() is not IResponseFeature<string> responseFeature)

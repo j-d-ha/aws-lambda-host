@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace MinimalLambda.UnitTests.Application;
@@ -6,18 +5,8 @@ namespace MinimalLambda.UnitTests.Application;
 [TestSubject(typeof(LambdaApplication))]
 public class LambdaApplicationTests
 {
-    private static IHost CreateHostWithServices()
-    {
-        var builder = Host.CreateDefaultBuilder();
-        builder.ConfigureServices(services =>
-        {
-            services.ConfigureLambdaHostOptions(_ => { });
-            services.AddLambdaHostCoreServices();
-            services.TryAddLambdaHostDefaultServices();
-        });
-
-        return builder.Build();
-    }
+    private static IHost CreateHostWithServices() =>
+        new LambdaApplicationBuilder(new LambdaApplicationOptions()).Build();
 
     [Fact]
     public void Constructor_WithNullHost_ThrowsArgumentNullException()
@@ -526,7 +515,7 @@ public class LambdaApplicationTests
         // Arrange
         var host = CreateHostWithServices();
         var app = new LambdaApplication(host);
-        LambdaInitDelegate handler = async (_, _) => true;
+        LambdaInitDelegate handler = async _ => true;
 
         // Act
         app.OnInit(handler);
@@ -541,7 +530,7 @@ public class LambdaApplicationTests
         // Arrange
         var host = CreateHostWithServices();
         var app = new LambdaApplication(host);
-        LambdaInitDelegate handler = async (_, _) => true;
+        LambdaInitDelegate handler = async _ => true;
 
         // Act
         var result = app.OnInit(handler);
@@ -556,7 +545,7 @@ public class LambdaApplicationTests
         // Arrange
         var host = CreateHostWithServices();
         var app = new LambdaApplication(host);
-        LambdaInitDelegate handler = async (_, _) => true;
+        LambdaInitDelegate handler = async _ => true;
 
         // Act
         var result = app.OnInit(handler).OnInit(handler);
@@ -572,7 +561,7 @@ public class LambdaApplicationTests
         // Arrange
         var host = CreateHostWithServices();
         var app = new LambdaApplication(host);
-        LambdaInitDelegate handler = async (_, _) => true;
+        LambdaInitDelegate handler = async _ => true;
         app.OnInit(handler);
 
         // Act
@@ -634,7 +623,7 @@ public class LambdaApplicationTests
         // Arrange
         var host = CreateHostWithServices();
         var app = new LambdaApplication(host);
-        LambdaShutdownDelegate handler = async (_, _) => await Task.CompletedTask;
+        LambdaShutdownDelegate handler = async _ => await Task.CompletedTask;
 
         // Act
         app.OnShutdown(handler);
@@ -649,7 +638,7 @@ public class LambdaApplicationTests
         // Arrange
         var host = CreateHostWithServices();
         var app = new LambdaApplication(host);
-        LambdaShutdownDelegate handler = async (_, _) => await Task.CompletedTask;
+        LambdaShutdownDelegate handler = async _ => await Task.CompletedTask;
 
         // Act
         var result = app.OnShutdown(handler);
@@ -664,7 +653,7 @@ public class LambdaApplicationTests
         // Arrange
         var host = CreateHostWithServices();
         var app = new LambdaApplication(host);
-        LambdaShutdownDelegate handler = async (_, _) => await Task.CompletedTask;
+        LambdaShutdownDelegate handler = async _ => await Task.CompletedTask;
 
         // Act
         var result = app.OnShutdown(handler).OnShutdown(handler);
@@ -680,7 +669,7 @@ public class LambdaApplicationTests
         // Arrange
         var host = CreateHostWithServices();
         var app = new LambdaApplication(host);
-        LambdaShutdownDelegate handler = async (_, _) => await Task.CompletedTask;
+        LambdaShutdownDelegate handler = async _ => await Task.CompletedTask;
         app.OnShutdown(handler);
 
         // Act
@@ -699,8 +688,8 @@ public class LambdaApplicationTests
         var host = CreateHostWithServices();
         var app = new LambdaApplication(host);
         LambdaInvocationDelegate invocationHandler = async _ => await Task.CompletedTask;
-        LambdaInitDelegate initHandler = async (_, _) => true;
-        LambdaShutdownDelegate shutdownHandler = async (_, _) => await Task.CompletedTask;
+        LambdaInitDelegate initHandler = async _ => true;
+        LambdaShutdownDelegate shutdownHandler = async _ => await Task.CompletedTask;
 
         // Act
         app.Handle(invocationHandler);

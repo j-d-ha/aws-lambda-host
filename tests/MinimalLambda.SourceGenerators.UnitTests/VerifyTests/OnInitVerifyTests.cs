@@ -15,7 +15,7 @@ public class OnInitVerifyTests
             var lambda = builder.Build();
 
             lambda.OnInit(
-                async (services, token) =>
+                async (context) =>
                 {
                     return true;
                 }
@@ -218,7 +218,7 @@ public class OnInitVerifyTests
             var lambda = builder.Build();
 
             lambda.OnInit(
-                Task<bool> (string? x, IService? y) =>
+                Task<bool> (string? x, IService? y = null) =>
                 {
                     return Task.FromResult(true);
                 }

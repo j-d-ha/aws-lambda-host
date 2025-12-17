@@ -11,9 +11,16 @@
     <PackageId>MinimalLambda.OpenTelemetry</PackageId>
     <Description>OpenTelemetry integration for MinimalLambda</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);MinimalLambda.Generated</InterceptorsNamespaces>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\MinimalLambda.Abstractions\MinimalLambda.Abstractions.csproj" />
+    <ProjectReference Include="..\MinimalLambda\MinimalLambda.csproj" />
+    <ProjectReference
+      Include="..\MinimalLambda.SourceGenerators\MinimalLambda.SourceGenerators.csproj"
+      ReferenceOutputAssembly="false"
+      OutputItemType="Analyzer"
+    />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="OpenTelemetry.Instrumentation.AWSLambda" />

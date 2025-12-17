@@ -39,22 +39,23 @@ namespace MinimalLambda.Generated
     [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
     file static class GeneratedLambdaOnInitBuilderExtensions
     {
-        // Location: InputFile.cs(10,8)
         [InterceptsLocation(1, "dCq2ERewPXxHvi/4iSh/m80AAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnInitBuilder OnInitInterceptor0(
             this ILambdaOnInitBuilder application,
             Delegate handler
         )
         {
-            var castHandler = (global::System.Func<bool>)handler;
+            var castHandler = Cast(handler, bool () => throw null!);
 
             return application.OnInit(OnInit);
 
-            Task<bool> OnInit(IServiceProvider serviceProvider, CancellationToken cancellationToken)
+            Task<bool> OnInit(ILambdaLifecycleContext context)
             {
                 var response = castHandler.Invoke();
                 return Task.FromResult(response);
             }
         }
+        
+        private static T Cast<T>(Delegate d, T _) where T : Delegate => (T)d;
     }
 }

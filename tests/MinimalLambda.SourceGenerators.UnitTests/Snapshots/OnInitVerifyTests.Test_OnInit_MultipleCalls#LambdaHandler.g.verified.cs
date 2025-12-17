@@ -39,66 +39,65 @@ namespace MinimalLambda.Generated
     [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
     file static class GeneratedLambdaOnInitBuilderExtensions
     {
-        // Location: InputFile.cs(10,8)
         [InterceptsLocation(1, "gOjUxL7brRqHQuY3oQ1zfc0AAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnInitBuilder OnInitInterceptor0(
             this ILambdaOnInitBuilder application,
             Delegate handler
         )
         {
-            var castHandler = (global::System.Func<global::System.Threading.Tasks.Task<bool>>)handler;
+            var castHandler = Cast(handler, global::System.Threading.Tasks.Task<bool> () => throw null!);
 
             return application.OnInit(OnInit);
 
-            Task<bool> OnInit(IServiceProvider serviceProvider, CancellationToken cancellationToken)
+            Task<bool> OnInit(ILambdaLifecycleContext context)
             {
                 var response = castHandler.Invoke();
                 return response;
             }
         }
         
-        // Location: InputFile.cs(15,8)
         [InterceptsLocation(1, "gOjUxL7brRqHQuY3oQ1zfRUBAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnInitBuilder OnInitInterceptor1(
             this ILambdaOnInitBuilder application,
             Delegate handler
         )
         {
-            var castHandler = (global::System.Func<string?, global::IService?, global::System.Threading.Tasks.Task<bool>>)handler;
+            var castHandler = Cast(handler, global::System.Threading.Tasks.Task<bool> (string? arg0, global::IService? arg1) => throw null!);
 
             return application.OnInit(OnInit);
 
-            Task<bool> OnInit(IServiceProvider serviceProvider, CancellationToken cancellationToken)
+            Task<bool> OnInit(ILambdaLifecycleContext context)
             {
                 // ParameterInfo { Type = string?, Name = x, Source = Service, IsNullable = True, IsOptional = False}
-                var arg0 = serviceProvider.GetService<string?>();
+                var arg0 = context.ServiceProvider.GetService<string?>();
                 // ParameterInfo { Type = global::IService?, Name = y, Source = Service, IsNullable = True, IsOptional = False}
-                var arg1 = serviceProvider.GetService<global::IService?>();
+                var arg1 = context.ServiceProvider.GetService<global::IService?>();
                 var response = castHandler.Invoke(arg0, arg1);
                 return response;
             }
         }
         
-        // Location: InputFile.cs(22,8)
         [InterceptsLocation(1, "gOjUxL7brRqHQuY3oQ1zfXoBAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnInitBuilder OnInitInterceptor2(
             this ILambdaOnInitBuilder application,
             Delegate handler
         )
         {
-            var castHandler = (global::System.Func<string, int, global::System.Threading.Tasks.Task<bool>>)handler;
+            var castHandler = Cast(handler, global::System.Threading.Tasks.Task<bool> (string arg0, int arg1) => throw null!);
 
             return application.OnInit(OnInit);
 
-            Task<bool> OnInit(IServiceProvider serviceProvider, CancellationToken cancellationToken)
+            Task<bool> OnInit(ILambdaLifecycleContext context)
             {
                 // ParameterInfo { Type = string, Name = x, Source = Service, IsNullable = False, IsOptional = False}
-                var arg0 = serviceProvider.GetRequiredService<string>();
+                var arg0 = context.ServiceProvider.GetRequiredService<string>();
                 // ParameterInfo { Type = int, Name = y, Source = Service, IsNullable = False, IsOptional = False}
-                var arg1 = serviceProvider.GetRequiredService<int>();
+                var arg1 = context.ServiceProvider.GetRequiredService<int>();
                 var response = castHandler.Invoke(arg0, arg1);
                 return response;
             }
         }
+        
+        private static T Cast<T>(Delegate d, T _) where T : Delegate => (T)d;
     }
 }

@@ -39,66 +39,65 @@ namespace MinimalLambda.Generated
     [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
     file static class GeneratedLambdaOnShutdownBuilderExtensions
     {
-        // Location: InputFile.cs(10,8)
         [InterceptsLocation(1, "W852isYQO43ObWn6kxnU5s0AAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnShutdownBuilder OnShutdownInterceptor0(
             this ILambdaOnShutdownBuilder application,
             Delegate handler
         )
         {
-            var castHandler = (global::System.Func<global::System.Threading.Tasks.Task>)handler;
+            var castHandler = Cast(handler, global::System.Threading.Tasks.Task () => throw null!);
 
             return application.OnShutdown(OnShutdown);
 
-            Task OnShutdown(IServiceProvider serviceProvider, CancellationToken cancellationToken)
+            Task OnShutdown(ILambdaLifecycleContext context)
             {
                 var response = castHandler.Invoke();
                 return response;
             }
         }
         
-        // Location: InputFile.cs(15,8)
         [InterceptsLocation(1, "W852isYQO43ObWn6kxnU5hABAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnShutdownBuilder OnShutdownInterceptor1(
             this ILambdaOnShutdownBuilder application,
             Delegate handler
         )
         {
-            var castHandler = (global::System.Func<string?, global::IService?, global::System.Threading.Tasks.Task>)handler;
+            var castHandler = Cast(handler, global::System.Threading.Tasks.Task (string? arg0, global::IService? arg1) => throw null!);
 
             return application.OnShutdown(OnShutdown);
 
-            Task OnShutdown(IServiceProvider serviceProvider, CancellationToken cancellationToken)
+            Task OnShutdown(ILambdaLifecycleContext context)
             {
                 // ParameterInfo { Type = string?, Name = x, Source = Service, IsNullable = True, IsOptional = False}
-                var arg0 = serviceProvider.GetService<string?>();
+                var arg0 = context.ServiceProvider.GetService<string?>();
                 // ParameterInfo { Type = global::IService?, Name = y, Source = Service, IsNullable = True, IsOptional = False}
-                var arg1 = serviceProvider.GetService<global::IService?>();
+                var arg1 = context.ServiceProvider.GetService<global::IService?>();
                 var response = castHandler.Invoke(arg0, arg1);
                 return response;
             }
         }
         
-        // Location: InputFile.cs(22,8)
         [InterceptsLocation(1, "W852isYQO43ObWn6kxnU5nsBAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnShutdownBuilder OnShutdownInterceptor2(
             this ILambdaOnShutdownBuilder application,
             Delegate handler
         )
         {
-            var castHandler = (global::System.Func<string, int, global::System.Threading.Tasks.Task>)handler;
+            var castHandler = Cast(handler, global::System.Threading.Tasks.Task (string arg0, int arg1) => throw null!);
 
             return application.OnShutdown(OnShutdown);
 
-            Task OnShutdown(IServiceProvider serviceProvider, CancellationToken cancellationToken)
+            Task OnShutdown(ILambdaLifecycleContext context)
             {
                 // ParameterInfo { Type = string, Name = x, Source = Service, IsNullable = False, IsOptional = False}
-                var arg0 = serviceProvider.GetRequiredService<string>();
+                var arg0 = context.ServiceProvider.GetRequiredService<string>();
                 // ParameterInfo { Type = int, Name = y, Source = Service, IsNullable = False, IsOptional = False}
-                var arg1 = serviceProvider.GetRequiredService<int>();
+                var arg1 = context.ServiceProvider.GetRequiredService<int>();
                 var response = castHandler.Invoke(arg0, arg1);
                 return response;
             }
         }
+        
+        private static T Cast<T>(Delegate d, T _) where T : Delegate => (T)d;
     }
 }

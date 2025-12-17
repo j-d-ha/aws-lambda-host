@@ -74,19 +74,59 @@ If your handler doesn't need the Lambda payload, omit the `[FromEvent]` paramete
       remaining time when creating the token.
     - Always pass it down to outbound SDK calls and database queries so you can stop work cleanly.
 
-## Middleware and Lifecycle Hooks
+## Middleware and Lifecycle Hooks: Source-Generated DI
 
 - Middleware receives the invocation scope via the `ILambdaHostContext` argument. Resolve services with
   `context.ServiceProvider` or create reusable middleware classes with constructor injection.
-- `OnInit` and `OnShutdown` handlers run outside the normal invocation scope but each one executes
-  inside its own scoped service provider so you can warm caches, seed connections, or flush telemetry
-  without leaking per-invocation services.
+- `OnInit` and `OnShutdown` handlers now use the same source-generated dependency injection as your main
+  handlers. Each executes inside its own scoped service provider so you can warm caches, seed connections,
+  or flush telemetry without leaking per-invocation services.
 
-```csharp title="OnInit"
-lambda.OnInit(async (services, ct) =>
+OnInit and OnShutdown handlers support multiple dependency injection patterns:
+
+```csharp title="Pattern 1: Direct DI (Recommended)"
+lambda.OnInit(async (ICache cache, ILogger<Program> logger, CancellationToken ct) =>
 {
-    var cache = services.GetRequiredService<ICache>();
+    logger.LogInformation("Warming cache during cold start");
     await cache.WarmUpAsync(ct);
+    return true;
+});
+```
+
+Each handler runs in its own scoped service provider, so you can safely resolve scoped services even
+outside the invocation pipeline.
+
+```csharp title="Pattern 2: Using ILambdaLifecycleContext"
+lambda.OnInit(async (ILambdaLifecycleContext context, ICache cache) =>
+{
+    var logger = context.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation(
+        "Init type: {Type}, Function: {Name}, Memory: {MB}MB",
+        context.InitializationType,
+        context.FunctionName,
+        context.FunctionMemorySize
+    );
+
+    await cache.WarmUpAsync(context.CancellationToken);
+    return true;
+});
+```
+
+Use `ILambdaLifecycleContext` when you need AWS environment metadata (region, function name, memory size,
+initialization type) or want to share data between handlers via the `Properties` dictionary.
+
+```csharp title="Pattern 3: Keyed Services"
+builder.Services.AddKeyedSingleton<ICache, RedisCache>("redis");
+builder.Services.AddKeyedSingleton<ICache, MemoryCache>("memory");
+
+lambda.OnInit(async (
+    [FromKeyedServices("redis")] ICache primaryCache,
+    [FromKeyedServices("memory")] ICache fallbackCache,
+    CancellationToken ct
+) =>
+{
+    await primaryCache.WarmUpAsync(ct);
+    await fallbackCache.WarmUpAsync(ct);
     return true;
 });
 ```

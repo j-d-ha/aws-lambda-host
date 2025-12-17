@@ -153,7 +153,7 @@ internal sealed class LambdaHostedService : IHostedService, IDisposable
     /// <summary>Executes the Lambda hosting environment startup sequence.</summary>
     private async Task ExecuteAsync(
         Func<Stream, ILambdaContext, Task<Stream>> handler,
-        Func<CancellationToken, Task<bool>> initializer,
+        Func<CancellationToken, Task<bool>>? initializer,
         CancellationToken stoppingToken
     )
     {

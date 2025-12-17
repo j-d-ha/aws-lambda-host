@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace MinimalLambda.Builder;
@@ -21,10 +20,8 @@ public static class OutputFormattingLambdaApplicationExtensions
         ArgumentNullException.ThrowIfNull(application);
 
         application.OnInit(
-            Task<bool> (services, _) =>
+            (ILogger<LambdaHostedService>? logger = null) =>
             {
-                var logger = services.GetService<ILogger<LambdaHostedService>>();
-
                 // This will clear the output formatting set by the Lambda runtime.
                 Console.SetOut(new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true });
 

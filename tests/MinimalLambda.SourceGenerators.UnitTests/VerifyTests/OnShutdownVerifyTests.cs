@@ -15,7 +15,7 @@ public class OnShutdownVerifyTests
             var lambda = builder.Build();
 
             lambda.OnShutdown(
-                async (services, token) =>
+                async (context) =>
                 {
                     return;
                 }
