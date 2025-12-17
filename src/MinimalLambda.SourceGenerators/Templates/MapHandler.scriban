@@ -15,7 +15,6 @@ namespace MinimalLambda.Generated
         private const string ResponseFeatureProviderKey = "__ResponseFeatureProvider";
 
         {{~ for call in map_handler_calls ~}}
-        // Location: {{ call.location.display_location }}
         [InterceptsLocation({{ call.location.version }}, "{{ call.location.data }}")]
         internal static ILambdaInvocationBuilder MapHandlerInterceptor{{ for.index }}(
             this ILambdaInvocationBuilder application,

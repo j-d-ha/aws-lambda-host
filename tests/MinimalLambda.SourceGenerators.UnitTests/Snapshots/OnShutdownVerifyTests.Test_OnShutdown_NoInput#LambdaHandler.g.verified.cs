@@ -39,7 +39,6 @@ namespace MinimalLambda.Generated
     [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
     file static class GeneratedLambdaOnShutdownBuilderExtensions
     {
-        // Location: InputFile.cs(10,8)
         [InterceptsLocation(1, "F/zSODBMGX3Xez9u/iwpl80AAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaOnShutdownBuilder OnShutdownInterceptor0(
             this ILambdaOnShutdownBuilder application,
