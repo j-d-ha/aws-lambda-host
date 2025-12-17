@@ -46,14 +46,16 @@ namespace MinimalLambda.Generated
             Delegate handler
         )
         {
-            var castHandler = (global::System.Func<global::System.Threading.Tasks.Task<string>>)handler;
+            var castHandler = Cast(handler, global::System.Threading.Tasks.Task<string> () => throw null!);
 
             return application.OnShutdown(OnShutdown);
 
-            async Task OnShutdown(IServiceProvider serviceProvider, CancellationToken cancellationToken)
+            async Task OnShutdown(ILambdaLifecycleContext context)
             {
                 await castHandler.Invoke();
             }
         }
+        
+        private static T Cast<T>(Delegate d, T _) where T : Delegate => (T)d;
     }
 }
