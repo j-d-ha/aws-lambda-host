@@ -18,7 +18,7 @@ internal static class MapHandlerSources
             var delegateInfo = mapHandlerInvocationInfo.DelegateInfo;
 
             // build handler function signature
-            var handlerSignature = delegateInfo.BuildHandlerSignature();
+            var handlerSignature = delegateInfo.BuildHandlerCastCall();
 
             // build out assignment statements for each handler parameter
             var handlerArgs = delegateInfo.BuildHandlerParameterAssignment();
