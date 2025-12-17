@@ -4,9 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
-using MinimalLambda.SourceGenerators.Extensions;
 using MinimalLambda.SourceGenerators.Models;
-using MinimalLambda.SourceGenerators.Types;
 
 namespace MinimalLambda.SourceGenerators;
 
@@ -51,18 +49,7 @@ internal static class UseMiddlewareTSyntaxProvider
         // get class TypeInfo
         var middlewareClassType = targetOperation.TargetMethod.TypeArguments[0];
 
-        // get globally qualified name of the class
-        var globallyQualifiedName = middlewareClassType.GetAsGlobal();
-
-        // handle each instance constructor on the type
-        var constructorInfo = ((INamedTypeSymbol)middlewareClassType)
-            .InstanceConstructors.Select(constructor =>
-            {
-                return new ConstructorInfo(0);
-            })
-            .ToEquatableArray();
-
-        var classInfo = new ClassInfo { GloballyQualifiedName = globallyQualifiedName };
+        var classInfo = ClassInfo.Create(middlewareClassType);
 
         var interceptableLocation = context.SemanticModel.GetInterceptableLocation(
             (InvocationExpressionSyntax)targetOperation.Syntax,
@@ -71,8 +58,7 @@ internal static class UseMiddlewareTSyntaxProvider
 
         var useMiddlewareTInfo = new UseMiddlewareTInfo(
             InterceptableLocationInfo.CreateFrom(interceptableLocation),
-            classInfo,
-            constructorInfo
+            classInfo
         );
 
         return useMiddlewareTInfo;

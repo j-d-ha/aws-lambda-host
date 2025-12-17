@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
+using MinimalLambda.SourceGenerators.Types;
 
 namespace MinimalLambda.SourceGenerators.Models;
 
@@ -10,7 +12,8 @@ internal readonly record struct ParameterInfo(
     ParameterSource Source,
     KeyedServiceKeyInfo? KeyedServiceKey,
     bool IsNullable,
-    bool IsOptional
+    bool IsOptional,
+    EquatableArray<string> AttributeNames
 )
 {
     internal bool IsRequired => !IsOptional && !IsNullable;
@@ -26,6 +29,11 @@ internal readonly record struct ParameterInfo(
         );
         var isNullable = parameter.NullableAnnotation == NullableAnnotation.Annotated;
         var isOptional = parameter.IsOptional;
+        var attributeNames = parameter
+            .GetAttributes()
+            .Where(a => a.AttributeClass is not null)
+            .Select(a => a.AttributeClass!.ToString())
+            .ToEquatableArray();
 
         return new ParameterInfo(
             name,
@@ -34,7 +42,8 @@ internal readonly record struct ParameterInfo(
             source,
             keyedService,
             isNullable,
-            isOptional
+            isOptional,
+            attributeNames
         );
     }
 
