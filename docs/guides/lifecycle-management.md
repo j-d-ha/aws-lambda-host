@@ -132,21 +132,111 @@ Both handlers are awaited simultaneously. Keep shutdown work small—only the re
 
 OnInit and OnShutdown handlers support the same source-generated dependency injection experience as middleware and handlers:
 
-- Request only what you need. The generated delegate resolves typed parameters (services, keyed services, `ILambdaHostContext`, `CancellationToken`, etc.).
+- Request only what you need. The generated delegate resolves typed parameters (services, keyed services, `ILambdaLifecycleContext`, `CancellationToken`, etc.).
 - `MinimalLambda` creates a new `IServiceScope` for every handler invocation, ensuring scoped services (database units of work, caches) are isolated even though you are outside the invocation pipeline.
-- The `IServiceProvider` parameter gives you direct access to the scope for manual resolution when needed.
+- Inject `ILambdaLifecycleContext` when you need AWS environment metadata or want to share state via the `Properties` dictionary. For simple scenarios, inject services directly.
 
-```csharp title="Program.cs"
+```csharp title="Program.cs - Keyed Services"
+builder.Services.AddKeyedSingleton<IMyClient, PrimaryClient>("primary");
+builder.Services.AddKeyedSingleton<IMyClient, SecondaryClient>("secondary");
+
 lambda.OnInit(async (
-    IServiceProvider scope,
-    KeyedService<MyClient>("primary"),
+    [FromKeyedServices("primary")] IMyClient primaryClient,
+    [FromKeyedServices("secondary")] IMyClient secondaryClient,
     CancellationToken ct
 ) =>
 {
-    await MyWarmupAsync(scope, MyClient, ct);
+    await primaryClient.WarmupAsync(ct);
+    await secondaryClient.WarmupAsync(ct);
     return true;
 });
 ```
+
+## Accessing AWS Environment Information
+
+When you need AWS environment metadata during initialization or shutdown, inject `ILambdaLifecycleContext`. This interface provides rich context information about the Lambda execution environment beyond what's available in the standard invocation pipeline.
+
+### Using ILambdaLifecycleContext
+
+```csharp title="Program.cs - AWS Environment Metadata"
+lambda.OnInit(async (ILambdaLifecycleContext context, ILogger<Program> logger) =>
+{
+    logger.LogInformation(
+        "Initializing {FunctionName} v{Version} in {Region}",
+        context.FunctionName,
+        context.FunctionVersion,
+        context.Region
+    );
+
+    logger.LogInformation(
+        "Memory: {Memory}MB, Init type: {InitType}, Elapsed: {Elapsed}ms",
+        context.FunctionMemorySize,
+        context.InitializationType,
+        context.ElapsedTime.TotalMilliseconds
+    );
+
+    return true;
+});
+```
+
+### Sharing State via Properties Dictionary
+
+The `Properties` dictionary lets you share data between OnInit handlers or pass information from initialization to your invocation handlers.
+
+```csharp title="Program.cs - State Sharing"
+lambda.OnInit(async (ILambdaLifecycleContext context) =>
+{
+    var initStartTime = DateTimeOffset.UtcNow;
+    context.Properties["InitStartTime"] = initStartTime;
+    context.Properties["EnvironmentType"] = context.InitializationType;
+
+    return true;
+});
+
+lambda.OnInit(async (ILambdaLifecycleContext context, ILogger<Program> logger) =>
+{
+    if (context.Properties.TryGetValue("InitStartTime", out var startTime))
+    {
+        logger.LogInformation("First handler started at {Time}", startTime);
+    }
+
+    return true;
+});
+```
+
+The `Properties` dictionary is backed by a thread-safe `ConcurrentDictionary<string, object?>` and is shared across all OnInit handlers. Properties set during OnInit are also available to invocation handlers via `ILambdaHostContext.Properties`.
+
+### Available Context Properties
+
+`ILambdaLifecycleContext` exposes the following properties:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `CancellationToken` | `CancellationToken` | Signals cancellation when `InitTimeout` (OnInit) or `ShutdownDuration - ShutdownDurationBuffer` (OnShutdown) elapses, or when SIGTERM is received |
+| `ServiceProvider` | `IServiceProvider` | The scoped service container for this handler invocation. Use for manual service resolution when direct injection isn't sufficient |
+| `Properties` | `IDictionary<string, object?>` | Thread-safe dictionary for sharing data between handlers or from OnInit to invocation handlers |
+| `ElapsedTime` | `TimeSpan` | Time elapsed since the Lambda execution environment started |
+| `Region` | `string?` | AWS region where the function is running (from `AWS_REGION` env var) |
+| `ExecutionEnvironment` | `string?` | Runtime identifier like `AWS_Lambda_dotnet8` (from `AWS_EXECUTION_ENV` env var) |
+| `FunctionName` | `string?` | Name of the Lambda function (from `AWS_LAMBDA_FUNCTION_NAME` env var) |
+| `FunctionMemorySize` | `int?` | Memory allocated to the function in MB (from `AWS_LAMBDA_FUNCTION_MEMORY_SIZE` env var) |
+| `FunctionVersion` | `string?` | Version of the function being executed (from `AWS_LAMBDA_FUNCTION_VERSION` env var) |
+| `InitializationType` | `string?` | Type of initialization: `on-demand`, `provisioned-concurrency`, `snap-start`, or `lambda-managed-instances` (from `AWS_LAMBDA_INITIALIZATION_TYPE` env var) |
+| `LogGroupName` | `string?` | CloudWatch Logs group name (from `AWS_LAMBDA_LOG_GROUP_NAME` env var, not available in SnapStart) |
+| `LogStreamName` | `string?` | CloudWatch Logs stream name (from `AWS_LAMBDA_LOG_STREAM_NAME` env var, not available in SnapStart) |
+| `TaskRoot` | `string?` | Path to the Lambda function code (from `LAMBDA_TASK_ROOT` env var) |
+
+All AWS environment properties are nullable because they depend on environment variables set by the Lambda runtime. Most are available during normal execution, but some (like `LogGroupName` and `LogStreamName`) are unavailable in SnapStart functions.
+
+### When to Use ILambdaLifecycleContext
+
+Use `ILambdaLifecycleContext` when you need:
+
+- **AWS environment metadata** – Access region, function name, memory size, or initialization type for logging, metrics, or conditional logic based on the execution environment
+- **State sharing** – Pass data between OnInit handlers or from OnInit to invocation handlers via the `Properties` dictionary
+- **Manual service resolution** – Access `ServiceProvider` directly for advanced scenarios where parameter injection isn't sufficient
+
+For simple dependency injection scenarios, prefer injecting services directly as parameters instead of using `ILambdaLifecycleContext.ServiceProvider`.
 
 ## Configuring Lifecycle Behavior
 

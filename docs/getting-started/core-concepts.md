@@ -85,6 +85,17 @@ lambda.OnShutdown(async (
 });
 ```
 
+### Lifecycle Context Access
+
+Both OnInit and OnShutdown handlers support rich dependency injection patterns:
+
+- **Inject services directly**: `(ICache cache, ILogger logger, CancellationToken ct)` – Recommended for most scenarios
+- **Access AWS metadata**: `(ILambdaLifecycleContext context)` – When you need environment information like function name, region, memory size, or initialization type
+- **Combine both**: `(ILambdaLifecycleContext context, ICache cache)` – Mix context access with direct service injection
+- **Use keyed services**: `([FromKeyedServices("key")] IService service)` – Resolve services registered with specific keys
+
+The `ILambdaLifecycleContext` interface provides AWS environment metadata, a `Properties` dictionary for sharing state between handlers, and access to the scoped `ServiceProvider`. See [Lifecycle Management](../guides/lifecycle-management.md) for detailed patterns and examples.
+
 ### Lifecycle Timeline
 
 ```mermaid
