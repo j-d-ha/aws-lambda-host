@@ -42,13 +42,13 @@ namespace MinimalLambda.Generated
         private const string EventFeatureProviderKey = "__EventFeatureProvider";
         private const string ResponseFeatureProviderKey = "__ResponseFeatureProvider";
 
-        [InterceptsLocation(1, "/Yux3FXySiMlCW6XCvraq8wAAABJbnB1dEZpbGUuY3M=")]
+        [InterceptsLocation(1, "MM9ytQ7zZDW9+yc/+rcLl+AAAABJbnB1dEZpbGUuY3M=")]
         internal static ILambdaInvocationBuilder MapHandlerInterceptor0(
             this ILambdaInvocationBuilder application,
             Delegate handler
         )
         {
-            var castHandler = (global::System.Func<global::System.Threading.Tasks.Task<string>>)handler;
+            var castHandler = (global::System.Func<global::System.Threading.CancellationToken, global::MinimalLambda.ILambdaInvocationContext, string>)handler;
 
             application.Handle(InvocationDelegate);
 
@@ -59,14 +59,19 @@ namespace MinimalLambda.Generated
 
             return application;
 
-            async Task InvocationDelegate(ILambdaInvocationContext context)
+            Task InvocationDelegate(ILambdaInvocationContext context)
             {
-                var response = await castHandler.Invoke();
+                // ParameterInfo { Type = global::System.Threading.CancellationToken, Name = ct, Source = CancellationToken, IsNullable = False, IsOptional = False}
+                var arg0 = context.CancellationToken;
+                // ParameterInfo { Type = global::MinimalLambda.ILambdaInvocationContext, Name = ctx, Source = HostContext, IsNullable = False, IsOptional = False}
+                var arg1 = context;
+                var response = castHandler.Invoke(arg0, arg1);
                 if (context.Features.Get<IResponseFeature>() is not IResponseFeature<string> responseFeature)
                 {
                     throw new InvalidOperationException($"Response feature for type 'string' is not available in the collection.");
                 }
                 responseFeature.SetResponse(response);
+                return Task.CompletedTask;
             }
         }
     }
