@@ -1,5 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-
 namespace MinimalLambda.UnitTests.Builder;
 
 [TestSubject(typeof(LambdaOnShutdownBuilder))]
@@ -7,72 +5,8 @@ public class LambdaOnShutdownBuilderTests
 {
     [Theory]
     [AutoNSubstituteData]
-    public void Constructor_WithNullServiceProvider_ThrowsArgumentNullException(
-        IServiceScopeFactory scopeFactory
-    )
+    internal void ShutdownHandlers_ReturnsReadOnlyList(LambdaOnShutdownBuilder builder)
     {
-        // Act
-        var act = () => new LambdaOnShutdownBuilder(null!, scopeFactory);
-
-        // Assert
-        act.Should().ThrowExactly<ArgumentNullException>().WithParameterName("serviceProvider");
-    }
-
-    [Theory]
-    [AutoNSubstituteData]
-    public void Constructor_WithNullScopeFactory_ThrowsArgumentNullException(
-        IServiceProvider serviceProvider
-    )
-    {
-        // Act
-        var act = () => new LambdaOnShutdownBuilder(serviceProvider, null!);
-
-        // Assert
-        act.Should().ThrowExactly<ArgumentNullException>().WithParameterName("scopeFactory");
-    }
-
-    [Theory]
-    [AutoNSubstituteData]
-    public void Constructor_WithValidParameters_Succeeds(
-        IServiceProvider serviceProvider,
-        IServiceScopeFactory scopeFactory
-    )
-    {
-        // Act
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
-
-        // Assert
-        builder.Should().NotBeNull();
-        builder.Services.Should().Be(serviceProvider);
-    }
-
-    [Theory]
-    [AutoNSubstituteData]
-    public void Services_ReturnsServiceProvider(
-        IServiceProvider serviceProvider,
-        IServiceScopeFactory scopeFactory
-    )
-    {
-        // Arrange
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
-
-        // Act
-        var result = builder.Services;
-
-        // Assert
-        result.Should().Be(serviceProvider);
-    }
-
-    [Theory]
-    [AutoNSubstituteData]
-    public void ShutdownHandlers_ReturnsReadOnlyList(
-        IServiceProvider serviceProvider,
-        IServiceScopeFactory scopeFactory
-    )
-    {
-        // Arrange
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
-
         // Act
         var handlers = builder.ShutdownHandlers;
 
@@ -84,14 +18,10 @@ public class LambdaOnShutdownBuilderTests
 
     [Theory]
     [AutoNSubstituteData]
-    public void OnShutdown_WithNullHandler_ThrowsArgumentNullException(
-        IServiceProvider serviceProvider,
-        IServiceScopeFactory scopeFactory
+    internal void OnShutdown_WithNullHandler_ThrowsArgumentNullException(
+        LambdaOnShutdownBuilder builder
     )
     {
-        // Arrange
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
-
         // Act
         var act = () => builder.OnShutdown(null!);
 
@@ -101,14 +31,12 @@ public class LambdaOnShutdownBuilderTests
 
     [Theory]
     [AutoNSubstituteData]
-    public void OnShutdown_WithValidHandler_AddsHandlerAndReturnsBuilder(
-        IServiceProvider serviceProvider,
-        IServiceScopeFactory scopeFactory
+    internal void OnShutdown_WithValidHandler_AddsHandlerAndReturnsBuilder(
+        LambdaOnShutdownBuilder builder
     )
     {
         // Arrange
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
-        LambdaShutdownDelegate handler = (_, _) => Task.CompletedTask;
+        LambdaShutdownDelegate handler = _ => Task.CompletedTask;
 
         // Act
         var result = builder.OnShutdown(handler);
@@ -120,16 +48,12 @@ public class LambdaOnShutdownBuilderTests
 
     [Theory]
     [AutoNSubstituteData]
-    public void OnShutdown_MultipleHandlers_AllAdded(
-        IServiceProvider serviceProvider,
-        IServiceScopeFactory scopeFactory
-    )
+    internal void OnShutdown_MultipleHandlers_AllAdded(LambdaOnShutdownBuilder builder)
     {
         // Arrange
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
-        LambdaShutdownDelegate handler1 = (_, _) => Task.CompletedTask;
-        LambdaShutdownDelegate handler2 = (_, _) => Task.CompletedTask;
-        LambdaShutdownDelegate handler3 = (_, _) => Task.CompletedTask;
+        LambdaShutdownDelegate handler1 = _ => Task.CompletedTask;
+        LambdaShutdownDelegate handler2 = _ => Task.CompletedTask;
+        LambdaShutdownDelegate handler3 = _ => Task.CompletedTask;
 
         // Act
         builder.OnShutdown(handler1);
@@ -141,14 +65,12 @@ public class LambdaOnShutdownBuilderTests
         builder.ShutdownHandlers.Should().Equal(handler1, handler2, handler3);
     }
 
-    [Fact]
-    public async Task Build_WithoutHandlers_ReturnsCompletedTaskFunction()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task Build_WithoutHandlers_ReturnsCompletedTaskFunction(
+        LambdaOnShutdownBuilder builder
+    )
     {
-        // Arrange
-        var serviceProvider = new ServiceCollection().BuildServiceProvider();
-        var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
-
         // Act
         var buildFunc = builder.Build();
         var task = buildFunc(CancellationToken.None);
@@ -158,16 +80,14 @@ public class LambdaOnShutdownBuilderTests
         task.IsCompletedSuccessfully.Should().BeTrue();
     }
 
-    [Fact]
-    public async Task Build_WithSingleHandler_ExecutesHandler()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task Build_WithSingleHandler_ExecutesHandler(LambdaOnShutdownBuilder builder)
     {
         // Arrange
-        var serviceProvider = new ServiceCollection().BuildServiceProvider();
-        var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
         var handlerCalled = false;
 
-        LambdaShutdownDelegate handler = (_, _) =>
+        LambdaShutdownDelegate handler = _ =>
         {
             handlerCalled = true;
             return Task.CompletedTask;
@@ -183,30 +103,28 @@ public class LambdaOnShutdownBuilderTests
         handlerCalled.Should().BeTrue();
     }
 
-    [Fact]
-    public async Task Build_WithMultipleHandlers_AllExecuted()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task Build_WithMultipleHandlers_AllExecuted(LambdaOnShutdownBuilder builder)
     {
         // Arrange
-        var serviceProvider = new ServiceCollection().BuildServiceProvider();
-        var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
         var handler1Called = false;
         var handler2Called = false;
         var handler3Called = false;
 
-        LambdaShutdownDelegate handler1 = (_, _) =>
+        LambdaShutdownDelegate handler1 = _ =>
         {
             handler1Called = true;
             return Task.CompletedTask;
         };
 
-        LambdaShutdownDelegate handler2 = (_, _) =>
+        LambdaShutdownDelegate handler2 = _ =>
         {
             handler2Called = true;
             return Task.CompletedTask;
         };
 
-        LambdaShutdownDelegate handler3 = (_, _) =>
+        LambdaShutdownDelegate handler3 = _ =>
         {
             handler3Called = true;
             return Task.CompletedTask;
@@ -226,16 +144,16 @@ public class LambdaOnShutdownBuilderTests
         handler3Called.Should().BeTrue();
     }
 
-    [Fact]
-    public async Task Build_WhenHandlerThrowsException_ThrowsAggregateException()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task Build_WhenHandlerThrowsException_ThrowsAggregateException(
+        LambdaOnShutdownBuilder builder
+    )
     {
         // Arrange
-        var serviceProvider = new ServiceCollection().BuildServiceProvider();
-        var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
         var testException = new InvalidOperationException("Test error");
 
-        LambdaShutdownDelegate handler = (_, _) => throw testException;
+        LambdaShutdownDelegate handler = _ => throw testException;
 
         builder.OnShutdown(handler);
 
@@ -247,19 +165,19 @@ public class LambdaOnShutdownBuilderTests
         await act.Should().ThrowAsync<AggregateException>();
     }
 
-    [Fact]
-    public async Task Build_WithMultipleFailures_AggregatesAllErrors()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task Build_WithMultipleFailures_AggregatesAllErrors(
+        LambdaOnShutdownBuilder builder
+    )
     {
         // Arrange
-        var serviceProvider = new ServiceCollection().BuildServiceProvider();
-        var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
         var exception1 = new InvalidOperationException("Error 1");
         var exception2 = new ArgumentException("Error 2");
 
-        LambdaShutdownDelegate handler1 = (_, _) => throw exception1;
+        LambdaShutdownDelegate handler1 = _ => throw exception1;
 
-        LambdaShutdownDelegate handler2 = (_, _) => throw exception2;
+        LambdaShutdownDelegate handler2 = _ => throw exception2;
 
         builder.OnShutdown(handler1);
         builder.OnShutdown(handler2);
@@ -272,23 +190,23 @@ public class LambdaOnShutdownBuilderTests
         await act.Should().ThrowAsync<AggregateException>();
     }
 
-    [Fact]
-    public async Task Build_WithMixedSuccessAndFailure_AggregatesOnlyErrors()
+    [Theory]
+    [AutoNSubstituteData]
+    internal async Task Build_WithMixedSuccessAndFailure_AggregatesOnlyErrors(
+        LambdaOnShutdownBuilder builder
+    )
     {
         // Arrange
-        var serviceProvider = new ServiceCollection().BuildServiceProvider();
-        var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
         var successfulHandlerCalled = false;
         var testException = new InvalidOperationException("Test error");
 
-        LambdaShutdownDelegate successHandler = (_, _) =>
+        LambdaShutdownDelegate successHandler = _ =>
         {
             successfulHandlerCalled = true;
             return Task.CompletedTask;
         };
 
-        LambdaShutdownDelegate failingHandler = (_, _) => throw testException;
+        LambdaShutdownDelegate failingHandler = _ => throw testException;
 
         builder.OnShutdown(successHandler);
         builder.OnShutdown(failingHandler);
@@ -300,83 +218,5 @@ public class LambdaOnShutdownBuilderTests
         // Assert
         await act.Should().ThrowAsync<AggregateException>();
         successfulHandlerCalled.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Build_CreatesServiceScopeForEachHandler()
-    {
-        // Arrange
-        var serviceProvider = new ServiceCollection().BuildServiceProvider();
-        var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
-
-        var scopeUsed = false;
-
-        LambdaShutdownDelegate handler = (scope, _) =>
-        {
-            scopeUsed = scope != serviceProvider;
-            return Task.CompletedTask;
-        };
-
-        builder.OnShutdown(handler);
-
-        // Act
-        var buildFunc = builder.Build();
-        await buildFunc(CancellationToken.None);
-
-        // Assert
-        scopeUsed.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Build_RespectsCancellationToken()
-    {
-        // Arrange
-        var serviceProvider = new ServiceCollection().BuildServiceProvider();
-        var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
-
-        var cancellationTokenReceived = false;
-
-        LambdaShutdownDelegate handler = (_, cancellationToken) =>
-        {
-            cancellationTokenReceived = !cancellationToken.IsCancellationRequested;
-            return Task.CompletedTask;
-        };
-
-        builder.OnShutdown(handler);
-
-        // Act
-        var buildFunc = builder.Build();
-        using var cts = new CancellationTokenSource();
-        await buildFunc(cts.Token);
-
-        // Assert
-        cancellationTokenReceived.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Build_WithCancelledToken_RespectsCancellation()
-    {
-        // Arrange
-        var serviceProvider = new ServiceCollection().BuildServiceProvider();
-        var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-        var builder = new LambdaOnShutdownBuilder(serviceProvider, scopeFactory);
-
-        LambdaShutdownDelegate handler = async (_, cancellationToken) =>
-        {
-            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
-        };
-
-        builder.OnShutdown(handler);
-
-        // Act
-        var buildFunc = builder.Build();
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-        var act = () => buildFunc(cts.Token);
-
-        // Assert
-        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 }
