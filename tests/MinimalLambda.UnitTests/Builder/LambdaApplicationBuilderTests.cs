@@ -387,8 +387,8 @@ public class LambdaApplicationBuilderTests
         var app = builder.Build();
 
         // Register shutdown handlers on the app
-        LambdaShutdownDelegate handler1 = (_, _) => Task.CompletedTask;
-        LambdaShutdownDelegate handler2 = (_, _) => Task.CompletedTask;
+        LambdaShutdownDelegate handler1 = _ => Task.CompletedTask;
+        LambdaShutdownDelegate handler2 = _ => Task.CompletedTask;
         app.OnShutdown(handler1);
         app.OnShutdown(handler2);
 
@@ -436,9 +436,9 @@ public class LambdaApplicationBuilderTests
         var app = builder.Build();
 
         // Register multiple shutdown handlers
-        LambdaShutdownDelegate handler1 = (_, _) => Task.CompletedTask;
-        LambdaShutdownDelegate handler2 = (_, _) => Task.CompletedTask;
-        LambdaShutdownDelegate handler3 = (_, _) => Task.CompletedTask;
+        LambdaShutdownDelegate handler1 = _ => Task.CompletedTask;
+        LambdaShutdownDelegate handler2 = _ => Task.CompletedTask;
+        LambdaShutdownDelegate handler3 = _ => Task.CompletedTask;
         app.OnShutdown(handler1);
         app.OnShutdown(handler2);
         app.OnShutdown(handler3);
@@ -548,7 +548,7 @@ public class LambdaApplicationBuilderTests
         // Arrange
         var builder = LambdaApplication.CreateBuilder();
         var app = builder.Build();
-        LambdaShutdownDelegate handler = (_, _) => Task.CompletedTask;
+        LambdaShutdownDelegate handler = _ => Task.CompletedTask;
 
         // Act
         var result = app.OnShutdown(handler);
@@ -564,8 +564,8 @@ public class LambdaApplicationBuilderTests
         // Arrange
         var builder = LambdaApplication.CreateBuilder();
         var app = builder.Build();
-        LambdaShutdownDelegate handler1 = (_, _) => Task.CompletedTask;
-        LambdaShutdownDelegate handler2 = (_, _) => Task.CompletedTask;
+        LambdaShutdownDelegate handler1 = _ => Task.CompletedTask;
+        LambdaShutdownDelegate handler2 = _ => Task.CompletedTask;
 
         // Act
         app.OnShutdown(handler1);
