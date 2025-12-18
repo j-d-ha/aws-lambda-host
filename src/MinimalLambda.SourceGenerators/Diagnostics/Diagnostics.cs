@@ -34,4 +34,13 @@ internal static class Diagnostics
         DiagnosticSeverity.Error,
         true
     );
+
+    public static readonly DiagnosticDescriptor MultipleConstructorsWithAttribute = new(
+        "LH0005",
+        "Multiple constructors use attribute",
+        "Type contains multiple constructors that use the '{0}' attribute. Only one constructor can use this attribute.",
+        ConfigurationCategory,
+        DiagnosticSeverity.Error,
+        true
+    );
 }

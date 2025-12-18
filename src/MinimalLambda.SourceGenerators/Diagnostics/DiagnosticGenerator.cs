@@ -43,6 +43,28 @@ internal static class DiagnosticGenerator
             compilationInfo.OnShutdownInvocationInfos.GenerateKeyedServiceKeyDiagnostics()
         );
 
+        // validate that middleware class constructors only use `[MiddlewareConstructor]` once
+        foreach (var useMiddlewareTInfo in compilationInfo.UseMiddlewareTInfos)
+            diagnostics.AddRange(
+                useMiddlewareTInfo
+                    .ClassInfo.ConstructorInfos.Where(c =>
+                        c.AttributeInfos.Any(a =>
+                            a.FullName == AttributeConstants.MiddlewareConstructor
+                        )
+                    )
+                    .Skip(1)
+                    .Select(c =>
+                        Diagnostic.Create(
+                            Diagnostics.MultipleConstructorsWithAttribute,
+                            c.AttributeInfos.First(a =>
+                                    a.FullName == AttributeConstants.MiddlewareConstructor
+                                )
+                                .LocationInfo?.ToLocation(),
+                            AttributeConstants.MiddlewareConstructor
+                        )
+                    )
+            );
+
         return diagnostics;
     }
 
