@@ -73,7 +73,7 @@
                     {
                         {{~ for parameter in call.parameters ~}}
                         {{~ if !parameter.from_services ~}}
-                        case {{ parameter.fully_qualified_type }} when _cache{{ for.index }} == FromServices:
+                        case {{ parameter.fully_qualified_type_not_null }} when _cache{{ for.index }} == FromServices:
                             _cache{{ for.index }} = i;
                             break;
                         {{~ end ~}}

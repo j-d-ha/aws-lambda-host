@@ -45,6 +45,9 @@ internal static class UseMiddlewareTSource
                     return new
                     {
                         p.TypeInfo.FullyQualifiedType,
+                        FullyQualifiedTypeNotNull = p.TypeInfo.FullyQualifiedType.RemoveTrailingChar(
+                            "?"
+                        ),
                         p.Name,
                         FromArguments = fromArgs,
                         FromServices = fromServices,
@@ -93,6 +96,9 @@ internal static class UseMiddlewareTSource
                 _ => $"context.ServiceProvider.GetService<{param.TypeInfo.FullyQualifiedType}>()",
             },
         };
+
+    private static string RemoveTrailingChar(this string value, string trailing) =>
+        value.EndsWith(trailing) ? value[..^1] : value;
 
     private readonly record struct ParameterArg(string String, string Assignment);
 }
