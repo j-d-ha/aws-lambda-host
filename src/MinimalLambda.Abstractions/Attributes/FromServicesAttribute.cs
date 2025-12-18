@@ -1,14 +1,11 @@
 namespace MinimalLambda.Builder;
 
-/// <summary>
-///     Marks a middleware constructor parameter to receive its value from the dependency
-///     injection container.
-/// </summary>
+/// <summary>Marks a middleware constructor parameter to receive its value from the dependency injection container.</summary>
 /// <remarks>
 ///     <para>
-///         Parameters marked with this attribute are resolved exclusively from the DI container,
-///         skipping argument resolution. Without this attribute, parameters first attempt resolution
-///         from args, then fall back to the DI container if no match is found.
+///         Parameters marked with this attribute are resolved exclusively from the DI container, skipping
+///         argument resolution. Without this attribute, parameters first attempt resolution from args, then
+///         fall back to the DI container if no match is found.
 ///     </para>
 /// </remarks>
 /// <example>

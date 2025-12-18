@@ -47,6 +47,7 @@ internal static class DiagnosticGenerator
         {
             // ensure middleware class is concrete
             if (useMiddlewareTInfo.ClassInfo.TypeKind is "interface" or "abstract class")
+            {
                 diagnostics.Add(
                     Diagnostic.Create(
                         Diagnostics.MustBeConcreteType,
@@ -54,6 +55,7 @@ internal static class DiagnosticGenerator
                         useMiddlewareTInfo.ClassInfo.ShortName
                     )
                 );
+            }
 
             // validate that middleware class constructors only use `[MiddlewareConstructor]` once
             diagnostics.AddRange(

@@ -18,14 +18,14 @@ public static class UseMiddlewareLambdaApplicationExtensions
     ///         parameters can be annotated with <see cref="FromArgumentsAttribute" /> to resolve from
     ///         <paramref name="args" />, <see cref="FromServicesAttribute" /> to resolve from the DI
     ///         container, or <c>FromKeyedServicesAttribute</c> for keyed services. Use
-    ///         <see cref="MiddlewareConstructorAttribute" /> to select a specific constructor when
-    ///         multiple exist.
+    ///         <see cref="MiddlewareConstructorAttribute" /> to select a specific constructor when multiple
+    ///         exist.
     ///     </para>
     /// </remarks>
     /// <typeparam name="T">The middleware type implementing <see cref="ILambdaMiddleware" />.</typeparam>
     /// <param name="builder">
-    ///     The <see cref="ILambdaInvocationBuilder" /> instance to register the
-    ///     middleware with.
+    ///     The <see cref="ILambdaInvocationBuilder" /> instance to register the middleware
+    ///     with.
     /// </param>
     /// <param name="args">
     ///     Arguments to pass to the middleware constructor for parameters marked with
