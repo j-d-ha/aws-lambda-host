@@ -1,12 +1,11 @@
 # Middleware
 
-`minimal-lambda` uses the same middleware model as ASP.NET Core: each component gets a context object,
-runs code before/after the next component, and can short-circuit the pipeline. You can use inline
-delegates for simple cases or class-based middleware for complex, reusable components. If you're new
-to the pattern, skim
-the [ASP.NET Core middleware overview](https://learn.microsoft.com/aspnet/core/fundamentals/middleware/)
-first. This guide focuses on Lambda-specific behavior: invocation scopes, feature access, and
-composition tips that keep middleware and handlers decoupled without extra DI plumbing.
+`minimal-lambda` uses a middleware model similar to ASP.NET Core: each component gets a context
+object, runs code before/after the next component, and can short-circuit the pipeline. If you're new
+to the pattern, the
+[ASP.NET Core middleware overview](https://learn.microsoft.com/aspnet/core/fundamentals/middleware/)
+is a helpful primer. This guide focuses on Lambda-specific behavior: invocation scopes, feature
+access, and composition tips that keep middleware and handlers decoupled without extra DI plumbing.
 
 ## Pipeline Basics
 
@@ -60,6 +59,7 @@ lambda.UseMiddleware(async (context, next) =>
     }
 
     context.Items["RequestId"] = Guid.NewGuid().ToString();
+    context.Items["Start"] = DateTimeOffset.UtcNow;
     context.Properties["Version"] ??= "1.0.0"; // safe cross-invocation value
 
     await next(context);
@@ -76,7 +76,8 @@ Key members:
   `LambdaHostOptions.InvocationCancellationBuffer`). Pass it to downstream async work.
 - `Items` – per-invocation storage shared by middleware/handler.
 - `Properties` – cross-invocation storage.
-- `Features` – ASP.NET-style typed capabilities such as `IEventFeature<T>` and `IResponseFeature<T>` that let middleware collaborate without injecting each other.
+- `Features` – typed capabilities such as `IEventFeature<T>` and `IResponseFeature<T>` that let
+  middleware collaborate without injecting each other.
 
 ## Middleware Approaches
 
@@ -124,9 +125,9 @@ lambda.UseMiddleware(async (context, next) =>
 
     // Access response after handler executes
     var response = context.GetResponse<OrderResponse>();
-    if (response is not null)
+    if (response is not null && request is not null)
     {
-        await cache.SetAsync(request!.OrderId, response);
+        await cache.SetAsync(request.OrderId, response);
     }
 });
 ```
@@ -200,9 +201,10 @@ await lambda.RunAsync();
 that instantiates your middleware and resolves constructor parameters automatically. No reflection,
 no runtime overhead.
 
-!!! info "ASP.NET Core Similarity"
-This mirrors ASP.NET Core's `UseMiddleware<T>()` extension, but uses source generation instead
-of reflection for Lambda's cold-start performance requirements.
+!!! tip "Reusable packages"
+Class-based middleware is a good fit for shared packages: ship the middleware type and attributes,
+and the consuming app's build generates the wiring code. The generated code lives in the
+application's build output, not in your package.
 
 #### Dependency Injection
 
