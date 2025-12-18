@@ -1,0 +1,78 @@
+    {{ generated_code_attribute }}
+    file static class UseMiddlewareExtensions
+    {
+        {{~ for call in calls ~}}
+        [InterceptsLocation({{ call.location.version }}, "{{ call.location.data }}")]
+        internal static ILambdaInvocationBuilder UseMiddleware{{ for.index }}<T>(
+            this ILambdaInvocationBuilder builder,
+            params object[] args
+        )
+            where T : ILambdaMiddleware
+        {
+            var resolver = new {{ call.short_middleware_class_name }}Resolver{{ for.index }}(args);
+
+            builder.Use(next => context => resolver.Create(context).InvokeAsync(context, next));
+
+            return builder;
+        }
+
+        private class {{ call.short_middleware_class_name }}Resolver{{ for.index }}
+        {
+            private const int NotCached = -1;
+            private const int FromServices = -2;
+            private readonly object[] _args;
+
+            // Cache fields: -1 = not cached, -2 = resolve from DI, >= 0 = args index
+            {{~ for parameter in call.parameters ~}}
+            private int _cache{{ for.index }} = NotCached; // {{ parameter.type_info.fully_qualified_type }}
+            {{~ end ~}}
+
+            internal {{ call.short_middleware_class_name }}Resolver{{ for.index }}(object[] args) => _args = args;
+
+            internal ILambdaMiddleware Create(ILambdaInvocationContext context)
+            {
+                // First call builds the resolution cache
+                if (_cache0 == NotCached)
+                    BuildResolutionCache();
+
+                // Fast resolution using cached indices
+                {{~ for parameter in call.parameters ~}}
+                var arg0 =
+                    _cache{{ for.index }} >= 0
+                        ? ({{ parameter.type_info.fully_qualified_type }})_args[_cache{{ for.index }}]
+                        : context.ServiceProvider.GetRequiredService<{{ parameter.type_info.fully_qualified_type }}>();
+                {{~ end ~}}
+
+                return new {{ call.full_middleware_class_name }}({{ for arg in call.parameters }}arg{{ for.index }}{{ if !for.last }}, {{ end }}{{ end }});
+            }
+
+            private void BuildResolutionCache()
+            {
+                // Initialize all to "resolve from services"
+                {{~ for parameter in call.parameters ~}}
+                _cache{{ for.index }} = FromServices;
+                {{~ end ~}}
+
+                // Single pass through args - find where each type lives
+                for (var i = 0; i < _args.Length; i++)
+                {
+                    var arg = _args[i];
+                    if (arg is null)
+                        continue;
+
+                    switch (arg)
+                    {
+                        {{~ for parameter in call.parameters ~}}
+                        case {{ parameter.type_info.fully_qualified_type }} when _cache{{ for.index }} == FromServices:
+                            _cache{{ for.index }} = i;
+                            break;
+                        {{~ end ~}}
+                    }
+                }
+            }
+        }
+        {{~ if !for.last ~}}
+
+        {{~ end ~}}
+        {{~ end ~}}
+    }

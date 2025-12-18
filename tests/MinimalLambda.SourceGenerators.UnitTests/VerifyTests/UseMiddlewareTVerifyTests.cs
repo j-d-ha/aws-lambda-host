@@ -134,7 +134,7 @@ public class UseMiddlewareTVerifyTests
                     _service = service;
                 }
 
-                [MiddlewareConstructor]
+                // [MiddlewareConstructor]
                 internal MyLambdaMiddleware()
                 {
                     _service = null!;

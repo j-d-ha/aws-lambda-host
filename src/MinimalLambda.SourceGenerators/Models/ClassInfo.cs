@@ -7,7 +7,8 @@ namespace MinimalLambda.SourceGenerators.Models;
 
 internal readonly record struct ClassInfo(
     string GloballyQualifiedName,
-    EquatableArray<ConstructorInfo> ConstructorInfos
+    string ShortName,
+    EquatableArray<MethodInfo> ConstructorInfos
 );
 
 internal static class ClassInfoExtensions
@@ -19,12 +20,15 @@ internal static class ClassInfoExtensions
             // get the globally qualified name of the class
             var globallyQualifiedName = typeSymbol.GetAsGlobal();
 
+            // get short name
+            var shortName = typeSymbol.Name;
+
             // handle each instance constructor on the type
             var constructorInfo = ((INamedTypeSymbol)typeSymbol)
-                .InstanceConstructors.Select(ConstructorInfo.Create)
+                .InstanceConstructors.Select(MethodInfo.Create)
                 .ToEquatableArray();
 
-            return new ClassInfo(globallyQualifiedName, constructorInfo);
+            return new ClassInfo(globallyQualifiedName, shortName, constructorInfo);
         }
     }
 }

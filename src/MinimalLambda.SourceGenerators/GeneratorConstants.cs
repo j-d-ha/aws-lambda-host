@@ -61,6 +61,8 @@ internal static class GeneratorConstants
     internal const string LambdaHostMapHandlerExtensionsTemplateFile =
         "Templates/MapHandler.scriban";
 
+    internal const string UseMiddlewareTTemplateFile = "Templates/UseMiddlewareT.scriban";
+
     internal const string GenericHandlerTemplateFile = "Templates/GenericHandler.scriban";
 
     internal const string LambdaHostUseOpenTelemetryTracingExtensionsTemplateFile =
