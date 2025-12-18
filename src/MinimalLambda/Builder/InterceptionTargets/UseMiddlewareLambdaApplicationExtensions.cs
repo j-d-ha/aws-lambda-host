@@ -6,7 +6,10 @@ namespace MinimalLambda.Builder;
 [ExcludeFromCodeCoverage]
 public static class UseMiddlewareLambdaApplicationExtensions
 {
-    public static ILambdaOnInitBuilder UseMiddleware<T>(this ILambdaOnInitBuilder _)
+    public static ILambdaInvocationBuilder UseMiddleware<T>(
+        this ILambdaInvocationBuilder builder,
+        params object[] args
+    )
         where T : ILambdaMiddleware
     {
         Debug.Fail("This method should have been intercepted at compile time!");

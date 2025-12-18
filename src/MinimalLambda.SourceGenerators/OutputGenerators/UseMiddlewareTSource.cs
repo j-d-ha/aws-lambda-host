@@ -4,7 +4,7 @@ using MinimalLambda.SourceGenerators.Types;
 
 namespace MinimalLambda.SourceGenerators;
 
-public class UseMiddlewareTSource
+internal static class UseMiddlewareTSource
 {
     internal static string Generate(
         EquatableArray<UseMiddlewareTInfo> useMiddlewareTInfos,
@@ -16,7 +16,8 @@ public class UseMiddlewareTSource
             var classInfo = useMiddlewareTInfo.ClassInfo;
 
             // choose what constructor to use with the following criteria:
-            // 1. if it has an `[MiddlewareConstructor]` attribute. Multiple of these are not valid.
+            // 1. if it has an `[MiddlewareConstructor]` attribute. Multiple of these are
+            // not valid.
             // 2. default to the constructor with the most arguments
             var constructor = classInfo
                 .ConstructorInfos.Select(c => (MethodInfo?)c)
@@ -30,12 +31,31 @@ public class UseMiddlewareTSource
                 .ConstructorInfos.OrderByDescending(c => c.ArgumentCount)
                 .First();
 
+            var parameters = constructor
+                .Value.Parameters.Select(p =>
+                {
+                    var fromArgs = p.AttributeNames.Any(n => n == AttributeConstants.FromArguments);
+
+                    var paramAssignment = p.BuildParameterAssignment();
+
+                    return new
+                    {
+                        p.TypeInfo.FullyQualifiedType,
+                        p.Name,
+                        FromArguments = fromArgs,
+                        paramAssignment.Assignment,
+                        paramAssignment.String,
+                    };
+                })
+                .ToArray();
+
             return new
             {
                 Location = useMiddlewareTInfo.InterceptableLocationInfo,
                 FullMiddlewareClassName = classInfo.GloballyQualifiedName,
                 ShortMiddlewareClassName = classInfo.ShortName,
-                constructor.Value.Parameters,
+                Parameters = parameters,
+                AnyParameters = parameters.Length > 0,
             };
         });
 
@@ -45,4 +65,29 @@ public class UseMiddlewareTSource
             new { GeneratedCodeAttribute = generatedCodeAttribute, Calls = useMiddlewareTCalls }
         );
     }
+
+    private static ParameterArg BuildParameterAssignment(this ParameterInfo param) =>
+        new()
+        {
+            String = param.ToPublicString(),
+            Assignment = param.Source switch
+            {
+                // inject keyed service from the DI container - required
+                ParameterSource.KeyedService when param.IsRequired =>
+                    $"context.ServiceProvider.GetRequiredKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
+
+                // inject keyed service from the DI container - optional
+                ParameterSource.KeyedService =>
+                    $"context.ServiceProvider.GetKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
+
+                // default: inject service from the DI container - required
+                _ when param.IsRequired =>
+                    $"context.ServiceProvider.GetRequiredService<{param.TypeInfo.FullyQualifiedType}>()",
+
+                // default: inject service from the DI container - optional
+                _ => $"context.ServiceProvider.GetService<{param.TypeInfo.FullyQualifiedType}>()",
+            },
+        };
+
+    private readonly record struct ParameterArg(string String, string Assignment);
 }

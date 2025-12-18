@@ -39,10 +39,9 @@ internal static class AttributeConstants
     internal const string FromKeyedService =
         "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute";
 
-    internal const string MiddlewareConstructor =
-        "global::MinimalLambda.MiddlewareConstructorAttribute";
+    internal const string MiddlewareConstructor = "MinimalLambda.MiddlewareConstructorAttribute";
 
-    internal const string FromArguments = "global::MinimalLambda.FromArgumentsAttribute";
+    internal const string FromArguments = "MinimalLambda.FromArgumentsAttribute";
 }
 
 internal static class GeneratorConstants
