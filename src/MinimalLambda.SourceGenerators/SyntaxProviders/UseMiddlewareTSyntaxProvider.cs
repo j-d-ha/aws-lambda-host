@@ -49,6 +49,20 @@ internal static class UseMiddlewareTSyntaxProvider
         // get class TypeInfo
         var middlewareClassType = targetOperation.TargetMethod.TypeArguments[0];
 
+        // Get location of the generic argument
+        Location? genericArgumentLocation = null;
+        if (
+            targetOperation.Syntax is InvocationExpressionSyntax
+            {
+                Expression: MemberAccessExpressionSyntax { Name: GenericNameSyntax genericName },
+            }
+        )
+        {
+            // Get the first type argument's location
+            var typeArgument = genericName.TypeArgumentList.Arguments[0];
+            genericArgumentLocation = typeArgument.GetLocation();
+        }
+
         var classInfo = ClassInfo.Create(middlewareClassType);
 
         var interceptableLocation = context.SemanticModel.GetInterceptableLocation(
@@ -58,7 +72,10 @@ internal static class UseMiddlewareTSyntaxProvider
 
         var useMiddlewareTInfo = new UseMiddlewareTInfo(
             InterceptableLocationInfo.CreateFrom(interceptableLocation),
-            classInfo
+            classInfo,
+            genericArgumentLocation is not null
+                ? LocationInfo.CreateFrom(genericArgumentLocation)
+                : null
         );
 
         return useMiddlewareTInfo;

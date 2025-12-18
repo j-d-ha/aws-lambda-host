@@ -2,5 +2,6 @@ namespace MinimalLambda.SourceGenerators.Models;
 
 internal readonly record struct UseMiddlewareTInfo(
     InterceptableLocationInfo InterceptableLocationInfo,
-    ClassInfo ClassInfo
+    ClassInfo ClassInfo,
+    LocationInfo? GenericTypeArgumentLocation
 );

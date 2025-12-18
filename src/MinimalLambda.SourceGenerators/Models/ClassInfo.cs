@@ -9,7 +9,8 @@ internal readonly record struct ClassInfo(
     string GloballyQualifiedName,
     string ShortName,
     EquatableArray<MethodInfo> ConstructorInfos,
-    EquatableArray<string> ImplementedInterfaces
+    EquatableArray<string> ImplementedInterfaces,
+    string TypeKind
 );
 
 internal static class ClassInfoExtensions
@@ -18,6 +19,8 @@ internal static class ClassInfoExtensions
     {
         internal static ClassInfo Create(ITypeSymbol typeSymbol)
         {
+            var typeKind = typeSymbol.GetTypeKind();
+
             // get the globally qualified name of the class
             var globallyQualifiedName = typeSymbol.GetAsGlobal();
 
@@ -34,7 +37,13 @@ internal static class ClassInfoExtensions
                 .AllInterfaces.Select(i => i.GetAsGlobal())
                 .ToEquatableArray();
 
-            return new ClassInfo(globallyQualifiedName, shortName, constructorInfo, interfaceNames);
+            return new ClassInfo(
+                globallyQualifiedName,
+                shortName,
+                constructorInfo,
+                interfaceNames,
+                typeKind
+            );
         }
 
         internal bool IsInterfaceImplemented(string interfaceName) =>
