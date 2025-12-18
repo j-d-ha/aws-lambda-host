@@ -43,4 +43,13 @@ internal static class Diagnostics
         DiagnosticSeverity.Error,
         true
     );
+
+    public static readonly DiagnosticDescriptor MustBeConcreteType = new(
+        "LH0006",
+        "Type must be a concrete class",
+        "The type '{0}' must be a concrete class. Interfaces, abstract classes, and other non-instantiable types cannot be used as middleware.",
+        ConfigurationCategory,
+        DiagnosticSeverity.Error,
+        true
+    );
 }

@@ -194,6 +194,40 @@ public class MapHandlerIncrementalGeneratorDiagnosticTests
         }
     }
 
+    [Fact]
+    public void Test_MiddlewareClassMustNotBeAbstractOrAnInterface()
+    {
+        var diagnostics = GenerateDiagnostics(
+            """
+            using System.Threading.Tasks;
+            using MinimalLambda;
+            using MinimalLambda.Builder;
+
+            var builder = LambdaApplication.CreateBuilder();
+
+            await using var lambda = builder.Build();
+
+            lambda.UseMiddleware<IMiddleware>();
+            lambda.UseMiddleware<Middleware2>();
+
+            interface IMiddleware : ILambdaMiddleware { }
+
+            abstract class Middleware2 : ILambdaMiddleware
+            {
+                public Task InvokeAsync(ILambdaInvocationContext context, LambdaInvocationDelegate next) =>
+                    next(context);
+            }
+            """
+        );
+
+        diagnostics.Length.Should().Be(2);
+        foreach (var diagnostic in diagnostics)
+        {
+            diagnostic.Id.Should().Be("LH0006");
+            diagnostic.Severity.Should().Be(DiagnosticSeverity.Error);
+        }
+    }
+
     private static ImmutableArray<Diagnostic> GenerateDiagnostics(
         string source,
         LanguageVersion languageVersion = LanguageVersion.CSharp11

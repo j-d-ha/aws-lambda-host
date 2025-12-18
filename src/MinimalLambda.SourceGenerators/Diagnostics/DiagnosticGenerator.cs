@@ -43,8 +43,19 @@ internal static class DiagnosticGenerator
             compilationInfo.OnShutdownInvocationInfos.GenerateKeyedServiceKeyDiagnostics()
         );
 
-        // validate that middleware class constructors only use `[MiddlewareConstructor]` once
         foreach (var useMiddlewareTInfo in compilationInfo.UseMiddlewareTInfos)
+        {
+            // ensure middleware class is concrete
+            if (useMiddlewareTInfo.ClassInfo.TypeKind is "interface" or "abstract class")
+                diagnostics.Add(
+                    Diagnostic.Create(
+                        Diagnostics.MustBeConcreteType,
+                        useMiddlewareTInfo.GenericTypeArgumentLocation?.ToLocation(),
+                        useMiddlewareTInfo.ClassInfo.ShortName
+                    )
+                );
+
+            // validate that middleware class constructors only use `[MiddlewareConstructor]` once
             diagnostics.AddRange(
                 useMiddlewareTInfo
                     .ClassInfo.ConstructorInfos.Where(c =>
@@ -64,6 +75,7 @@ internal static class DiagnosticGenerator
                         )
                     )
             );
+        }
 
         return diagnostics;
     }

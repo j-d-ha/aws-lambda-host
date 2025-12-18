@@ -1,8 +1,9 @@
 ### New Rules
 
-Rule ID | Category | Severity | Notes
---------|----------|----------|-------
-LH0005 | MinimalLambda.Configuration | Error | Diagnostics
+ Rule ID | Category                    | Severity | Notes       
+---------|-----------------------------|----------|-------------
+ LH0005  | MinimalLambda.Configuration | Error    | Diagnostics 
+ LH0006  | MinimalLambda.Configuration | Error    | Diagnostics 
 
 ### Removed Rules
 
