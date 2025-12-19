@@ -41,7 +41,7 @@ internal static class AttributeInfoExtensions
         {
             var syntax = attributeData.ApplicationSyntaxReference?.GetSyntax();
             var location = syntax?.GetLocation();
-            var locationData = LocationInfo.CreateFrom(location);
+            var locationData = location?.CreateLocationInfo();
 
             var name = attributeData.AttributeClass?.ToString() ?? "UNKNOWN";
 

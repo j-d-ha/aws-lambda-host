@@ -22,7 +22,7 @@ internal readonly record struct ParameterInfo(
     {
         var typeInfo = TypeInfo.Create(parameter.Type);
         var name = parameter.Name;
-        var location = Models.LocationInfo.CreateFrom(parameter);
+        var location = parameter.CreateLocationInfo();
         var (source, keyedService) = GetSourceFromAttribute(
             parameter.GetAttributes(),
             typeInfo.FullyQualifiedType

@@ -73,9 +73,7 @@ internal static class UseMiddlewareTSyntaxProvider
         var useMiddlewareTInfo = new UseMiddlewareTInfo(
             InterceptableLocationInfo.CreateFrom(interceptableLocation),
             classInfo,
-            genericArgumentLocation is not null
-                ? LocationInfo.CreateFrom(genericArgumentLocation)
-                : null
+            genericArgumentLocation?.CreateLocationInfo()
         );
 
         return useMiddlewareTInfo;
