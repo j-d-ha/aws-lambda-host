@@ -7,8 +7,6 @@ tasks:
     cmds:
       - echo "🧹 Cleaning"
       - '[ -d ./nupkg ] && rm -r ./nupkg || true'
-      - echo "done with one"
-      - find src -path "src/*/obj/Release/*.nuspec" -delete
       - dotnet clean --configuration Release
   
   restore:
