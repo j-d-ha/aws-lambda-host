@@ -7,18 +7,20 @@ namespace MinimalLambda;
 ///     code.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-internal class DefaultEventFeature<T> : IEventFeature<T>
+internal class DefaultEventFeature<T>(ILambdaSerializer? lambdaSerializer = null) : IEventFeature<T>
 {
-    private readonly ILambdaSerializer _lambdaSerializer;
+    private readonly ILambdaSerializer _lambdaSerializer =
+        lambdaSerializer
+        ?? throw new ArgumentNullException(
+            nameof(lambdaSerializer),
+            "ILambdaSerializer has not been registered. In AOT scenarios you must provide an "
+                + "serializer by registering an ILambdaSerializer in the DI container. "
+                + "Use AddLambdaSerializerWithContext (registers the context for you) or "
+                + "manually register your serializer implementation."
+        );
+
     private T _data = default!;
     private bool _isDeserialized;
-
-    public DefaultEventFeature(ILambdaSerializer lambdaSerializer)
-    {
-        ArgumentNullException.ThrowIfNull(lambdaSerializer);
-
-        _lambdaSerializer = lambdaSerializer;
-    }
 
     public T GetEvent(ILambdaInvocationContext context)
     {

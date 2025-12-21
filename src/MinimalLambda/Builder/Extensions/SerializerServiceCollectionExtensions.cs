@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
@@ -30,7 +31,9 @@ public static class SerializerServiceCollectionExtensions
         /// </exception>
         /// <seealso cref="SourceGeneratorLambdaJsonSerializer{TContext}" />
         /// <seealso cref="JsonSerializerContext" />
-        public IServiceCollection AddLambdaSerializerWithContext<TContext>()
+        public IServiceCollection AddLambdaSerializerWithContext<
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TContext
+        >()
             where TContext : JsonSerializerContext
         {
             ArgumentNullException.ThrowIfNull(serviceCollection);

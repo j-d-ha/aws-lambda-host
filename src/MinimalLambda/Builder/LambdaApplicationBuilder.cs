@@ -84,9 +84,9 @@ public sealed class LambdaApplicationBuilder : IHostApplicationBuilder
             ConfigureContainer(serviceProviderFactory);
 
             // Configure LambdaHostSettings from appsettings.json
-            Services.Configure<LambdaHostOptions>(
-                Configuration.GetSection(LambdaHostAppSettingsSectionName)
-            );
+            Services
+                .AddOptions<LambdaHostOptions>()
+                .BindConfiguration(LambdaHostAppSettingsSectionName);
         }
 
         // Configure LambdaHostedServiceOptions with callbacks

@@ -6,7 +6,17 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IncludeSymbols>false</IncludeSymbols>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
+  <ItemGroup>
+    <Using Include="AutoFixture" />
+    <Using Include="AutoFixture.Xunit3" />
+    <Using Include="AwesomeAssertions" />
+    <Using Include="JetBrains.Annotations" />
+    <Using Include="MinimalLambda.Builder" />
+    <Using Include="NSubstitute" />
+    <Using Include="Xunit" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AutoFixture.AutoNSubstitute" />
     <PackageReference Include="AutoFixture.Xunit3" />
