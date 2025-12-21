@@ -7,6 +7,12 @@
     <IsTestProject>true</IsTestProject>
     <NoWarn>$(NoWarn);IL2026;IL2087;IL2091;IL3050;IL3051;IL2075:</NoWarn>
   </PropertyGroup>
+  <ItemGroup>
+    <Using Include="AutoFixture" />
+    <Using Include="AwesomeAssertions" />
+    <Using Include="NSubstitute" />
+    <Using Include="Xunit" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" />

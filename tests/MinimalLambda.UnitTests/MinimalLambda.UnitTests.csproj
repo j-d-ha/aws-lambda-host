@@ -9,6 +9,19 @@
     <LangVersion>14</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Using Include="Amazon.Lambda.Core" />
+    <Using Include="AutoFixture" />
+    <Using Include="AutoFixture.Xunit3" />
+    <Using Include="AwesomeAssertions" />
+    <Using Include="JetBrains.Annotations" />
+    <Using Include="MinimalLambda" />
+    <Using Include="MinimalLambda.Builder" />
+    <Using Include="MinimalLambda.Options" />
+    <Using Include="MinimalLambda.Runtime" />
+    <Using Include="NSubstitute" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Amazon.Lambda.Core" />
     <PackageReference Include="Amazon.Lambda.RuntimeSupport" />
     <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" />

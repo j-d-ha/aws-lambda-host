@@ -13,6 +13,12 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <InterceptorsNamespaces>$(InterceptorsNamespaces);MinimalLambda.Generated</InterceptorsNamespaces>
   </PropertyGroup>
+  <ItemGroup>
+    <Using Include="MinimalLambda" />
+    <Using Include="MinimalLambda.Builder" />
+    <Using Include="MinimalLambda.Options" />
+    <Using Include="MinimalLambda.Runtime" />
+  </ItemGroup>
   <!-- 
   Needed to unblock this error for dontet 9: 
   CSC : error AD0001: Analyzer 'ILLink.RoslynAnalyzer.DynamicallyAccessedMembersAnalyzer' threw an 
