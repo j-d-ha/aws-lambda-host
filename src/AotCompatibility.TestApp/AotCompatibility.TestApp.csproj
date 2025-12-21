@@ -7,5 +7,25 @@
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <PublishAot>true</PublishAot>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <SelfContained>true</SelfContained>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Envelopes\MinimalLambda.Envelopes.Alb\MinimalLambda.Envelopes.Alb.csproj" />
+    <ProjectReference Include="..\Envelopes\MinimalLambda.Envelopes.ApiGateway\MinimalLambda.Envelopes.ApiGateway.csproj" />
+    <ProjectReference Include="..\Envelopes\MinimalLambda.Envelopes.CloudWatchLogs\MinimalLambda.Envelopes.CloudWatchLogs.csproj" />
+    <ProjectReference Include="..\Envelopes\MinimalLambda.Envelopes.Kafka\MinimalLambda.Envelopes.Kafka.csproj" />
+    <ProjectReference Include="..\Envelopes\MinimalLambda.Envelopes.KinesisFirehose\MinimalLambda.Envelopes.KinesisFirehose.csproj" />
+    <ProjectReference Include="..\Envelopes\MinimalLambda.Envelopes.Kinesis\MinimalLambda.Envelopes.Kinesis.csproj" />
+    <ProjectReference Include="..\Envelopes\MinimalLambda.Envelopes.Sns\MinimalLambda.Envelopes.Sns.csproj" />
+    <ProjectReference Include="..\Envelopes\MinimalLambda.Envelopes.Sqs\MinimalLambda.Envelopes.Sqs.csproj" />
+    <ProjectReference Include="..\Envelopes\MinimalLambda.Envelopes\MinimalLambda.Envelopes.csproj" />
+    <ProjectReference Include="..\MinimalLambda.Abstractions\MinimalLambda.Abstractions.csproj" />
+    <ProjectReference Include="..\MinimalLambda.OpenTelemetry\MinimalLambda.OpenTelemetry.csproj" />
+    <ProjectReference Include="..\MinimalLambda\MinimalLambda.csproj" />
+  </ItemGroup>
 </Project>
