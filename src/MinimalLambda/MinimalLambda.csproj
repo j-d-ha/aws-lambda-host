@@ -55,4 +55,7 @@
       />
     </ItemGroup>
   </Target>
+  <PropertyGroup>
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+  </PropertyGroup>
 </Project>

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -67,6 +68,11 @@ public static class ServiceCollectionExtensions
         ///     already.
         /// </summary>
         /// <returns>The service collection for chaining.</returns>
+        [UnconditionalSuppressMessage(
+            "Aot",
+            "IL2026:RequiresUnreferencedCode",
+            Justification = "DefaultLambdaJsonSerializer is a fallback. Users can AddLambdaSerializerWithContext for AOT scenarios."
+        )]
         public IServiceCollection TryAddLambdaHostDefaultServices()
         {
             ArgumentNullException.ThrowIfNull(services);
