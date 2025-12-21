@@ -1,9 +1,18 @@
 version: '3'
 
 tasks:
+  clean:
+    desc: Clean NuGet packages from Release folder
+    silent: true
+    cmds:
+      - echo "🧹 Cleaning"
+      - '[ -d ./nupkg ] && rm -r ./nupkg || true'
+      - dotnet clean --configuration Release
+  
   restore:
     desc: Restore NuGet dependencies
     silent: true
+    deps: [ clean ]
     cmds:
       - echo "📥 Restoring dependencies"
       - dotnet restore
@@ -12,6 +21,7 @@ tasks:
   build:
     desc: Build solution in Release configuration
     silent: true
+    deps: [ restore ]
     cmds:
       - echo "🔨 Building Release"
       - dotnet build --configuration Release --no-restore
@@ -20,28 +30,26 @@ tasks:
   build-debug:
     desc: Build solution in Debug configuration
     silent: true
+    deps: [ restore ]
     cmds:
       - echo "🔨 Building Debug"
       - dotnet build --configuration Debug --no-restore
       - echo "✅ Debug build complete"
 
-  clean:
-    desc: Clean NuGet packages from Release folder
-    silent: true
-    cmds:
-      - echo "🧹 Cleaning"
-      - '[ -d ./nupkg ] && rm -r ./nupkg || true'
-      - echo "done with one"
-      - find src -path "src/*/obj/Release/*.nuspec" -delete
-      - dotnet clean --configuration Release
-
   pack:
     desc: Build the NuGet package
     silent: true
+    deps: [ build ]
     cmds:
-      - task: clean
-      - echo "📦 Packing {{.DIR}}"
-      - dotnet restore
-      - dotnet build --configuration Release --no-restore
+      - echo "📦 Packing Packages"
       - dotnet pack --configuration Release --no-build --output ./nupkg
       - echo "✅ Packed"
+  
+  publish:
+    desc: Publish the NuGet package to NuGet.org
+    silent: true
+    deps: [ pack ]
+    cmds:
+      - echo "🚀 Publishing"
+      - dotnet nuget push ./nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
+      - echo "✨ Published"
