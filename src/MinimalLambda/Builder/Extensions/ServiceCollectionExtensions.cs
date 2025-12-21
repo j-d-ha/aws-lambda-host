@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -77,7 +78,11 @@ public static class ServiceCollectionExtensions
         {
             ArgumentNullException.ThrowIfNull(services);
 
-            services.TryAddSingleton<ILambdaSerializer, DefaultLambdaJsonSerializer>();
+            // We will only attempt to add ILambdaSerializer if we are not using AOT.
+            // This is needed for code AOT analysis.
+            if (RuntimeFeature.IsDynamicCodeSupported)
+                services.TryAddSingleton<ILambdaSerializer, DefaultLambdaJsonSerializer>();
+
             services.TryAddSingleton<
                 ILambdaCancellationFactory,
                 DefaultLambdaCancellationFactory
