@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using MinimalLambda.SourceGenerators.Models;
@@ -9,24 +8,6 @@ namespace MinimalLambda.SourceGenerators;
 [Generator]
 public class MapHandlerIncrementalGenerator : IIncrementalGenerator
 {
-    private readonly string _generatorName;
-    private readonly string _generatorVersion;
-
-    public MapHandlerIncrementalGenerator()
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-
-        _generatorName = assembly.GetName().FullName;
-        _generatorVersion = assembly.GetName().Version.ToString();
-    }
-
-    /// <summary>This constructor is only used for testing.</summary>
-    internal MapHandlerIncrementalGenerator(string generatorName, string generatorVersion)
-    {
-        _generatorName = generatorName;
-        _generatorVersion = generatorVersion;
-    }
-
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         // Language version gate - only generate source if C# 11 or later is used
@@ -139,12 +120,7 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
                 if (info is null)
                     return;
 
-                LambdaHostOutputGenerator.Generate(
-                    productionContext,
-                    info.Value,
-                    _generatorName,
-                    _generatorVersion
-                );
+                LambdaHostOutputGenerator.Generate(productionContext, info.Value);
             }
         );
     }

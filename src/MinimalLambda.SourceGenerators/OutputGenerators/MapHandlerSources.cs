@@ -9,8 +9,7 @@ internal static class MapHandlerSources
 {
     internal static string Generate(
         EquatableArray<HigherOrderMethodInfo> mapHandlerInvocationInfos,
-        EquatableArray<SimpleMethodInfo> builderInfo,
-        string generatedCodeAttribute
+        EquatableArray<SimpleMethodInfo> builderInfo
     )
     {
         var mapHandlerCalls = mapHandlerInvocationInfos.Select(mapHandlerInvocationInfo =>
@@ -69,7 +68,7 @@ internal static class MapHandlerSources
         return template.Render(
             new
             {
-                GeneratedCodeAttribute = generatedCodeAttribute,
+                LambdaHostOutputGenerator.GeneratedCodeAttribute,
                 MapHandlerCalls = mapHandlerCalls,
             }
         );
