@@ -16,7 +16,7 @@ namespace System.Runtime.CompilerServices
 {
     using System.CodeDom.Compiler;
 
-    [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
+    [GeneratedCode("REPLACED", "REPLACED")]
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     file sealed class InterceptsLocationAttribute : Attribute
     {
@@ -37,13 +37,13 @@ namespace MinimalLambda.Generated
     using MinimalLambda;
     using MinimalLambda.Builder;
 
-    [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
+    [GeneratedCode("REPLACED", "REPLACED")]
     file static class GeneratedLambdaInvocationBuilderExtensions
     {
         private const string EventFeatureProviderKey = "__EventFeatureProvider";
         private const string ResponseFeatureProviderKey = "__ResponseFeatureProvider";
 
-        [InterceptsLocation(1, "hmegcgWk2t+EeA09rekjfN0BAABJbnB1dEZpbGUuY3M=")]
+        [InterceptsLocation(1, "REPLACED")]
         internal static ILambdaInvocationBuilder MapHandlerInterceptor0(
             this ILambdaInvocationBuilder application,
             Delegate handler

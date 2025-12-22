@@ -2,9 +2,9 @@ namespace MinimalLambda.SourceGenerators;
 
 internal static class CommonSources
 {
-    internal static string Generate(string generatedCodeAttribute)
+    internal static string Generate()
     {
-        var model = new { GeneratedCodeAttribute = generatedCodeAttribute };
+        var model = new { LambdaHostOutputGenerator.GeneratedCodeAttribute };
 
         var template = TemplateHelper.LoadTemplate(
             GeneratorConstants.InterceptsLocationAttributeTemplateFile

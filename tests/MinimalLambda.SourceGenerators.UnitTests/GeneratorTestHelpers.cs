@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.RuntimeSupport;
@@ -54,7 +55,24 @@ internal static class GeneratorTestHelpers
 
         result.GeneratedTrees.Length.Should().Be(expectedTrees);
 
-        return Verifier.Verify(driver).UseDirectory("Snapshots").DisableDiff();
+        return Verifier
+            .Verify(driver)
+            .UseDirectory("Snapshots")
+            .DisableDiff()
+            .ScrubLinesWithReplace(line =>
+            {
+                // replace [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
+                if (line.Contains("GeneratedCode", StringComparison.Ordinal))
+                    return RegexHelper
+                        .GeneratedCodeAttributeRegex()
+                        .Replace(line, """[GeneratedCode("REPLACED", "REPLACED")]""");
+
+                // replace [InterceptsLocation(1, "")]
+                if (line.Contains("InterceptsLocation", StringComparison.Ordinal))
+                    return RegexHelper.InterceptsLocationRegex().Replace(line, "REPLACED");
+
+                return line;
+            });
     }
 
     internal static (GeneratorDriver driver, Compilation compilation) GenerateFromSource(
@@ -106,14 +124,24 @@ internal static class GeneratorTestHelpers
             compilationOptions
         );
 
-        var generator = new MapHandlerIncrementalGenerator(
-            "MinimalLambda.SourceGenerators",
-            "0.0.0"
-        ).AsSourceGenerator();
+        var generator = new MapHandlerIncrementalGenerator().AsSourceGenerator();
 
         var driver = CSharpGeneratorDriver.Create(generator);
         var updatedDriver = driver.RunGenerators(compilation, CancellationToken.None);
 
         return (updatedDriver, compilation);
     }
+}
+
+internal static partial class RegexHelper
+{
+    [GeneratedRegex("""\[GeneratedCode\("([^"]+)",\s*"([^"]+)"\)\]""", RegexOptions.None, "en-US")]
+    internal static partial Regex GeneratedCodeAttributeRegex();
+
+    [GeneratedRegex(
+        """(?<=\[InterceptsLocation\(\d+, ")([A-Za-z0-9+/=]{2,})(?="\)\])""",
+        RegexOptions.None,
+        "en-US"
+    )]
+    internal static partial Regex InterceptsLocationRegex();
 }

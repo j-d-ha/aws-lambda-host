@@ -32,8 +32,7 @@ internal static class GenericHandlerSources
         string methodName,
         string? wrapperReturnType,
         string? defaultWrapperReturnValue,
-        string targetType,
-        string generatedCodeAttribute
+        string targetType
     )
     {
         var calls = higherOrderMethodInfos
@@ -110,7 +109,7 @@ internal static class GenericHandlerSources
         {
             Name = methodName,
             Calls = calls,
-            GeneratedCodeAttribute = generatedCodeAttribute,
+            LambdaHostOutputGenerator.GeneratedCodeAttribute,
         };
 
         var template = TemplateHelper.LoadTemplate(GeneratorConstants.GenericHandlerTemplateFile);

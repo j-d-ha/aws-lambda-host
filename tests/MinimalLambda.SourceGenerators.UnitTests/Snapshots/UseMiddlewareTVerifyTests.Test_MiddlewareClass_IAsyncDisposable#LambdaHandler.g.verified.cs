@@ -16,7 +16,7 @@ namespace System.Runtime.CompilerServices
 {
     using System.CodeDom.Compiler;
 
-    [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
+    [GeneratedCode("REPLACED", "REPLACED")]
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     file sealed class InterceptsLocationAttribute : Attribute
     {
@@ -37,10 +37,10 @@ namespace MinimalLambda.Generated
     using MinimalLambda;
     using MinimalLambda.Builder;
 
-    [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
+    [GeneratedCode("REPLACED", "REPLACED")]
     file static class UseMiddlewareExtensions
     {
-        [InterceptsLocation(1, "p6F9mr5nQrDoT4xxrawd2+cAAABJbnB1dEZpbGUuY3M=")]
+        [InterceptsLocation(1, "REPLACED")]
         internal static ILambdaInvocationBuilder UseMiddleware0<T>(
             this ILambdaInvocationBuilder builder,
             params object[] args

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using MinimalLambda.SourceGenerators.Models;
 
@@ -7,12 +8,24 @@ namespace MinimalLambda.SourceGenerators;
 
 internal static class LambdaHostOutputGenerator
 {
-    internal static void Generate(
-        SourceProductionContext context,
-        CompilationInfo compilationInfo,
-        string generatorName,
-        string generatorVersion
-    )
+    internal static string GeneratedCodeAttribute
+    {
+        get
+        {
+            if (field is null)
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var generatorName = assembly.GetName().FullName;
+                var generatorVersion = assembly.GetName().Version.ToString();
+
+                field = $"[GeneratedCode(\"{generatorName}\", \"{generatorVersion}\")]";
+            }
+
+            return field;
+        }
+    }
+
+    internal static void Generate(SourceProductionContext context, CompilationInfo compilationInfo)
     {
         // validate the generator data and report any diagnostics before exiting.
         var diagnostics = DiagnosticGenerator.GenerateDiagnostics(compilationInfo);
@@ -25,13 +38,9 @@ internal static class LambdaHostOutputGenerator
                 return;
         }
 
-        // create GeneratedCodeAttribute. This is used across all generated source files.
-        var generatedCodeAttribute =
-            $"[GeneratedCode(\"{generatorName}\", \"{generatorVersion}\")]";
-
         List<string?> outputs =
         [
-            CommonSources.Generate(generatedCodeAttribute),
+            CommonSources.Generate(),
             """
                 namespace MinimalLambda.Generated
                 {
@@ -52,19 +61,13 @@ internal static class LambdaHostOutputGenerator
             outputs.Add(
                 MapHandlerSources.Generate(
                     compilationInfo.MapHandlerInvocationInfos,
-                    compilationInfo.BuilderInfos,
-                    generatedCodeAttribute
+                    compilationInfo.BuilderInfos
                 )
             );
 
         // add UseMiddleware<T> interceptors
         if (compilationInfo.UseMiddlewareTInfos.Count >= 1)
-            outputs.Add(
-                UseMiddlewareTSource.Generate(
-                    compilationInfo.UseMiddlewareTInfos,
-                    generatedCodeAttribute
-                )
-            );
+            outputs.Add(UseMiddlewareTSource.Generate(compilationInfo.UseMiddlewareTInfos));
 
         // add OnInit interceptors
         if (compilationInfo.OnInitInvocationInfos.Count >= 1)
@@ -74,8 +77,7 @@ internal static class LambdaHostOutputGenerator
                     "OnInit",
                     "bool",
                     "true",
-                    "ILambdaOnInitBuilder",
-                    generatedCodeAttribute
+                    "ILambdaOnInitBuilder"
                 )
             );
 
@@ -87,8 +89,7 @@ internal static class LambdaHostOutputGenerator
                     "OnShutdown",
                     null,
                     null,
-                    "ILambdaOnShutdownBuilder",
-                    generatedCodeAttribute
+                    "ILambdaOnShutdownBuilder"
                 )
             );
 

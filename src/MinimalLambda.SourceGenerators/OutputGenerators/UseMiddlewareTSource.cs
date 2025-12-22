@@ -6,10 +6,7 @@ namespace MinimalLambda.SourceGenerators;
 
 internal static class UseMiddlewareTSource
 {
-    internal static string Generate(
-        EquatableArray<UseMiddlewareTInfo> useMiddlewareTInfos,
-        string generatedCodeAttribute
-    )
+    internal static string Generate(EquatableArray<UseMiddlewareTInfo> useMiddlewareTInfos)
     {
         var useMiddlewareTCalls = useMiddlewareTInfos.Select(useMiddlewareTInfo =>
         {
@@ -87,7 +84,7 @@ internal static class UseMiddlewareTSource
         var template = TemplateHelper.LoadTemplate(GeneratorConstants.UseMiddlewareTTemplateFile);
 
         return template.Render(
-            new { GeneratedCodeAttribute = generatedCodeAttribute, Calls = useMiddlewareTCalls }
+            new { LambdaHostOutputGenerator.GeneratedCodeAttribute, Calls = useMiddlewareTCalls }
         );
     }
 
