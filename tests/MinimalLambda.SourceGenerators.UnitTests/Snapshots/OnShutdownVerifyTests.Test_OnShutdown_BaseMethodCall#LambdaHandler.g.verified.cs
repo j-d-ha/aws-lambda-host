@@ -16,7 +16,7 @@ namespace System.Runtime.CompilerServices
 {
     using System.CodeDom.Compiler;
 
-    [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
+    [GeneratedCode("MinimalLambda.SourceGenerators", "REPLACED")]
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     file sealed class InterceptsLocationAttribute : Attribute
     {

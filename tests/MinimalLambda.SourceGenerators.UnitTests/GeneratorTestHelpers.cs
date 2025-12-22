@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.RuntimeSupport;
@@ -54,7 +55,18 @@ internal static class GeneratorTestHelpers
 
         result.GeneratedTrees.Length.Should().Be(expectedTrees);
 
-        return Verifier.Verify(driver).UseDirectory("Snapshots").DisableDiff();
+        return Verifier
+            .Verify(driver)
+            .UseDirectory("Snapshots")
+            .DisableDiff()
+            .ScrubLinesWithReplace(line =>
+            {
+                // replace [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
+                if (line.Contains("GeneratedCode", StringComparison.Ordinal))
+                    return RegexHelper.GeneratedCodeAttributeRegex().Replace(line, "REPLACED");
+
+                return line;
+            });
     }
 
     internal static (GeneratorDriver driver, Compilation compilation) GenerateFromSource(
@@ -116,4 +128,14 @@ internal static class GeneratorTestHelpers
 
         return (updatedDriver, compilation);
     }
+}
+
+internal partial class RegexHelper
+{
+    [GeneratedRegex(
+        """(?<=\[GeneratedCode\("MinimalLambda\.SourceGenerators", ")([\d.]+)(?="\)\])""",
+        RegexOptions.None,
+        "en-US"
+    )]
+    internal static partial Regex GeneratedCodeAttributeRegex();
 }

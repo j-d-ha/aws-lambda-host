@@ -16,7 +16,7 @@ namespace System.Runtime.CompilerServices
 {
     using System.CodeDom.Compiler;
 
-    [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
+    [GeneratedCode("MinimalLambda.SourceGenerators", "REPLACED")]
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     file sealed class InterceptsLocationAttribute : Attribute
     {
@@ -37,7 +37,7 @@ namespace MinimalLambda.Generated
     using MinimalLambda;
     using MinimalLambda.Builder;
 
-    [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
+    [GeneratedCode("MinimalLambda.SourceGenerators", "REPLACED")]
     file static class GeneratedLambdaOnShutdownBuilderExtensions
     {
         [InterceptsLocation(1, "12DeS9LwHN3iO8NwFisQBs0AAABJbnB1dEZpbGUuY3M=")]
