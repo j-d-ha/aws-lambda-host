@@ -63,7 +63,9 @@ internal static class GeneratorTestHelpers
             {
                 // replace [GeneratedCode("MinimalLambda.SourceGenerators", "0.0.0")]
                 if (line.Contains("GeneratedCode", StringComparison.Ordinal))
-                    return RegexHelper.GeneratedCodeAttributeRegex().Replace(line, "REPLACED");
+                    return RegexHelper
+                        .GeneratedCodeAttributeRegex()
+                        .Replace(line, @"[GeneratedCode(""REPLACED"", ""REPLACED"")]");
 
                 // replace [InterceptsLocation(1, "")]
                 if (line.Contains("InterceptsLocation", StringComparison.Ordinal))
@@ -122,10 +124,7 @@ internal static class GeneratorTestHelpers
             compilationOptions
         );
 
-        var generator = new MapHandlerIncrementalGenerator(
-            "MinimalLambda.SourceGenerators",
-            "0.0.0"
-        ).AsSourceGenerator();
+        var generator = new MapHandlerIncrementalGenerator().AsSourceGenerator();
 
         var driver = CSharpGeneratorDriver.Create(generator);
         var updatedDriver = driver.RunGenerators(compilation, CancellationToken.None);
@@ -136,11 +135,7 @@ internal static class GeneratorTestHelpers
 
 internal partial class RegexHelper
 {
-    [GeneratedRegex(
-        """(?<=\[GeneratedCode\("MinimalLambda\.SourceGenerators", ")([\d.]+)(?="\)\])""",
-        RegexOptions.None,
-        "en-US"
-    )]
+    [GeneratedRegex("""\[GeneratedCode\("([^"]+)",\s*"([^"]+)"\)\]""", RegexOptions.None, "en-US")]
     internal static partial Regex GeneratedCodeAttributeRegex();
 
     [GeneratedRegex(
