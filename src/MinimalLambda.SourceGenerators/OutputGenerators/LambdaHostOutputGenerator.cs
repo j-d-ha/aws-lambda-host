@@ -19,7 +19,7 @@ internal static class LambdaHostOutputGenerator
                 var generatorVersion = assembly.GetName().Version.ToString();
 
                 field =
-                    $"[global::System.CodeDom.Compiler.GeneratedCode(\"{generatorName}\", \"{generatorVersion}\")]";
+                    $"""[global::System.CodeDom.Compiler.GeneratedCode("{generatorName}", "{generatorVersion}")]""";
             }
 
             return field;
