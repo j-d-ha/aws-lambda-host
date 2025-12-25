@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using MinimalLambda.SourceGenerators.Models;
@@ -31,41 +32,49 @@ public class MinimalLambdaGenerator : IIncrementalGenerator
             }
         );
 
-        // Find all MapHandler method calls with lambda analysis
-        var mapHandlerCalls = context
-            .SyntaxProvider.CreateSyntaxProvider(
-                MapHandlerSyntaxProvider.Predicate,
-                MapHandlerSyntaxProvider.Transformer
-            )
-            .Where(static m => m is not null)
-            .Select(static (m, _) => m!.Value);
+        // // Find all MapHandler method calls with lambda analysis
+        // var mapHandlerCalls = context
+        //     .SyntaxProvider.CreateSyntaxProvider(
+        //         MapHandlerSyntaxProvider.Predicate,
+        //         MapHandlerSyntaxProvider.Transformer
+        //     )
+        //     .Where(static m => m is not null)
+        //     .Select(static (m, _) => m!.Value);
+        //
+        // // Find all OnShutdown method calls with lambda analysis
+        // var onShutdownCalls = context
+        //     .SyntaxProvider.CreateSyntaxProvider(
+        //         OnShutdownSyntaxProvider.Predicate,
+        //         OnShutdownSyntaxProvider.Transformer
+        //     )
+        //     .Where(static m => m is not null)
+        //     .Select(static (m, _) => m!.Value);
+        //
+        // // Find all OnInit method calls with lambda analysis
+        // var onInitCalls = context
+        //     .SyntaxProvider.CreateSyntaxProvider(
+        //         OnInitSyntaxProvider.Predicate,
+        //         OnInitSyntaxProvider.Transformer
+        //     )
+        //     .Where(static m => m is not null)
+        //     .Select(static (m, _) => m!.Value);
+        //
+        // // find LambdaApplicationBuilder.Build() calls
+        // var lambdaApplicationBuilderBuildCalls = context
+        //     .SyntaxProvider.CreateSyntaxProvider(
+        //         LambdaApplicationBuilderBuildSyntaxProvider.Predicate,
+        //         LambdaApplicationBuilderBuildSyntaxProvider.Transformer
+        //     )
+        //     .Where(static m => m is not null)
+        //     .Select(static (m, _) => m!.Value);
 
-        // Find all OnShutdown method calls with lambda analysis
-        var onShutdownCalls = context
+        // handler registration calls
+        var registrationCalls = context
             .SyntaxProvider.CreateSyntaxProvider(
-                OnShutdownSyntaxProvider.Predicate,
-                OnShutdownSyntaxProvider.Transformer
+                HandlerSyntaxProvider.Predicate,
+                HandlerSyntaxProvider.Transformer
             )
-            .Where(static m => m is not null)
-            .Select(static (m, _) => m!.Value);
-
-        // Find all OnInit method calls with lambda analysis
-        var onInitCalls = context
-            .SyntaxProvider.CreateSyntaxProvider(
-                OnInitSyntaxProvider.Predicate,
-                OnInitSyntaxProvider.Transformer
-            )
-            .Where(static m => m is not null)
-            .Select(static (m, _) => m!.Value);
-
-        // find LambdaApplicationBuilder.Build() calls
-        var lambdaApplicationBuilderBuildCalls = context
-            .SyntaxProvider.CreateSyntaxProvider(
-                LambdaApplicationBuilderBuildSyntaxProvider.Predicate,
-                LambdaApplicationBuilderBuildSyntaxProvider.Transformer
-            )
-            .Where(static m => m is not null)
-            .Select(static (m, _) => m!.Value);
+            .WhereNotNull();
 
         // find UseMiddleware<T>() calls
         var useMiddlewareTCalls = context
@@ -77,43 +86,39 @@ public class MinimalLambdaGenerator : IIncrementalGenerator
             .Select(static (m, _) => m!.Value);
 
         // collect call
-        var mapHandlerCallsCollected = mapHandlerCalls.Collect();
-        var onShutdownCallsCollected = onShutdownCalls.Collect();
-        var onInitCallsCollected = onInitCalls.Collect();
-        var lambdaApplicationBuilderBuildCallsCollected =
-            lambdaApplicationBuilderBuildCalls.Collect();
+        // var mapHandlerCallsCollected = mapHandlerCalls.Collect();
+        // var onShutdownCallsCollected = onShutdownCalls.Collect();
+        // var onInitCallsCollected = onInitCalls.Collect();
+        // var lambdaApplicationBuilderBuildCallsCollected =
+        //     lambdaApplicationBuilderBuildCalls.Collect();
+
+        var registrationCallsCollected = registrationCalls.Collect();
         var useMiddlewareTCallsCollected = useMiddlewareTCalls.Collect();
 
         // combine the compilation and map handler calls
-        var combined = mapHandlerCallsCollected
-            .Combine(onShutdownCallsCollected)
-            .Combine(onInitCallsCollected)
-            .Combine(lambdaApplicationBuilderBuildCallsCollected)
+        var combined = registrationCallsCollected
             .Combine(useMiddlewareTCallsCollected)
             .Select(
                 CompilationInfo? (t, _) =>
                 {
-                    var (
-                        (((mapHandlerInfos, onShutdownInfo), onInitInfo), builderInfo),
-                        useMiddlewareInfo
-                    ) = t;
+                    var (handlerInfos, useMiddlewareInfo) = t;
 
-                    if (
-                        mapHandlerInfos.Length == 0
-                        && onShutdownInfo.Length == 0
-                        && onInitInfo.Length == 0
-                        && builderInfo.Length == 0
-                        && useMiddlewareInfo.Length == 0
-                    )
+                    if (handlerInfos.Length == 0 && useMiddlewareInfo.Length == 0)
                         return null;
 
-                    return new CompilationInfo(
-                        mapHandlerInfos.ToEquatableArray(),
-                        onShutdownInfo.ToEquatableArray(),
-                        onInitInfo.ToEquatableArray(),
-                        builderInfo.ToEquatableArray(),
-                        useMiddlewareInfo.ToEquatableArray()
-                    );
+                    return new CompilationInfo
+                    {
+                        MapHandlerInvocationInfos = handlerInfos
+                            .Where(h => h.Name == "MapHandler")
+                            .ToEquatableArray(),
+                        OnShutdownInvocationInfos = handlerInfos
+                            .Where(h => h.Name == "OnShutdown")
+                            .ToEquatableArray(),
+                        OnInitInvocationInfos = handlerInfos
+                            .Where(h => h.Name == "OnInit")
+                            .ToEquatableArray(),
+                        UseMiddlewareTInfos = useMiddlewareInfo.ToEquatableArray(),
+                    };
                 }
             );
 
