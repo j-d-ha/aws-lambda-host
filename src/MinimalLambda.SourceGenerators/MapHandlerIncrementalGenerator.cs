@@ -93,21 +93,26 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
             .Select(
                 CompilationInfo? (t, _) =>
                 {
+                    var (
+                        (((mapHandlerInfos, onShutdownInfo), onInitInfo), builderInfo),
+                        useMiddlewareInfo
+                    ) = t;
+
                     if (
-                        t.Left.Left.Left.Left.Length == 0
-                        && t.Left.Left.Left.Right.Length == 0
-                        && t.Left.Left.Right.Length == 0
-                        && t.Left.Right.Length == 0
-                        && t.Right.Length == 0
+                        mapHandlerInfos.Length == 0
+                        && onShutdownInfo.Length == 0
+                        && onInitInfo.Length == 0
+                        && builderInfo.Length == 0
+                        && useMiddlewareInfo.Length == 0
                     )
                         return null;
 
                     return new CompilationInfo(
-                        t.Left.Left.Left.Left.ToEquatableArray(),
-                        t.Left.Left.Left.Right.ToEquatableArray(),
-                        t.Left.Left.Right.ToEquatableArray(),
-                        t.Left.Right.ToEquatableArray(),
-                        t.Right.ToEquatableArray()
+                        mapHandlerInfos.ToEquatableArray(),
+                        onShutdownInfo.ToEquatableArray(),
+                        onInitInfo.ToEquatableArray(),
+                        builderInfo.ToEquatableArray(),
+                        useMiddlewareInfo.ToEquatableArray()
                     );
                 }
             );
