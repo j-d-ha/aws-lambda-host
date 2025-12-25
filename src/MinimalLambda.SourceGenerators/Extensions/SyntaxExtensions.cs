@@ -6,26 +6,28 @@ namespace MinimalLambda.SourceGenerators;
 
 internal static class SyntaxExtensions
 {
-    internal static bool TryGetMethodName(
-        this SyntaxNode node,
-        [NotNullWhen(true)] out string? methodName
-    )
+    extension(SyntaxNode node)
     {
-        methodName = null;
-        if (
-            node is InvocationExpressionSyntax
-            {
-                Expression: MemberAccessExpressionSyntax { Name.Identifier.ValueText: var method },
-            }
-        )
+        internal bool TryGetMethodName([NotNullWhen(true)] out string? methodName)
         {
-            methodName = method;
-            return true;
+            methodName = null;
+            if (
+                node is InvocationExpressionSyntax
+                {
+                    Expression: MemberAccessExpressionSyntax
+                    {
+                        Name.Identifier.ValueText: var method,
+                    },
+                }
+            )
+            {
+                methodName = method;
+                return true;
+            }
+
+            return false;
         }
 
-        return false;
+        internal bool IsGeneratedFile() => node.SyntaxTree.FilePath.EndsWith(".g.cs");
     }
-
-    internal static bool IsGeneratedFile(this SyntaxNode node) =>
-        node.SyntaxTree.FilePath.EndsWith(".g.cs");
 }
