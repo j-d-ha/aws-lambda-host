@@ -6,8 +6,6 @@
 // See THIRD-PARTY-LICENSES.txt file in the project root or visit
 // https://github.com/dotnet/aspnetcore/blob/v10.0.0/LICENSE.txt
 
-// ReSharper disable InconsistentNaming
-
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -38,10 +36,13 @@ internal static class HandlerSyntaxProvider
         if (!TryGetInvocationOperation(context, out var targetOperation))
             return null;
 
-        if (!targetOperation.TryGetRouteHandlerMethod(context.SemanticModel, out var methodSymbol))
-            return null;
-
-        return null;
+        return !targetOperation.TryGetHandlerMethod(context.SemanticModel, out var methodSymbol)
+            ? null
+            : HigherOrderMethodInfo.Create(
+                methodSymbol,
+                targetOperation.TargetMethod.Name,
+                context
+            );
     }
 
     private static bool TryGetInvocationOperation(
@@ -80,7 +81,7 @@ internal static class HandlerSyntaxProvider
         return false;
     }
 
-    private static bool TryGetRouteHandlerMethod(
+    private static bool TryGetHandlerMethod(
         this IInvocationOperation invocation,
         SemanticModel semanticModel,
         [NotNullWhen(true)] out IMethodSymbol? method
