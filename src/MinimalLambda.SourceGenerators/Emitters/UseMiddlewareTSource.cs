@@ -84,7 +84,7 @@ internal static class UseMiddlewareTSource
         var template = TemplateHelper.LoadTemplate(GeneratorConstants.UseMiddlewareTTemplateFile);
 
         return template.Render(
-            new { LambdaHostOutputGenerator.GeneratedCodeAttribute, Calls = useMiddlewareTCalls }
+            new { MinimalLambdaEmitter.GeneratedCodeAttribute, Calls = useMiddlewareTCalls }
         );
     }
 

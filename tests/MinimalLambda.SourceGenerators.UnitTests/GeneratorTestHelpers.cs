@@ -135,7 +135,7 @@ internal static class GeneratorTestHelpers
             compilationOptions
         );
 
-        var generator = new MapHandlerIncrementalGenerator().AsSourceGenerator();
+        var generator = new MinimalLambdaGenerator().AsSourceGenerator();
 
         var driver = CSharpGeneratorDriver.Create(generator);
         var updatedDriver = driver.RunGenerators(compilation, CancellationToken.None);

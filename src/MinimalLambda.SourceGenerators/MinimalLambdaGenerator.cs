@@ -6,7 +6,7 @@ using MinimalLambda.SourceGenerators.Models;
 namespace MinimalLambda.SourceGenerators;
 
 [Generator]
-public class MapHandlerIncrementalGenerator : IIncrementalGenerator
+public class MinimalLambdaGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -125,7 +125,7 @@ public class MapHandlerIncrementalGenerator : IIncrementalGenerator
                 if (info is null)
                     return;
 
-                LambdaHostOutputGenerator.Generate(productionContext, info.Value);
+                MinimalLambdaEmitter.Generate(productionContext, info.Value);
             }
         );
     }

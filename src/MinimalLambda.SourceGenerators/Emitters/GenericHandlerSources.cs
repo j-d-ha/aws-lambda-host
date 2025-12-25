@@ -94,7 +94,7 @@ internal static class GenericHandlerSources
         {
             Name = methodName,
             Calls = calls,
-            LambdaHostOutputGenerator.GeneratedCodeAttribute,
+            MinimalLambdaEmitter.GeneratedCodeAttribute,
         };
 
         var template = TemplateHelper.LoadTemplate(GeneratorConstants.GenericHandlerTemplateFile);

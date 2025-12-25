@@ -66,11 +66,7 @@ internal static class MapHandlerSources
         );
 
         return template.Render(
-            new
-            {
-                LambdaHostOutputGenerator.GeneratedCodeAttribute,
-                MapHandlerCalls = mapHandlerCalls,
-            }
+            new { MinimalLambdaEmitter.GeneratedCodeAttribute, MapHandlerCalls = mapHandlerCalls }
         );
     }
 

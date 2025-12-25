@@ -4,7 +4,7 @@ internal static class CommonSources
 {
     internal static string Generate()
     {
-        var model = new { LambdaHostOutputGenerator.GeneratedCodeAttribute };
+        var model = new { MinimalLambdaEmitter.GeneratedCodeAttribute };
 
         var template = TemplateHelper.LoadTemplate(
             GeneratorConstants.InterceptsLocationAttributeTemplateFile

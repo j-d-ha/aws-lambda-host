@@ -6,7 +6,7 @@ using MinimalLambda.SourceGenerators.Models;
 
 namespace MinimalLambda.SourceGenerators;
 
-internal static class LambdaHostOutputGenerator
+internal static class MinimalLambdaEmitter
 {
     internal static string GeneratedCodeAttribute
     {
