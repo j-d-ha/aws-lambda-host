@@ -50,14 +50,13 @@ internal static class ParameterInfo2Extensions
             // event
             if (isEvent)
             {
-                // stream event
-                if (SymbolEqualityComparer.Default.Equals(parameter.Type, stream))
-                    return success(
-                        "context.Features.GetRequired<IInvocationDataFeature>().EventStream"
-                    );
-
-                // non stream event
-                return success($"context.GetRequiredEvent<{paramType}>()");
+                return success(
+                    SymbolEqualityComparer.Default.Equals(parameter.Type, stream)
+                        // stream event
+                        ? "context.Features.GetRequired<IInvocationDataFeature>().EventStream"
+                        // non stream event
+                        : $"context.GetRequiredEvent<{paramType}>()"
+                );
             }
 
             // context
