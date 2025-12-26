@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -7,6 +8,90 @@ using MinimalLambda.SourceGenerators.Extensions;
 using WellKnownType = MinimalLambda.SourceGenerators.WellKnownTypes.WellKnownTypeData.WellKnownType;
 
 namespace MinimalLambda.SourceGenerators.Models;
+
+internal readonly record struct ParameterInfo2(string Assignment, string InfoComment);
+
+internal static class ParameterInfo2Extensions
+{
+    private static Func<string, DiagnosticResult<ParameterInfo2>> Success(string infoComment)
+    {
+        var info = new ParameterInfo2 { InfoComment = infoComment };
+        return assignment =>
+            DiagnosticResult<ParameterInfo2>.Success(info with { Assignment = assignment });
+    }
+
+    extension(ParameterInfo2)
+    {
+        internal static DiagnosticResult<ParameterInfo2> CreateForInvocationHandler(
+            IParameterSymbol parameter,
+            GeneratorContext context
+        )
+        {
+            var stream = context.WellKnownTypes.Get(WellKnownType.System_IO_Stream);
+            var lambdaContext = context.WellKnownTypes.Get(
+                WellKnownType.Amazon_Lambda_Core_ILambdaContext
+            );
+            var lambdaInvocationContext = context.WellKnownTypes.Get(
+                WellKnownType.MinimalLambda_ILambdaInvocationContext
+            );
+            var cancellationToken = context.WellKnownTypes.Get(
+                WellKnownType.System_Threading_CancellationToken
+            );
+
+            var paramType = parameter.Type.ToGloballyQualifiedName();
+
+            var (isEvent, isKeyedServices) = parameter.IsFromEventOrFromKeyedService(
+                context,
+                out var keyResult
+            );
+
+            var success = Success("");
+
+            // event
+            if (isEvent)
+            {
+                // stream event
+                if (SymbolEqualityComparer.Default.Equals(parameter.Type, stream))
+                    return success(
+                        "context.Features.GetRequired<IInvocationDataFeature>().EventStream"
+                    );
+
+                // non stream event
+                return success($"context.GetRequiredEvent<{paramType}>()");
+            }
+
+            // context
+            if (
+                SymbolEqualityComparer.Default.Equals(parameter.Type, lambdaContext)
+                || SymbolEqualityComparer.Default.Equals(parameter.Type, lambdaInvocationContext)
+            )
+                return success("context");
+
+            // cancellation token
+            if (SymbolEqualityComparer.Default.Equals(parameter.Type, cancellationToken))
+                return success("context.CancellationToken");
+
+            // keyed services
+            if (isKeyedServices)
+                return keyResult!.Bind(key =>
+                    parameter.IsOptional
+                        ? success($"context.ServiceProvider.GetKeyedService<{paramType}>({key})")
+                        : success(
+                            $"context.ServiceProvider.GetRequiredKeyedService<{paramType}>({key})"
+                        )
+                );
+
+            // default - inject from DI - optional
+            if (parameter.IsOptional)
+                return success($"context.ServiceProvider.GetService<{paramType}>()");
+
+            // default - inject required from DI
+            return success($"context.ServiceProvider.GetRequiredService<{paramType}>()");
+        }
+
+        internal static ParameterInfo2 CreateForLifecycleHandler() => new();
+    }
+}
 
 internal static class MapHandlerExtractors
 {
@@ -146,8 +231,6 @@ internal static class MapHandlerExtractors
         private DiagnosticResult<string> ExtractKeyedServiceKey()
         {
             var argument = attributeData.ConstructorArguments[0];
-            var keyBaseType = argument.Type?.BaseType?.ToGloballyQualifiedName();
-            var keyType = argument.Type?.ToGloballyQualifiedName();
 
             if (argument.IsNull)
                 return DiagnosticResult<string>.Success("null");

@@ -41,7 +41,6 @@ internal static class HandlerSyntaxProvider
 
         return HigherOrderMethodInfo.Create(
             methodSymbol,
-            targetOperation.TargetMethod.Name,
             MapHandlerExtractors.GetParameterAssignments,
             context
         );

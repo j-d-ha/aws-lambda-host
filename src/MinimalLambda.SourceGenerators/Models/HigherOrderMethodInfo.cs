@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using LayeredCraft.SourceGeneratorTools.Types;
 using Microsoft.CodeAnalysis;
@@ -17,6 +18,10 @@ internal readonly record struct HigherOrderMethodInfo(
     // ── New ──────────────────────────────────────────────────────────────────────────
     string DelegateCastType = "",
     EquatableArray<string> ParameterAssignments = default,
+    bool IsAwaitable = false,
+    bool HasReturnType = false,
+    bool IsReturnTypeStream = false,
+    bool IsReturnTypeBool = false,
     EquatableArray<DiagnosticInfo> DiagnosticInfos = default
 );
 
@@ -26,7 +31,6 @@ internal static class HigherOrderMethodInfoExtensions
     {
         internal static HigherOrderMethodInfo? Create(
             IMethodSymbol methodSymbol,
-            string name,
             Func<
                 IMethodSymbol,
                 GeneratorContext,
@@ -35,6 +39,9 @@ internal static class HigherOrderMethodInfoExtensions
             GeneratorContext context
         )
         {
+            var gotName = context.Node.TryGetMethodName(out var methodName);
+            Debug.Assert(gotName, "Could not get method name. This should be unreachable");
+
             var handlerCastType = GetMethodSignature(methodSymbol);
 
             if (!InterceptableLocationInfo.TryGet(context, out var interceptableLocation))
@@ -59,13 +66,17 @@ internal static class HigherOrderMethodInfoExtensions
 
             return new HigherOrderMethodInfo
             {
-                Name = name,
+                Name = methodName!,
                 DelegateInfo = default,
                 LocationInfo = null,
                 InterceptableLocationInfo = interceptableLocation.Value,
                 ArgumentsInfos = default,
                 DelegateCastType = handlerCastType,
                 ParameterAssignments = assignments,
+                IsAwaitable = false,
+                HasReturnType = false,
+                IsReturnTypeStream = false,
+                IsReturnTypeBool = false,
                 DiagnosticInfos = diagnostics,
             };
         }

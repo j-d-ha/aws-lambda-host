@@ -49,4 +49,12 @@ internal class DiagnosticResult<T> : Result<T, DiagnosticInfo?>
         LocationInfo? locationInfo = null,
         params object?[] messageArgs
     ) => new(false, default, new DiagnosticInfo(diagnosticDescriptor, locationInfo, messageArgs));
+
+    public new DiagnosticResult<TNew> Map<TNew>(Func<T, TNew> map) =>
+        IsSuccess
+            ? DiagnosticResult<TNew>.Success(map(Value!))
+            : DiagnosticResult<TNew>.Failure(Error!.Value);
+
+    public DiagnosticResult<TNew> Bind<TNew>(Func<T, DiagnosticResult<TNew>> bind) =>
+        IsSuccess ? bind(Value!) : DiagnosticResult<TNew>.Failure(Error!.Value);
 }
