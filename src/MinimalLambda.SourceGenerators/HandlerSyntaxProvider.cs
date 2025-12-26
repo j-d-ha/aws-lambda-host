@@ -39,11 +39,7 @@ internal static class HandlerSyntaxProvider
         if (!targetOperation.TryGetHandlerMethod(context.SemanticModel, out var methodSymbol))
             return null;
 
-        return HigherOrderMethodInfo.Create(
-            methodSymbol,
-            MapHandlerExtractors.GetParameterAssignments,
-            context
-        );
+        return HigherOrderMethodInfo.Create(methodSymbol, context);
     }
 
     private static bool TryGetInvocationOperation(

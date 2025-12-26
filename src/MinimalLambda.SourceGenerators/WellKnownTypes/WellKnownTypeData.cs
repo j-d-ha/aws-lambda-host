@@ -55,6 +55,7 @@ internal static class WellKnownTypeData
         MinimalLambda_Builder_FromEventAttribute,
         MinimalLambda_Builder_FromServicesAttribute,
         MinimalLambda_Builder_MiddlewareConstructorAttribute,
+        System_Boolean,
     }
 
     public static readonly string[] WellKnownTypeNames =
@@ -100,5 +101,6 @@ internal static class WellKnownTypeData
         "MinimalLambda.Builder.FromEventAttribute",
         "MinimalLambda.Builder.FromServicesAttribute",
         "MinimalLambda.Builder.MiddlewareConstructorAttribute",
+        "System.Boolean",
     ];
 }
