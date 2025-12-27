@@ -76,11 +76,12 @@ internal static class HandlerInfoExtractor
         )!;
 
         return new HigherOrderMethodInfo(
-            targetOperation.TargetMethod.Name,
-            LocationInfo: context.Node.CreateLocationInfo(),
-            DelegateInfo: delegateInfo.Value,
-            InterceptableLocationInfo: InterceptableLocationInfo.CreateFrom(interceptableLocation),
-            ArgumentsInfos: argumentInfos
+        // targetOperation.TargetMethod.Name,
+        // LocationInfo: context.Node.CreateLocationInfo(),
+        // DelegateInfo: delegateInfo.Value,
+        // InterceptableLocationInfo:
+        // InterceptableLocationInfo.CreateFrom(interceptableLocation),
+        // ArgumentsInfos: argumentInfos
         );
     }
 

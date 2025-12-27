@@ -1,82 +1,17 @@
-using System;
 using System.Linq;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using MinimalLambda.SourceGenerators;
 using MinimalLambda.SourceGenerators.Extensions;
+using MinimalLambda.SourceGenerators.Models;
 using WellKnownType = MinimalLambda.SourceGenerators.WellKnownTypes.WellKnownTypeData.WellKnownType;
 
-namespace MinimalLambda.SourceGenerators.Models;
+namespace Microsoft.CodeAnalysis;
 
-internal readonly record struct ParameterInfo2(string Assignment, string InfoComment);
-
-internal static class ParameterInfo2Extensions
+internal static class ParameterSymbolExtensions
 {
-    private static Func<string, DiagnosticResult<ParameterInfo2>> Success(string infoComment)
-    {
-        var info = new ParameterInfo2 { InfoComment = infoComment };
-        return assignment =>
-            DiagnosticResult<ParameterInfo2>.Success(info with { Assignment = assignment });
-    }
-
-    extension(ParameterInfo2)
-    {
-        internal static DiagnosticResult<ParameterInfo2> CreateForInvocationHandler(
-            IParameterSymbol parameter,
-            GeneratorContext context
-        )
-        {
-            var stream = context.WellKnownTypes.Get(WellKnownType.System_IO_Stream);
-            var lambdaContext = context.WellKnownTypes.Get(
-                WellKnownType.Amazon_Lambda_Core_ILambdaContext
-            );
-            var lambdaInvocationContext = context.WellKnownTypes.Get(
-                WellKnownType.MinimalLambda_ILambdaInvocationContext
-            );
-            var cancellationToken = context.WellKnownTypes.Get(
-                WellKnownType.System_Threading_CancellationToken
-            );
-
-            var paramType = parameter.Type.ToGloballyQualifiedName();
-
-            var success = Success("");
-
-            // event
-            if (parameter.IsFromEvent(context))
-                return success(
-                    SymbolEqualityComparer.Default.Equals(parameter.Type, stream)
-                        // stream event
-                        ? "context.Features.GetRequired<IInvocationDataFeature>().EventStream"
-                        // non stream event
-                        : $"context.GetRequiredEvent<{paramType}>()"
-                );
-
-            // context
-            if (
-                SymbolEqualityComparer.Default.Equals(parameter.Type, lambdaContext)
-                || SymbolEqualityComparer.Default.Equals(parameter.Type, lambdaInvocationContext)
-            )
-                return success("context");
-
-            // cancellation token
-            if (SymbolEqualityComparer.Default.Equals(parameter.Type, cancellationToken))
-                return success("context.CancellationToken");
-
-            // default assignment from Di
-            return parameter
-                .GetDiParameterAssignment(context)
-                .Bind(assignment => success(assignment));
-        }
-
-        internal static DiagnosticResult<ParameterInfo2> CreateForLifecycleHandler(
-            IParameterSymbol parameter,
-            GeneratorContext context
-        ) => throw new NotImplementedException();
-    }
-
     extension(IParameterSymbol parameterSymbol)
     {
-        private bool IsFromEvent(GeneratorContext context)
+        internal bool IsFromEvent(GeneratorContext context)
         {
             var eventAttr = context.WellKnownTypes.Get(
                 WellKnownType.MinimalLambda_Builder_EventAttribute
@@ -101,7 +36,7 @@ internal static class ParameterInfo2Extensions
                 });
         }
 
-        private bool IsFromKeyedService(
+        internal bool IsFromKeyedService(
             GeneratorContext context,
             out DiagnosticResult<string>? keyResult
         )
@@ -130,7 +65,7 @@ internal static class ParameterInfo2Extensions
             return false;
         }
 
-        private DiagnosticResult<string> GetDiParameterAssignment(GeneratorContext context)
+        internal DiagnosticResult<string> GetDiParameterAssignment(GeneratorContext context)
         {
             var paramType = parameterSymbol.Type.ToGloballyQualifiedName();
 
@@ -177,7 +112,7 @@ internal static class ParameterInfo2Extensions
 
             if (value is null)
                 return DiagnosticResult<string>.Failure(
-                    Diagnostics.InvalidAttributeArgument,
+                    MinimalLambda.SourceGenerators.Diagnostics.InvalidAttributeArgument,
                     attributeData.GetAttributeArgumentLocation(0),
                     argument.Type?.ToGloballyQualifiedName()
                 );
@@ -186,7 +121,7 @@ internal static class ParameterInfo2Extensions
                 argument.Kind switch
                 {
                     TypedConstantKind.Primitive when value is string strValue =>
-                        SymbolDisplay.FormatLiteral(strValue, true),
+                        CSharp.SymbolDisplay.FormatLiteral(strValue, true),
 
                     TypedConstantKind.Primitive when value is char charValue => $"'{charValue}'",
 

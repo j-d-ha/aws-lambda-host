@@ -1,42 +1,56 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using LayeredCraft.SourceGeneratorTools.Types;
 using Microsoft.CodeAnalysis;
 using MinimalLambda.SourceGenerators.Extensions;
 using MinimalLambda.SourceGenerators.WellKnownTypes;
-using ParameterAssigner = System.Func<
-    Microsoft.CodeAnalysis.IParameterSymbol,
-    MinimalLambda.SourceGenerators.GeneratorContext,
-    MinimalLambda.SourceGenerators.Models.DiagnosticResult<MinimalLambda.SourceGenerators.Models.ParameterInfo2>
->;
 using WellKnownType = MinimalLambda.SourceGenerators.WellKnownTypes.WellKnownTypeData.WellKnownType;
 
 namespace MinimalLambda.SourceGenerators.Models;
 
+internal enum MethodType
+{
+    MapHandler,
+    OnInit,
+    OnShutdown,
+}
+
+internal interface IMethodInfo
+{
+    MethodType MethodType { get; }
+    InterceptableLocationInfo InterceptableLocationInfo { get; }
+    string DelegateCastType { get; }
+    bool IsAwaitable { get; }
+    bool HasResponse { get; }
+    bool HasAnyFromKeyedServices { get; }
+    EquatableArray<DiagnosticInfo> DiagnosticInfos { get; }
+}
+
 internal readonly record struct HigherOrderMethodInfo(
-    string Name,
-    DelegateInfo DelegateInfo,
-    LocationInfo? LocationInfo,
     InterceptableLocationInfo InterceptableLocationInfo,
-    ImmutableArray<ArgumentInfo> ArgumentsInfos,
-    // ── New ──────────────────────────────────────────────────────────────────────────
-    string DelegateCastType = "",
-    EquatableArray<ParameterInfo2> ParameterAssignments = default,
-    bool IsAwaitable = false,
-    bool HasReturnType = false,
-    bool IsReturnTypeStream = false,
-    bool IsReturnTypeBool = false,
-    EquatableArray<DiagnosticInfo> DiagnosticInfos = default
-);
+    string InterceptableLocationAttribute,
+    string DelegateCastType,
+    EquatableArray<MapHandlerParameterInfo> ParameterAssignments,
+    bool IsAwaitable,
+    bool HasResponse,
+    bool IsResponseTypeStream,
+    bool IsResponseTypeBool,
+    bool IsEventTypeStream,
+    bool HasEvent,
+    string? EventType,
+    string? ResponseType,
+    bool HasAnyFromKeyedServices,
+    EquatableArray<DiagnosticInfo> DiagnosticInfos,
+    MethodType MethodType = MethodType.MapHandler
+) : IMethodInfo;
 
 internal static class HigherOrderMethodInfoExtensions
 {
     extension(HigherOrderMethodInfo)
     {
-        internal static HigherOrderMethodInfo? Create(
+        internal static HigherOrderMethodInfo Create(
             IMethodSymbol methodSymbol,
             GeneratorContext context
         )
@@ -49,20 +63,11 @@ internal static class HigherOrderMethodInfoExtensions
             if (!InterceptableLocationInfo.TryGet(context, out var interceptableLocation))
                 throw new InvalidOperationException("Unable to get interceptable location");
 
-            ParameterAssigner getParameterAssignments = methodName switch
-            {
-                "MapHandler" => ParameterInfo2.CreateForInvocationHandler,
-                "OnInit" or "OnShutdown" => ParameterInfo2.CreateForLifecycleHandler,
-                _ => throw new InvalidOperationException(
-                    $"Handler with name '{methodName}' is not valid"
-                ),
-            };
-
             var (assignments, diagnostics) = methodSymbol
-                .Parameters.Select(parameter => getParameterAssignments(parameter, context))
+                .Parameters.Select(parameter => MapHandlerParameterInfo.Create(parameter, context))
                 .Aggregate(
                     (
-                        Successes: new List<ParameterInfo2>(),
+                        Successes: new List<MapHandlerParameterInfo>(),
                         Diagnostics: new List<DiagnosticInfo>()
                     ),
                     static (acc, result) =>
@@ -79,35 +84,49 @@ internal static class HigherOrderMethodInfoExtensions
                 );
 
             var isAwaitable = methodSymbol.IsAwaitable(context);
-            var hasReturnType = methodSymbol.HasMeaningfulReturnType(context);
+            var hasResponse = methodSymbol.HasMeaningfulReturnType(context);
             var isReturnTypeStream =
-                hasReturnType
+                hasResponse
                 && context.WellKnownTypes.IsTypeMatch(
                     methodSymbol.ReturnType,
                     WellKnownType.System_IO_Stream
                 );
             var isReturnTypeBool =
-                hasReturnType
+                hasResponse
                 && !isReturnTypeStream
                 && context.WellKnownTypes.IsTypeMatch(
                     methodSymbol.ReturnType,
                     WellKnownType.System_Boolean
                 );
+            var hasEvent = assignments.Any(a => a.IsEvent);
+            var eventType = hasEvent
+                ? assignments.Where(a => a.IsEvent).Select(a => a.GloballyQualifiedType).First()
+                : null;
+            var responseType = hasResponse
+                ? methodSymbol.ReceiverType!.ToGloballyQualifiedName()
+                : null;
+            var isEventTypeStream =
+                hasEvent && assignments.Any(a => a is { IsEvent: true, IsStream: true });
+            var hasAnyKeyedServices = assignments.Any(a => a is { IsFromKeyedService: true });
 
             return new HigherOrderMethodInfo
             {
-                Name = methodName!,
-                DelegateInfo = default,
-                LocationInfo = null,
                 InterceptableLocationInfo = interceptableLocation.Value,
-                ArgumentsInfos = default,
+                InterceptableLocationAttribute =
+                    interceptableLocation.Value.ToInterceptsLocationAttribute(),
                 DelegateCastType = handlerCastType,
                 ParameterAssignments = assignments,
                 IsAwaitable = isAwaitable,
-                HasReturnType = hasReturnType,
-                IsReturnTypeStream = isReturnTypeStream,
-                IsReturnTypeBool = isReturnTypeBool,
+                HasResponse = hasResponse,
+                IsResponseTypeStream = isReturnTypeStream,
+                IsResponseTypeBool = isReturnTypeBool,
+                IsEventTypeStream = isEventTypeStream,
+                HasEvent = hasEvent,
+                EventType = eventType,
+                ResponseType = responseType,
+                HasAnyFromKeyedServices = hasAnyKeyedServices,
                 DiagnosticInfos = diagnostics,
+                MethodType = MethodType.MapHandler,
             };
         }
     }
