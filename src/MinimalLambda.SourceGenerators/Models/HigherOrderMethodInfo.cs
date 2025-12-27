@@ -18,8 +18,8 @@ internal enum MethodType
 
 internal interface IMethodInfo
 {
-    MethodType MethodType { get; }
     EquatableArray<DiagnosticInfo> DiagnosticInfos { get; }
+    MethodType MethodType { get; }
 }
 
 internal record HigherOrderMethodInfo(
@@ -46,23 +46,22 @@ internal static class HigherOrderMethodInfoExtensions
         GeneratorContext context
     )
     {
-        string? eventAttribute = null;
+        var eventAttribute = new Lazy<string>(() =>
+            context
+                .WellKnownTypes.Get(WellKnownType.MinimalLambda_Builder_FromEventAttribute)
+                .ToGloballyQualifiedName()
+        );
 
         return assignments
             .Where(a => a.IsEvent)
             .Skip(1)
             .Select(a =>
-            {
-                eventAttribute ??= context
-                    .WellKnownTypes.Get(WellKnownType.MinimalLambda_Builder_FromEventAttribute)
-                    .ToGloballyQualifiedName();
-
-                return DiagnosticInfo.Create(
+                DiagnosticInfo.Create(
                     Diagnostics.MultipleParametersUseAttribute,
                     a.LocationInfo,
                     [eventAttribute]
-                );
-            });
+                )
+            );
     }
 
     extension(HigherOrderMethodInfo)
