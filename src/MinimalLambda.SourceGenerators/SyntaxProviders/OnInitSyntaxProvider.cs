@@ -9,7 +9,7 @@ internal static class OnInitSyntaxProvider
     internal static bool Predicate(SyntaxNode node, CancellationToken cancellationToken) =>
         HandlerInfoExtractor.Predicate(node, GeneratorConstants.OnInitMethodName);
 
-    internal static InvocationMethodInfo? Transformer(
+    internal static MapHandlerMethodInfo? Transformer(
         GeneratorSyntaxContext context,
         CancellationToken cancellationToken
     ) => HandlerInfoExtractor.Transformer(context, IsBaseOnShutdownCall, cancellationToken);

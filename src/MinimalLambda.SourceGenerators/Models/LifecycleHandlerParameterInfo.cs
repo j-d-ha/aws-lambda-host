@@ -5,7 +5,7 @@ using WellKnownType = MinimalLambda.SourceGenerators.WellKnownTypes.WellKnownTyp
 
 namespace MinimalLambda.SourceGenerators.Models;
 
-internal record MapHandlerParameterInfo(
+internal record LifecycleHandlerParameterInfo(
     string GloballyQualifiedType,
     bool IsStream,
     string Assignment,
@@ -17,18 +17,18 @@ internal record MapHandlerParameterInfo(
     string? KeyedServicesKey
 );
 
-internal static class MapHandlerParameterInfoExtensions
+internal static class LifecycleHandlerParameterInfoExtensions
 {
-    extension(MapHandlerParameterInfo)
+    extension(LifecycleHandlerParameterInfo)
     {
-        internal static DiagnosticResult<MapHandlerParameterInfo> Create(
+        internal static DiagnosticResult<LifecycleHandlerParameterInfo> Create(
             IParameterSymbol parameter,
             GeneratorContext context
         )
         {
             var paramType = parameter.Type.ToGloballyQualifiedName();
 
-            var parameterInfo = new MapHandlerParameterInfo(
+            var parameterInfo = new LifecycleHandlerParameterInfo(
                 parameter.Type.ToGloballyQualifiedName(),
                 context.WellKnownTypes.IsTypeMatch(parameter.Type, WellKnownType.System_IO_Stream),
                 IsEvent: false,
@@ -42,7 +42,7 @@ internal static class MapHandlerParameterInfoExtensions
 
             // event
             if (parameter.IsFromEvent(context))
-                return DiagnosticResult<MapHandlerParameterInfo>.Success(
+                return DiagnosticResult<LifecycleHandlerParameterInfo>.Success(
                     parameterInfo with
                     {
                         Assignment = parameterInfo.IsStream
@@ -65,7 +65,7 @@ internal static class MapHandlerParameterInfoExtensions
                     ]
                 )
             )
-                return DiagnosticResult<MapHandlerParameterInfo>.Success(
+                return DiagnosticResult<LifecycleHandlerParameterInfo>.Success(
                     parameterInfo with
                     {
                         Assignment = "context",
@@ -80,7 +80,7 @@ internal static class MapHandlerParameterInfoExtensions
                     WellKnownType.System_Threading_CancellationToken
                 )
             )
-                return DiagnosticResult<MapHandlerParameterInfo>.Success(
+                return DiagnosticResult<LifecycleHandlerParameterInfo>.Success(
                     parameterInfo with
                     {
                         Assignment = "context.CancellationToken",
@@ -92,7 +92,7 @@ internal static class MapHandlerParameterInfoExtensions
             return parameter
                 .GetDiParameterAssignment(context)
                 .Bind(diInfo =>
-                    DiagnosticResult<MapHandlerParameterInfo>.Success(
+                    DiagnosticResult<LifecycleHandlerParameterInfo>.Success(
                         parameterInfo with
                         {
                             Assignment = diInfo.Assignment,

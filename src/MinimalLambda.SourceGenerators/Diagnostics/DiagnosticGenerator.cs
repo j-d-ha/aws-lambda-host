@@ -102,7 +102,7 @@ internal static class DiagnosticGenerator
     }
 
     // private static Diagnostic[] GenerateKeyedServiceKeyDiagnostics(
-    //     this EquatableArray<InvocationMethodInfo> methodNameInfos
+    //     this EquatableArray<MapHandlerMethodInfo> methodNameInfos
     // ) =>
     //     methodNameInfos
     //         .SelectMany(onShutdownInvocationInfo =>

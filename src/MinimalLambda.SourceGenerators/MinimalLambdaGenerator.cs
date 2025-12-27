@@ -108,7 +108,7 @@ public class MinimalLambdaGenerator : IIncrementalGenerator
                     return new CompilationInfo
                     {
                         MapHandlerInvocationInfos = handlerInfos
-                            .OfType<InvocationMethodInfo>()
+                            .OfType<MapHandlerMethodInfo>()
                             .ToEquatableArray(),
                         OnShutdownInvocationInfos = handlerInfos
                             .OfType<LifecycleMethodInfo>()

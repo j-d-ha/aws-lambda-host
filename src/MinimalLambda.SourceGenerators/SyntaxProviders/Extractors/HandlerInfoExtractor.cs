@@ -22,7 +22,7 @@ internal static class HandlerInfoExtractor
         && node.TryGetMethodName(out var name)
         && methodNames.Contains(name);
 
-    internal static InvocationMethodInfo? Transformer(
+    internal static MapHandlerMethodInfo? Transformer(
         GeneratorSyntaxContext context,
         Func<DelegateInfo, bool> delegateFilter,
         CancellationToken cancellationToken
@@ -76,7 +76,7 @@ internal static class HandlerInfoExtractor
         )!;
 
         throw new NotImplementedException();
-        // return new InvocationMethodInfo(
+        // return new MapHandlerMethodInfo(
         // // targetOperation.TargetMethod.Name,
         // // LocationInfo: context.Node.CreateLocationInfo(),
         // // DelegateInfo: delegateInfo.Value,

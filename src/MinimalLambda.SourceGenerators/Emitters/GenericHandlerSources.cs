@@ -11,7 +11,7 @@ internal static class GenericHandlerSources
     ///     the return type of the actual handler.
     /// </summary>
     internal static string Generate(
-        EquatableArray<InvocationMethodInfo> higherOrderMethodInfos,
+        EquatableArray<MapHandlerMethodInfo> higherOrderMethodInfos,
         string methodName,
         string? wrapperReturnType,
         string? defaultWrapperReturnValue,

@@ -42,7 +42,7 @@ internal static class HandlerSyntaxProvider
 
         return targetOperation.TargetMethod.Name switch
         {
-            "MapHandler" => InvocationMethodInfo.Create(method, context),
+            "MapHandler" => MapHandlerMethodInfo.Create(method, context),
             "OnInit" => LifecycleMethodInfo.Create(method, MethodType.OnInit, context),
             "OnShutdown" => LifecycleMethodInfo.Create(method, MethodType.OnShutdown, context),
             var methodName => throw new InvalidOperationException($"Unknown method '{methodName}"),
