@@ -36,7 +36,6 @@ internal readonly record struct HigherOrderMethodInfo(
     bool IsAwaitable,
     bool HasResponse,
     bool IsResponseTypeStream,
-    bool IsResponseTypeBool,
     bool IsEventTypeStream,
     bool HasEvent,
     string? EventType,
@@ -94,14 +93,6 @@ internal static class HigherOrderMethodInfoExtensions
                     WellKnownType.System_IO_Stream
                 );
 
-            var isReturnTypeBool =
-                hasResponse
-                && !isReturnTypeStream
-                && context.WellKnownTypes.IsTypeMatch(
-                    methodSymbol.ReturnType,
-                    WellKnownType.System_Boolean
-                );
-
             var hasEvent = assignments.Any(a => a.IsEvent);
 
             var eventType = hasEvent
@@ -127,7 +118,6 @@ internal static class HigherOrderMethodInfoExtensions
                 IsAwaitable = isAwaitable,
                 HasResponse = hasResponse,
                 IsResponseTypeStream = isReturnTypeStream,
-                IsResponseTypeBool = isReturnTypeBool,
                 IsEventTypeStream = isEventTypeStream,
                 HasEvent = hasEvent,
                 EventType = eventType,
