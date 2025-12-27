@@ -42,7 +42,7 @@
                 {{~ for handler_arg in call.parameter_assignments ~}}
                 var arg{{ for.index }} = {{ handler_arg.assignment }};
                 {{~ end ~}}
-                {{ if call.has_response != null; ~}} var response = {{ end }}{{ if call.is_awaitable ~}} await {{ end ~}} castHandler.Invoke({{ for arg in call.parameter_assignments }}arg{{ for.index }}{{ if !for.last }}, {{ end }}{{ end }});
+                {{ if call.has_response ~}} var response = {{ end }}{{ if call.is_awaitable ~}} await {{ end ~}} castHandler.Invoke({{ for arg in call.parameter_assignments }}arg{{ for.index }}{{ if !for.last }}, {{ end }}{{ end }});
                 {{~ if call.has_response ~}}
                 {{~ if call.is_response_type_stream ~}}
                 context.Features.GetRequired<IInvocationDataFeature>().ResponseStream = response;

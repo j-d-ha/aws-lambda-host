@@ -103,7 +103,7 @@ internal static class HigherOrderMethodInfoExtensions
                 ? assignments.Where(a => a.IsEvent).Select(a => a.GloballyQualifiedType).First()
                 : null;
             var responseType = hasResponse
-                ? methodSymbol.ReceiverType!.ToGloballyQualifiedName()
+                ? methodSymbol.ReturnType.ToGloballyQualifiedName()
                 : null;
             var isEventTypeStream =
                 hasEvent && assignments.Any(a => a is { IsEvent: true, IsStream: true });

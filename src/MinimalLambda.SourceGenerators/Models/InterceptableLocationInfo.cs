@@ -46,6 +46,6 @@ internal static class InterceptableLocationInfoExtensions
         }
 
         internal string ToInterceptsLocationAttribute() =>
-            $""" [InterceptsLocation({location.Version}, "{location.Data}")]""";
+            $"""[InterceptsLocation({location.Version}, "{location.Data}")]""";
     }
 }
