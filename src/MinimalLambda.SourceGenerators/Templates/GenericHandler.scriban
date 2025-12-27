@@ -2,42 +2,33 @@
     file static class GeneratedLambda{{ name }}BuilderExtensions
     {
         {{~ for call in calls ~}}
-        [InterceptsLocation({{ call.location.version }}, "{{ call.location.data }}")]
-        internal static {{ call.target_type }} {{ name }}Interceptor{{ for.index }}{{ call.generic_parameters }}(
-            this {{ call.target_type }} application,
+        {{ call.interceptable_location_attribute }}
+        internal static ILambdaOnInitBuilder {{ name }}Interceptor{{ for.index }}(
+            this ILambdaOnInitBuilder application,
             Delegate handler
         )
         {
-            var castHandler = {{ call.handler_signature }};
+            var castHandler = Utilities.Cast(handler, {{ call.delegate_cast_type }});
 
             return application.{{ name }}({{ name }});
 
-            {{ if call.should_await ~}} async {{ end ~}}{{ call.wrapper_return_type }} {{ name }}(ILambdaLifecycleContext context)
+            {{ if call.should_await ~}} async {{ end ~}}{{ call.return_type }} {{ name }}(ILambdaLifecycleContext context)
             {
-                {{~ if call.has_any_keyed_service_parameter ~}}
+                {{~ if call.has_any_from_keyed_services ~}}
                 if (context.ServiceProvider.GetService<IServiceProviderIsService>() is not IServiceProviderIsKeyedService)
                 {
                     throw new InvalidOperationException($"Unable to resolve service referenced by {nameof(FromKeyedServicesAttribute)}. The service provider doesn't support keyed services.");
                 }
                 {{~ end ~}}
-                {{~ for handler_arg in call.handler_args ~}}
-                // {{ handler_arg.string }}
+                {{~ for handler_arg in call.parameter_assignments ~}}
                 var arg{{ for.index }} = {{ handler_arg.assignment }};
                 {{~ end ~}}
-                {{ if call.should_return_response ~}} var response = {{ end }}{{ if call.should_await ~}} await {{ end ~}} castHandler.Invoke({{ for arg in call.handler_args }}arg{{ for.index }}{{ if !for.last }}, {{ end }}{{ end }});
-                {{~ if call.should_return_response ~}}
-                {{~ if call.should_wrap_response ~}}
-                return Task.FromResult(response);
-                {{~ else ~}}
-                return response;
-                 {{~ end ~}}
-                {{~ else if call.default_return_value != null ~}}
-                return {{ call.default_return_value }};
-                {{~ end ~}}
+                {{ call.handle_response_assignment }}{{ if call.should_await ~}} await {{ end ~}} castHandler.Invoke({{ for arg in call.parameter_assignments }}arg{{ for.index }}{{ if !for.last }}, {{ end }}{{ end }});
+                {{ call.handle_returning_from_method }}
             }
         }
         {{~ if !for.last ~}}
-        
+
         {{~ end ~}}
         {{~ end ~}}
     }

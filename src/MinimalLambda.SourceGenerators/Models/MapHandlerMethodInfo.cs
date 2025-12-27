@@ -105,7 +105,7 @@ internal static class MapHandlerMethodInfoExtensions
                 IsEventTypeStream: isEventTypeStream,
                 HasEvent: hasEvent,
                 EventType: eventType,
-                UnwrappedResponseType: unwrappedReturnType.ToGloballyQualifiedName(),
+                UnwrappedResponseType: unwrappedReturnType?.ToGloballyQualifiedName(),
                 HasAnyFromKeyedServices: hasAnyKeyedServices,
                 DiagnosticInfos: diagnostics.ToEquatableArray()
             );

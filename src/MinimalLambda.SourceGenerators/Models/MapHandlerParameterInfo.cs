@@ -59,10 +59,8 @@ internal static class MapHandlerParameterInfoExtensions
             if (
                 context.WellKnownTypes.IsAnyTypeMatch(
                     parameter.Type,
-                    [
-                        WellKnownType.Amazon_Lambda_Core_ILambdaContext,
-                        WellKnownType.MinimalLambda_ILambdaInvocationContext,
-                    ]
+                    WellKnownType.Amazon_Lambda_Core_ILambdaContext,
+                    WellKnownType.MinimalLambda_ILambdaInvocationContext
                 )
             )
                 return DiagnosticResult<MapHandlerParameterInfo>.Success(

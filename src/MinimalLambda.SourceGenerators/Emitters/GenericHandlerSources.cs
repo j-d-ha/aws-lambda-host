@@ -1,3 +1,4 @@
+using System.Linq;
 using LayeredCraft.SourceGeneratorTools.Types;
 using MinimalLambda.SourceGenerators.Models;
 
@@ -11,7 +12,7 @@ internal static class GenericHandlerSources
     ///     the return type of the actual handler.
     /// </summary>
     internal static string Generate(
-        EquatableArray<MapHandlerMethodInfo> higherOrderMethodInfos,
+        EquatableArray<LifecycleMethodInfo> lifecycleMethodInfos,
         string methodName,
         string? wrapperReturnType,
         string? defaultWrapperReturnValue,
@@ -45,7 +46,7 @@ internal static class GenericHandlerSources
         //         var shouldAwait =
         //             fullWrapperReturnType
         //                 != higherOrderMethodInfo.DelegateInfo.ReturnTypeInfo.FullyQualifiedType
-        //             && higherOrderMethodInfo.DelegateInfo.IsAwaitable;
+        //             && higherOrderMethodInfo.DelegateInfo.ShouldAwait;
         //
         //         // should return response
         //         var shouldReturnResponse =
@@ -64,7 +65,7 @@ internal static class GenericHandlerSources
         //
         //         // should wrap the response in a Task
         //         var shouldWrapResponse =
-        //             shouldReturnResponse && !higherOrderMethodInfo.DelegateInfo.IsAwaitable;
+        //             shouldReturnResponse && !higherOrderMethodInfo.DelegateInfo.ShouldAwait;
         //
         //         // default return value
         //         var defaultReturnValueString = !shouldAwait
@@ -91,8 +92,8 @@ internal static class GenericHandlerSources
 
         var model = new
         {
-            Name = methodName,
-            // Calls = calls,
+            Name = lifecycleMethodInfos.First().MethodType,
+            Calls = lifecycleMethodInfos,
             MinimalLambdaEmitter.GeneratedCodeAttribute,
         };
 

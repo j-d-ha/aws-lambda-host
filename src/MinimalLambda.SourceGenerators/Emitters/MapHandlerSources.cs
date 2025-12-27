@@ -18,7 +18,7 @@ internal static class MapHandlerSources
         //         IsResponseFeatureRequired = isResponseFeatureRequired,
         //         delegateInfo.HasAnyKeyedServiceParameter,
         //         HandlerArgs = handlerArgs,
-        //         ShouldAwait = delegateInfo.IsAwaitable,
+        //         ShouldAwait = delegateInfo.ShouldAwait,
         //         InputEvent = inputEvent,
         //         OutputResponse = outputResponse,
         //     };

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using LayeredCraft.SourceGeneratorTools.Types;
 using Microsoft.CodeAnalysis;
+using MinimalLambda.SourceGenerators.WellKnownTypes;
 
 namespace MinimalLambda.SourceGenerators.Models;
 
@@ -10,9 +11,13 @@ internal record LifecycleMethodInfo(
     string InterceptableLocationAttribute,
     string DelegateCastType,
     EquatableArray<DiagnosticInfo> DiagnosticInfos,
+    EquatableArray<LifecycleHandlerParameterInfo> ParameterAssignments,
+    bool ShouldAwait,
     MethodType MethodType,
     string HandleResponseAssignment,
-    string HandleReturningFromMethod
+    string HandleReturningFromMethod,
+    string ReturnType,
+    bool HasAnyFromKeyedServices
 ) : IMethodInfo;
 
 internal static class LifecycleMethodInfoExtensions
@@ -40,19 +45,58 @@ internal static class LifecycleMethodInfoExtensions
                 out var unwrappedReturnType
             );
 
-            var hasAnyKeyedServices = assignments.Any(a => a is { IsFromKeyedService: true });
+            var unwrappedReturnIsBool =
+                hasResponse
+                && context.WellKnownTypes.IsTypeMatch(
+                    unwrappedReturnType!,
+                    WellKnownTypeData.WellKnownType.System_Boolean
+                );
 
-            // var unwrappedReturnType = methodSymbol
-            //     .UnwrapReturnType(context)
-            //     .ToGloballyQualifiedName();
+            /*
+             * Return rules:
+             * If handler returns `Task<bool>`, no need to await, can be returned on its own
+             * If handler returns `ValueTask<bool>`, must be awaited and then returned
+             * If handler returns `bool`, it doesn't need to be awaited and can be returned as
+             * result
+             * default + async, return true
+             * default, return Task.FromResult(true);
+             */
+
+            var returnIsTaskBool =
+                methodSymbol.ReturnType is INamedTypeSymbol namedTypeSymbol
+                && context.WellKnownTypes.IsTypeMatch(
+                    namedTypeSymbol.ConstructedFrom,
+                    WellKnownTypeData.WellKnownType.System_Threading_Tasks_Task_T
+                )
+                && unwrappedReturnIsBool;
+
+            var shouldAwait = isAwaitable && !returnIsTaskBool;
+
+            var handleResponseAssignment =
+                hasResponse && unwrappedReturnIsBool ? "var response = " : string.Empty;
+
+            var handleReturningFromMethod = hasResponse switch
+            {
+                true when returnIsTaskBool || (unwrappedReturnIsBool && isAwaitable) =>
+                    "return response;",
+                true when unwrappedReturnIsBool => "return Task.FromResult(response);",
+                _ when isAwaitable => "return true;",
+                _ => "return Task.FromResult(true);",
+            };
+
+            var hasAnyKeyedServices = assignments.Any(a => a is { IsFromKeyedService: true });
 
             return new LifecycleMethodInfo(
                 MethodType: MethodType.OnInit,
                 InterceptableLocationAttribute: interceptableLocation.Value.ToInterceptsLocationAttribute(),
                 DelegateCastType: handlerCastType,
                 DiagnosticInfos: diagnostics.ToEquatableArray(),
-                HandleResponseAssignment: "",
-                HandleReturningFromMethod: ""
+                ParameterAssignments: assignments.ToEquatableArray(),
+                ShouldAwait: shouldAwait,
+                HandleResponseAssignment: handleResponseAssignment,
+                HandleReturningFromMethod: handleReturningFromMethod,
+                ReturnType: "Task<bool>",
+                HasAnyFromKeyedServices: hasAnyKeyedServices
             );
         }
 

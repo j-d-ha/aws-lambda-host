@@ -7,10 +7,8 @@ namespace MinimalLambda.SourceGenerators.Models;
 
 internal record LifecycleHandlerParameterInfo(
     string GloballyQualifiedType,
-    bool IsStream,
     string Assignment,
     string InfoComment,
-    bool IsEvent,
     bool IsFromKeyedService,
     LocationInfo? LocationInfo,
     MapHandlerParameterSource Source,
@@ -26,12 +24,8 @@ internal static class LifecycleHandlerParameterInfoExtensions
             GeneratorContext context
         )
         {
-            var paramType = parameter.Type.ToGloballyQualifiedName();
-
             var parameterInfo = new LifecycleHandlerParameterInfo(
                 parameter.Type.ToGloballyQualifiedName(),
-                context.WellKnownTypes.IsTypeMatch(parameter.Type, WellKnownType.System_IO_Stream),
-                IsEvent: false,
                 IsFromKeyedService: false,
                 LocationInfo: LocationInfo.Create(parameter),
                 Assignment: string.Empty,
@@ -40,29 +34,11 @@ internal static class LifecycleHandlerParameterInfoExtensions
                 Source: MapHandlerParameterSource.Services
             );
 
-            // event
-            if (parameter.IsFromEvent(context))
-                return DiagnosticResult<LifecycleHandlerParameterInfo>.Success(
-                    parameterInfo with
-                    {
-                        Assignment = parameterInfo.IsStream
-                            // stream event
-                            ? "context.Features.GetRequired<IInvocationDataFeature>().EventStream"
-                            // non stream event
-                            : $"context.GetRequiredEvent<{paramType}>()",
-                        IsEvent = true,
-                        Source = MapHandlerParameterSource.Event,
-                    }
-                );
-
             // context
             if (
                 context.WellKnownTypes.IsAnyTypeMatch(
                     parameter.Type,
-                    [
-                        WellKnownType.Amazon_Lambda_Core_ILambdaContext,
-                        WellKnownType.MinimalLambda_ILambdaInvocationContext,
-                    ]
+                    WellKnownType.MinimalLambda_ILambdaLifecycleContext
                 )
             )
                 return DiagnosticResult<LifecycleHandlerParameterInfo>.Success(

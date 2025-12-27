@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using MinimalLambda.SourceGenerators;
 using MinimalLambda.SourceGenerators.Extensions;
@@ -30,7 +31,10 @@ internal static class MethodSymbolExtensions
 
         internal bool IsAwaitable(GeneratorContext context)
         {
-            var returnType = methodSymbol.ReturnType;
+            if (methodSymbol.ReturnType is not INamedTypeSymbol namedTypeSymbol)
+                return false;
+
+            var returnType = namedTypeSymbol.ConstructedFrom;
 
             // Check for Task and Task<T>
             var task = context.WellKnownTypes.Get(WellKnownType.System_Threading_Tasks_Task);
@@ -63,18 +67,24 @@ internal static class MethodSymbolExtensions
 
         internal bool HasMeaningfulReturnType(
             GeneratorContext context,
-            out ITypeSymbol unwrappedReturnType
+            [NotNullWhen(true)] out INamedTypeSymbol? unwrappedReturnType
         )
         {
-            var returnType = methodSymbol.ReturnType;
+            unwrappedReturnType = null;
 
-            if (IsVoidLike(returnType))
+            if (methodSymbol.ReturnType is not INamedTypeSymbol namedTypeSymbol)
+                return false;
+
+            if (IsVoidLike(namedTypeSymbol.ConstructedFrom))
             {
-                unwrappedReturnType = returnType;
+                unwrappedReturnType = namedTypeSymbol;
                 return false;
             }
 
-            unwrappedReturnType = methodSymbol.UnwrapReturnType(context);
+            if (methodSymbol.UnwrapReturnType(context) is not INamedTypeSymbol namedTypeSymbol2)
+                return false;
+
+            unwrappedReturnType = namedTypeSymbol2;
             return true;
 
             bool IsVoidLike(ITypeSymbol type) =>
@@ -89,7 +99,7 @@ internal static class MethodSymbolExtensions
         private ITypeSymbol UnwrapReturnType(GeneratorContext context)
         {
             if (methodSymbol.ReturnType is not INamedTypeSymbol namedReturnType)
-                return (INamedTypeSymbol)methodSymbol.ReturnType;
+                return methodSymbol.ReturnType;
 
             var taskOfT = context.WellKnownTypes.Get(WellKnownType.System_Threading_Tasks_Task_T);
             var valueTaskOfT = context.WellKnownTypes.Get(
