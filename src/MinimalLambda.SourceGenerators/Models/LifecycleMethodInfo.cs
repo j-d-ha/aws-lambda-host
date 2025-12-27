@@ -101,6 +101,49 @@ internal static class LifecycleMethodInfoExtensions
         internal static LifecycleMethodInfo CreateForShutdown(
             IMethodSymbol methodSymbol,
             GeneratorContext context
-        ) => throw new NotImplementedException();
+        )
+        {
+            var handlerCastType = methodSymbol.GetCastableSignature();
+
+            if (!InterceptableLocationInfo.TryGet(context, out var interceptableLocation))
+                throw new InvalidOperationException("Unable to get interceptable location");
+
+            var (assignments, diagnostics) = methodSymbol.Parameters.CollectDiagnosticResults(
+                parameter => LifecycleHandlerParameterInfo.Create(parameter, context)
+            );
+
+            var isAwaitable = methodSymbol.IsAwaitable(context);
+
+            var returnIsTask = context.WellKnownTypes.IsTypeMatch(
+                methodSymbol.ReturnType,
+                WellKnownTypeData.WellKnownType.System_Threading_Tasks_Task
+            );
+
+            var shouldAwait = isAwaitable && !returnIsTask;
+
+            var handleResponseAssignment = returnIsTask ? "var response = " : string.Empty;
+
+            var handleReturningFromMethod = shouldAwait switch
+            {
+                _ when returnIsTask => "return response;",
+                true => string.Empty,
+                _ => "return Task.CompletedTask;",
+            };
+
+            var hasAnyKeyedServices = assignments.Any(a => a is { IsFromKeyedService: true });
+
+            return new LifecycleMethodInfo(
+                MethodType: MethodType.OnShutdown,
+                InterceptableLocationAttribute: interceptableLocation.Value.ToInterceptsLocationAttribute(),
+                DelegateCastType: handlerCastType,
+                DiagnosticInfos: diagnostics.ToEquatableArray(),
+                ParameterAssignments: assignments.ToEquatableArray(),
+                ShouldAwait: shouldAwait,
+                HandleResponseAssignment: handleResponseAssignment,
+                HandleReturningFromMethod: handleReturningFromMethod,
+                ReturnType: "Task",
+                HasAnyFromKeyedServices: hasAnyKeyedServices
+            );
+        }
     }
 }

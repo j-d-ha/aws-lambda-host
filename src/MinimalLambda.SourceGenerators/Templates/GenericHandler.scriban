@@ -3,8 +3,8 @@
     {
         {{~ for call in calls ~}}
         {{ call.interceptable_location_attribute }}
-        internal static ILambdaOnInitBuilder {{ name }}Interceptor{{ for.index }}(
-            this ILambdaOnInitBuilder application,
+        internal static ILambda{{ name }}Builder {{ name }}Interceptor{{ for.index }}(
+            this ILambda{{ name }}Builder application,
             Delegate handler
         )
         {
@@ -24,7 +24,9 @@
                 var arg{{ for.index }} = {{ handler_arg.assignment }};
                 {{~ end ~}}
                 {{ call.handle_response_assignment }}{{ if call.should_await ~}} await {{ end ~}} castHandler.Invoke({{ for arg in call.parameter_assignments }}arg{{ for.index }}{{ if !for.last }}, {{ end }}{{ end }});
+                {{~ if call.handle_returning_from_method != "" ~}}
                 {{ call.handle_returning_from_method }}
+                {{~ end ~}}
             }
         }
         {{~ if !for.last ~}}
