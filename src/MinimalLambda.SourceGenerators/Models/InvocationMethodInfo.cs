@@ -10,7 +10,6 @@ using WellKnownType = MinimalLambda.SourceGenerators.WellKnownTypes.WellKnownTyp
 namespace MinimalLambda.SourceGenerators.Models;
 
 internal record InvocationMethodInfo(
-    InterceptableLocationInfo InterceptableLocationInfo,
     string InterceptableLocationAttribute,
     string DelegateCastType,
     EquatableArray<MapHandlerParameterInfo> ParameterAssignments,
@@ -98,7 +97,6 @@ internal static class MapHandlerMethodInfoExtensions
 
             return new InvocationMethodInfo(
                 MethodType: MethodType.MapHandler,
-                InterceptableLocationInfo: interceptableLocation.Value,
                 InterceptableLocationAttribute: interceptableLocation.Value.ToInterceptsLocationAttribute(),
                 DelegateCastType: handlerCastType,
                 ParameterAssignments: assignments.ToEquatableArray(),

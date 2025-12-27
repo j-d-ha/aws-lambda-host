@@ -17,6 +17,18 @@ internal static class DiagnosticGenerator
                 .Select(d => d.ToDiagnostic())
         );
 
+        diagnostics.AddRange(
+            compilationInfo
+                .OnInitInvocationInfos.SelectMany(m => m.DiagnosticInfos)
+                .Select(d => d.ToDiagnostic())
+        );
+
+        diagnostics.AddRange(
+            compilationInfo
+                .OnShutdownInvocationInfos.SelectMany(m => m.DiagnosticInfos)
+                .Select(d => d.ToDiagnostic())
+        );
+
         // var delegateInfos = compilationInfo.MapHandlerInvocationInfos;
         //
         // // // Validate parameters

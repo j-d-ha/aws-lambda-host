@@ -9,6 +9,8 @@ using MinimalLambda.SourceGenerators.WellKnownTypes;
 namespace MinimalLambda.SourceGenerators.Models;
 
 internal record LifecycleMethodInfo(
+    string InterceptableLocationAttribute,
+    string DelegateCastType,
     EquatableArray<DiagnosticInfo> DiagnosticInfos,
     MethodType MethodType
 ) : IMethodInfo;
@@ -60,10 +62,8 @@ internal static class LifecycleMethodInfoExtensions
 
             return new LifecycleMethodInfo(
                 MethodType: methodType,
-                // InterceptableLocationInfo: interceptableLocation.Value,
-                // InterceptableLocationAttribute:
-                // interceptableLocation.Value.ToInterceptsLocationAttribute(),
-                // DelegateCastType: handlerCastType,
+                InterceptableLocationAttribute: interceptableLocation.Value.ToInterceptsLocationAttribute(),
+                DelegateCastType: handlerCastType,
                 // ParameterAssignments: assignments.ToEquatableArray(),
                 // IsAwaitable: isAwaitable,
                 // HasResponse: hasResponse,
