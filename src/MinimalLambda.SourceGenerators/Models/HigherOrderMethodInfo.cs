@@ -18,16 +18,11 @@ internal enum MethodType
 
 internal interface IMethodInfo
 {
-    string DelegateCastType { get; }
-    EquatableArray<DiagnosticInfo> DiagnosticInfos { get; }
-    bool HasAnyFromKeyedServices { get; }
-    bool HasResponse { get; }
-    InterceptableLocationInfo InterceptableLocationInfo { get; }
-    bool IsAwaitable { get; }
     MethodType MethodType { get; }
+    EquatableArray<DiagnosticInfo> DiagnosticInfos { get; }
 }
 
-internal readonly record struct HigherOrderMethodInfo(
+internal record HigherOrderMethodInfo(
     InterceptableLocationInfo InterceptableLocationInfo,
     string InterceptableLocationAttribute,
     string DelegateCastType,
@@ -46,7 +41,7 @@ internal readonly record struct HigherOrderMethodInfo(
 
 internal static class HigherOrderMethodInfoExtensions
 {
-    internal static IEnumerable<DiagnosticInfo> ReportMultipleEvents(
+    private static IEnumerable<DiagnosticInfo> ReportMultipleEvents(
         IEnumerable<MapHandlerParameterInfo> assignments,
         GeneratorContext context
     )

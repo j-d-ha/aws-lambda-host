@@ -14,7 +14,7 @@ internal enum MapHandlerParameterSource
     Services,
 }
 
-internal readonly record struct MapHandlerParameterInfo(
+internal record MapHandlerParameterInfo(
     string GloballyQualifiedType,
     bool IsStream,
     string Assignment,
@@ -37,17 +37,17 @@ internal static class MapHandlerParameterInfoExtensions
         {
             var paramType = parameter.Type.ToGloballyQualifiedName();
 
-            var parameterInfo = new MapHandlerParameterInfo
-            {
-                GloballyQualifiedType = parameter.Type.ToGloballyQualifiedName(),
-                IsStream = context.WellKnownTypes.IsTypeMatch(
-                    parameter.Type,
-                    WellKnownType.System_IO_Stream
-                ),
-                IsEvent = false,
-                IsFromKeyedService = false,
-                LocationInfo = LocationInfo.Create(parameter),
-            };
+            var parameterInfo = new MapHandlerParameterInfo(
+                parameter.Type.ToGloballyQualifiedName(),
+                context.WellKnownTypes.IsTypeMatch(parameter.Type, WellKnownType.System_IO_Stream),
+                IsEvent: false,
+                IsFromKeyedService: false,
+                LocationInfo: LocationInfo.Create(parameter),
+                Assignment: string.Empty,
+                InfoComment: string.Empty,
+                KeyedServicesKey: string.Empty,
+                Source: MapHandlerParameterSource.Services
+            );
 
             // event
             if (parameter.IsFromEvent(context))
