@@ -7,23 +7,6 @@ internal static class MapHandlerSources
 {
     internal static string Generate(EquatableArray<MapHandlerMethodInfo> mapHandlerInvocationInfos)
     {
-        // var mapHandlerCalls = mapHandlerInvocationInfos.Select(mapHandler =>
-        // {
-        //     return new
-        //     {
-        //         InterceptableLocationAttribute =
-        // mapHandler.InterceptableLocationInfo.ToInterceptsLocationAttribute(),
-        //         HandlerSignature = handlerSignature,
-        //         IsEventFeatureRequired = isEventFeatureRequired,
-        //         IsResponseFeatureRequired = isResponseFeatureRequired,
-        //         delegateInfo.HasAnyKeyedServiceParameter,
-        //         HandlerArgs = handlerArgs,
-        //         ShouldAwait = delegateInfo.ShouldAwait,
-        //         InputEvent = inputEvent,
-        //         OutputResponse = outputResponse,
-        //     };
-        // });
-
         var template = TemplateHelper.LoadTemplate(
             GeneratorConstants.LambdaHostMapHandlerExtensionsTemplateFile
         );

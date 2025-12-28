@@ -11,85 +11,8 @@ internal static class GenericHandlerSources
     ///     handler. The return type of the wrapper is a <c>Task</c> or <c>Task&lt;T&gt;</c> depending on
     ///     the return type of the actual handler.
     /// </summary>
-    internal static string Generate(
-        EquatableArray<LifecycleMethodInfo> lifecycleMethodInfos,
-        string methodName,
-        string? wrapperReturnType,
-        string? defaultWrapperReturnValue,
-        string targetType
-    )
+    internal static string Generate(EquatableArray<LifecycleMethodInfo> lifecycleMethodInfos)
     {
-        // var calls = higherOrderMethodInfos
-        //     .Select(higherOrderMethodInfo =>
-        //     {
-        //         // build handler function signature
-        //         var handlerSignature = higherOrderMethodInfo.DelegateInfo.BuildHandlerCastCall();
-        //
-        //         // get arguments for handler
-        //         var handlerArgs =
-        //             higherOrderMethodInfo.DelegateInfo.BuildHandlerParameterAssignment();
-        //
-        //         // get the return type of the wrapper function wrapped in a Task
-        //         var fullWrapperReturnType = wrapperReturnType is not null
-        //             ? $"global::System.Threading.Tasks.Task<{wrapperReturnType}>"
-        //             : "global::System.Threading.Tasks.Task";
-        //
-        //         // get the return type of the wrapper function wrapped in a Task - shortened
-        //         // to just use Task
-        //         var shortFullWrapperReturnType = wrapperReturnType is not null
-        //             ? $"Task<{wrapperReturnType}>"
-        //             : "Task";
-        //
-        //         // should await determined by whether the delegate is awaitable and if the
-        //         // delegate
-        //         // return type matches the wrapper return type 1:1
-        //         var shouldAwait =
-        //             fullWrapperReturnType
-        //                 != higherOrderMethodInfo.DelegateInfo.ReturnTypeInfo.FullyQualifiedType
-        //             && higherOrderMethodInfo.DelegateInfo.ShouldAwait;
-        //
-        //         // should return response
-        //         var shouldReturnResponse =
-        //             higherOrderMethodInfo.DelegateInfo.ReturnTypeInfo.FullyQualifiedType
-        //                 != TypeConstants.Void
-        //             && (
-        //                 wrapperReturnType
-        //                     == higherOrderMethodInfo
-        //                         .DelegateInfo
-        //                         .ReturnTypeInfo
-        //                         .UnwrappedFullyQualifiedType
-        //                 || fullWrapperReturnType
-        //                     ==
-        // higherOrderMethodInfo.DelegateInfo.ReturnTypeInfo.FullyQualifiedType
-        //             );
-        //
-        //         // should wrap the response in a Task
-        //         var shouldWrapResponse =
-        //             shouldReturnResponse && !higherOrderMethodInfo.DelegateInfo.ShouldAwait;
-        //
-        //         // default return value
-        //         var defaultReturnValueString = !shouldAwait
-        //             ? defaultWrapperReturnValue is not null
-        //                 ? $"Task.FromResult({defaultWrapperReturnValue})"
-        //                 : "Task.CompletedTask"
-        //             : defaultWrapperReturnValue;
-        //
-        //         return new
-        //         {
-        //             Location = higherOrderMethodInfo.InterceptableLocationInfo,
-        //             WrapperReturnType = shortFullWrapperReturnType,
-        //             HandlerSignature = handlerSignature,
-        //             ShouldAwait = shouldAwait,
-        //             higherOrderMethodInfo.DelegateInfo.HasAnyKeyedServiceParameter,
-        //             HandlerArgs = handlerArgs,
-        //             ShouldReturnResponse = shouldReturnResponse,
-        //             ShouldWrapResponse = shouldWrapResponse,
-        //             DefaultReturnValue = defaultReturnValueString,
-        //             TargetType = targetType,
-        //         };
-        //     })
-        //     .ToArray();
-
         var model = new
         {
             Name = lifecycleMethodInfos.First().MethodType,
@@ -103,47 +26,4 @@ internal static class GenericHandlerSources
 
         return outCode;
     }
-
-    // private static HandlerArg[] BuildHandlerParameterAssignment(this DelegateInfo delegateInfo)
-    // {
-    //     var handlerArgs = delegateInfo
-    //         .Parameters.Select(param => new HandlerArg
-    //         {
-    //             String = param.ToPublicString(),
-    //             Assignment = param.Source switch
-    //             {
-    //                 // CancellationToken -> get directly from arguments
-    //                 ParameterSource.CancellationToken => "context.CancellationToken",
-    //
-    //                 // ILambdaLifecycleContext -> get directly from arguments
-    //                 ParameterSource.LifecycleContext => "context",
-    //
-    //                 // inject keyed service from the DI container - required
-    //                 ParameterSource.KeyedService when param.IsRequired =>
-    //
-    // $"context.ServiceProvider.GetRequiredKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
-    //
-    //                 // inject keyed service from the DI container - optional
-    //                 ParameterSource.KeyedService =>
-    //
-    // $"context.ServiceProvider.GetKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
-    //
-    //                 // default: inject service from the DI container - required
-    //                 _ when param.IsRequired =>
-    //
-    // $"context.ServiceProvider.GetRequiredService<{param.TypeInfo.FullyQualifiedType}>()",
-    //
-    //                 // default: inject service from the DI container - optional
-    //                 _ =>
-    //
-    // $"context.ServiceProvider.GetService<{param.TypeInfo.FullyQualifiedType}>()",
-    //             },
-    //         })
-    //         .ToArray();
-    //
-    //     return handlerArgs;
-    // }
-    //
-    // // ReSharper disable NotAccessedPositionalProperty.Local
-    // private readonly record struct HandlerArg(string String, string Assignment);
 }

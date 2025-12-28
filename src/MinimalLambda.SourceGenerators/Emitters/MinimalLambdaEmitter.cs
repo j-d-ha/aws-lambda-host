@@ -66,27 +66,11 @@ internal static class MinimalLambdaEmitter
 
         // add OnInit interceptors
         if (compilationInfo.OnInitInvocationInfos.Count >= 1)
-            outputs.Add(
-                GenericHandlerSources.Generate(
-                    compilationInfo.OnInitInvocationInfos,
-                    "OnInit",
-                    "bool",
-                    "true",
-                    "ILambdaOnInitBuilder"
-                )
-            );
+            outputs.Add(GenericHandlerSources.Generate(compilationInfo.OnInitInvocationInfos));
 
         // add OnShutdown interceptors
         if (compilationInfo.OnShutdownInvocationInfos.Count >= 1)
-            outputs.Add(
-                GenericHandlerSources.Generate(
-                    compilationInfo.OnShutdownInvocationInfos,
-                    "OnShutdown",
-                    null,
-                    null,
-                    "ILambdaOnShutdownBuilder"
-                )
-            );
+            outputs.Add(GenericHandlerSources.Generate(compilationInfo.OnShutdownInvocationInfos));
 
         outputs.Add(
             """
