@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,23 +9,14 @@ namespace MinimalLambda.SourceGenerators;
 
 internal static class MinimalLambdaEmitter
 {
-    internal static string GeneratedCodeAttribute
+    internal static readonly Lazy<string> GeneratedCodeAttribute = new(() =>
     {
-        get
-        {
-            if (field is null)
-            {
-                var assembly = Assembly.GetExecutingAssembly();
-                var generatorName = assembly.GetName().Name;
-                var generatorVersion = assembly.GetName().Version.ToString();
+        var assembly = Assembly.GetExecutingAssembly();
+        var generatorName = assembly.GetName().Name;
+        var generatorVersion = assembly.GetName().Version;
 
-                field =
-                    $"""[global::System.CodeDom.Compiler.GeneratedCode("{generatorName}", "{generatorVersion}")]""";
-            }
-
-            return field;
-        }
-    }
+        return $"""[global::System.CodeDom.Compiler.GeneratedCode("{generatorName}", "{generatorVersion}")]""";
+    });
 
     internal static void Generate(SourceProductionContext context, CompilationInfo compilationInfo)
     {

@@ -1,4 +1,4 @@
-    {{ generated_code_attribute }}
+    {{ generated_code_attribute.value }}
     file static class GeneratedLambda{{ name }}BuilderExtensions
     {
         {{~ for call in calls ~}}

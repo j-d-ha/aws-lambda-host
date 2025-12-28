@@ -90,8 +90,6 @@ internal static class UseMiddlewareTSyntaxProvider
                 is { } typeParameter
             && typeParameter.ConstraintTypes.Any(c =>
                 context.WellKnownTypes.IsTypeMatch(c, WellKnownType.MinimalLambda_ILambdaMiddleware)
-                && c.ContainingNamespace
-                    is { Name: "MinimalLambda", ContainingNamespace.IsGlobalNamespace: true }
             )
         )
         {
