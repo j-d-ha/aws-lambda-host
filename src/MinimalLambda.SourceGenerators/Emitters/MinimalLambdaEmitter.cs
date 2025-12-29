@@ -33,7 +33,10 @@ internal static class MinimalLambdaEmitter
 
         List<string?> outputs =
         [
-            CommonSources.Generate(),
+            TemplateHelper.Render(
+                GeneratorConstants.InterceptsLocationAttributeTemplateFile,
+                new { GeneratedCodeAttribute }
+            ),
             """
                 namespace MinimalLambda.Generated
                 {
@@ -50,7 +53,16 @@ internal static class MinimalLambdaEmitter
 
         // if MapHandler calls found, generate the source code.
         if (compilationInfo.MapHandlerInvocationInfos.Count >= 1)
-            outputs.Add(MapHandlerSources.Generate(compilationInfo.MapHandlerInvocationInfos));
+            outputs.Add(
+                TemplateHelper.Render(
+                    GeneratorConstants.LambdaHostMapHandlerExtensionsTemplateFile,
+                    new
+                    {
+                        GeneratedCodeAttribute,
+                        MapHandlerCalls = compilationInfo.MapHandlerInvocationInfos,
+                    }
+                )
+            );
 
         // add UseMiddleware<T> interceptors
         if (compilationInfo.UseMiddlewareTInfos.Count >= 1)
@@ -58,11 +70,31 @@ internal static class MinimalLambdaEmitter
 
         // add OnInit interceptors
         if (compilationInfo.OnInitInvocationInfos.Count >= 1)
-            outputs.Add(GenericHandlerSources.Generate(compilationInfo.OnInitInvocationInfos));
+            outputs.Add(
+                TemplateHelper.Render(
+                    GeneratorConstants.GenericHandlerTemplateFile,
+                    new
+                    {
+                        Name = compilationInfo.OnInitInvocationInfos.First().MethodType,
+                        Calls = compilationInfo.OnInitInvocationInfos,
+                        GeneratedCodeAttribute,
+                    }
+                )
+            );
 
         // add OnShutdown interceptors
         if (compilationInfo.OnShutdownInvocationInfos.Count >= 1)
-            outputs.Add(GenericHandlerSources.Generate(compilationInfo.OnShutdownInvocationInfos));
+            outputs.Add(
+                TemplateHelper.Render(
+                    GeneratorConstants.GenericHandlerTemplateFile,
+                    new
+                    {
+                        Name = compilationInfo.OnShutdownInvocationInfos.First().MethodType,
+                        Calls = compilationInfo.OnShutdownInvocationInfos,
+                        GeneratedCodeAttribute,
+                    }
+                )
+            );
 
         outputs.Add(
             """
