@@ -39,7 +39,7 @@ internal static class EnumerableExtensions
 
     extension<TIn>(IEnumerable<TIn> enumerable)
     {
-        internal (List<TOut>, List<DiagnosticInfo>) CollectDiagnosticResults<TOut>(
+        internal (List<TOut> Data, List<DiagnosticInfo> Diagnostics) CollectDiagnosticResults<TOut>(
             Func<TIn, DiagnosticResult<TOut>> extractor
         )
         {

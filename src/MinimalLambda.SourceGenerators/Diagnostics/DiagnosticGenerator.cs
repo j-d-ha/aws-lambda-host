@@ -64,13 +64,14 @@ internal static class DiagnosticGenerator
         // foreach (var useMiddlewareTInfo in compilationInfo.UseMiddlewareTInfos)
         // {
         //     // ensure middleware class is concrete
-        //     if (useMiddlewareTInfo.ClassInfo.TypeKind is "interface" or "abstract class")
+        //     if (useMiddlewareTInfo.MiddlewareClassInfo.TypeKind is "interface" or "abstract
+        // class")
         //     {
         //         diagnostics.Add(
         //             Diagnostic.ToLocationInfo(
         //                 Diagnostics.MustBeConcreteType,
         //                 useMiddlewareTInfo.GenericTypeArgumentLocation?.ToLocation(),
-        //                 useMiddlewareTInfo.ClassInfo.ShortName
+        //                 useMiddlewareTInfo.MiddlewareClassInfo.ShortName
         //             )
         //         );
         //     }
@@ -79,7 +80,7 @@ internal static class DiagnosticGenerator
         // once
         //     diagnostics.AddRange(
         //         useMiddlewareTInfo
-        //             .ClassInfo.ConstructorInfos.Where(c =>
+        //             .MiddlewareClassInfo.ConstructorInfos.Where(c =>
         //                 c.AttributeInfos.Any(a =>
         //                     a.FullName == AttributeConstants.MiddlewareConstructor
         //                 )

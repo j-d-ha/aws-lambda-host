@@ -45,7 +45,7 @@ internal static class UseMiddlewareTSyntaxProvider
         //     genericArgumentLocation = typeArgument.GetLocation();
         // }
         //
-        // var classInfo = ClassInfo.Create(middlewareClassType);
+        // var classInfo = MiddlewareClassInfo.Create(middlewareClassType);
         //
         // var interceptableLocation = context.SemanticModel.GetInterceptableLocation(
         //     (InvocationExpressionSyntax)targetOperation.Syntax,

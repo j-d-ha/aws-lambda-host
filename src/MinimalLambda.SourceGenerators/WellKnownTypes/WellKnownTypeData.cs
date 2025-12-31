@@ -80,7 +80,7 @@ internal static class WellKnownTypeData
         "System.Threading.Tasks.Task`1",
         "System.Threading.Tasks.ValueTask",
         "System.Threading.Tasks.ValueTask`1",
-        "System.Reflection.ParameterInfo",
+        "System.Reflection.MiddlewareParameterInfo",
         "System.IParsable`1",
         "Microsoft.Extensions.DependencyInjection.OutputCacheConventionBuilderExtensions",
         "Microsoft.Extensions.DependencyInjection.PolicyServiceCollectionExtensions",

@@ -76,19 +76,19 @@ namespace MinimalLambda.Generated
                 if (!_cacheBuilt)
                     BuildResolutionCache();
 
-                // ParameterInfo { Type = global::ILogger, Name = logger, Source = Service, IsNullable = False, IsOptional = False}
+                // MiddlewareParameterInfo { Type = global::ILogger, Name = logger, Source = Service, IsNullable = False, IsOptional = False}
                 var arg0 = context.ServiceProvider.GetRequiredService<global::ILogger>();
                 
-                // ParameterInfo { Type = global::ICache, Name = cache, Source = KeyedService, IsNullable = False, IsOptional = False, KeyedServiceKeyInfo { DisplayValue = "cache", Type = string, BaseType = object } }
+                // MiddlewareParameterInfo { Type = global::ICache, Name = cache, Source = KeyedService, IsNullable = False, IsOptional = False, KeyedServiceKeyInfo { DisplayValue = "cache", Type = string, BaseType = object } }
                 var arg1 = context.ServiceProvider.GetRequiredKeyedService<global::ICache>("cache");
                 
-                // ParameterInfo { Type = string, Name = apiKey, Source = Service, IsNullable = False, IsOptional = False}
+                // MiddlewareParameterInfo { Type = string, Name = apiKey, Source = Service, IsNullable = False, IsOptional = False}
                 var arg2 =
                     _cache2 >= 0
                         ? (string)_args[_cache2]
                         : throw new InvalidOperationException("Parameter 'apiKey' of type 'string' must be provided in args");
                 
-                // ParameterInfo { Type = global::IMetrics?, Name = metrics, Source = Service, IsNullable = True, IsOptional = False}
+                // MiddlewareParameterInfo { Type = global::IMetrics?, Name = metrics, Source = Service, IsNullable = True, IsOptional = False}
                 var arg3 =
                     _cache3 >= 0
                         ? (global::IMetrics?)_args[_cache3]

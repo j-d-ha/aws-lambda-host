@@ -75,7 +75,7 @@ namespace MinimalLambda.Generated
                 if (!_cacheBuilt)
                     BuildResolutionCache();
 
-                // ParameterInfo { Type = string, Name = name, Source = Service, IsNullable = False, IsOptional = True}
+                // MiddlewareParameterInfo { Type = string, Name = name, Source = Service, IsNullable = False, IsOptional = True}
                 var arg0 =
                     _cache0 >= 0
                         ? (string)_args[_cache0]

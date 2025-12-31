@@ -76,13 +76,13 @@ namespace MinimalLambda.Generated
                 if (!_cacheBuilt)
                     BuildResolutionCache();
 
-                // ParameterInfo { Type = string, Name = apiKey, Source = Service, IsNullable = False, IsOptional = False}
+                // MiddlewareParameterInfo { Type = string, Name = apiKey, Source = Service, IsNullable = False, IsOptional = False}
                 var arg0 =
                     _cache0 >= 0
                         ? (string)_args[_cache0]
                         : context.ServiceProvider.GetRequiredService<string>();
                 
-                // ParameterInfo { Type = global::IService, Name = service, Source = Service, IsNullable = False, IsOptional = False}
+                // MiddlewareParameterInfo { Type = global::IService, Name = service, Source = Service, IsNullable = False, IsOptional = False}
                 var arg1 =
                     _cache1 >= 0
                         ? (global::IService)_args[_cache1]

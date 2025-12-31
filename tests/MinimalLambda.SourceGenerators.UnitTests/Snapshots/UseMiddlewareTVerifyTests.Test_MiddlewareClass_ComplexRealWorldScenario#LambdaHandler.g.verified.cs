@@ -76,19 +76,19 @@ namespace MinimalLambda.Generated
                 if (!_cacheBuilt)
                     BuildResolutionCache();
 
-                // ParameterInfo { Type = string, Name = name, Source = Service, IsNullable = False, IsOptional = False}
+                // MiddlewareParameterInfo { Type = string, Name = name, Source = Service, IsNullable = False, IsOptional = False}
                 var arg0 =
                     _cache0 >= 0
                         ? (string)_args[_cache0]
                         : throw new InvalidOperationException("Parameter 'name' of type 'string' must be provided in args");
                 
-                // ParameterInfo { Type = global::ILogger, Name = logger, Source = KeyedService, IsNullable = False, IsOptional = False, KeyedServiceKeyInfo { DisplayValue = "primary", Type = string, BaseType = object } }
+                // MiddlewareParameterInfo { Type = global::ILogger, Name = logger, Source = KeyedService, IsNullable = False, IsOptional = False, KeyedServiceKeyInfo { DisplayValue = "primary", Type = string, BaseType = object } }
                 var arg1 = context.ServiceProvider.GetRequiredKeyedService<global::ILogger>("primary");
                 
-                // ParameterInfo { Type = global::IMetrics, Name = metrics, Source = Service, IsNullable = False, IsOptional = False}
+                // MiddlewareParameterInfo { Type = global::IMetrics, Name = metrics, Source = Service, IsNullable = False, IsOptional = False}
                 var arg2 = context.ServiceProvider.GetRequiredService<global::IMetrics>();
                 
-                // ParameterInfo { Type = global::IDataService?, Name = dataService, Source = Service, IsNullable = True, IsOptional = False}
+                // MiddlewareParameterInfo { Type = global::IDataService?, Name = dataService, Source = Service, IsNullable = True, IsOptional = False}
                 var arg3 =
                     _cache3 >= 0
                         ? (global::IDataService?)_args[_cache3]

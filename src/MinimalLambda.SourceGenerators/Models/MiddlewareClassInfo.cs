@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using LayeredCraft.SourceGeneratorTools.Types;
@@ -8,37 +9,24 @@ using WellKnownType = MinimalLambda.SourceGenerators.WellKnownTypes.WellKnownTyp
 
 namespace MinimalLambda.SourceGenerators.Models;
 
-internal record ClassInfo(
+internal record MiddlewareClassInfo(
     string GloballyQualifiedName,
     string ShortName,
-    EquatableArray<MethodInfo> ConstructorInfos,
+    EquatableArray<MiddlewareParameterInfo> ParameterInfos,
     bool ImplementsDisposable,
     bool ImplementsAsyncDisposable
-)
-{
-    internal string NonNullableGloballyQualifiedName
-    {
-        get
-        {
-            field ??= GloballyQualifiedName.EndsWith("?")
-                ? GloballyQualifiedName[..^1]
-                : GloballyQualifiedName;
+);
 
-            return field;
-        }
-    }
-}
-
-internal static class ClassInfoExtensions
+internal static class MiddlewareExtensions
 {
-    extension(ClassInfo classInfo)
+    extension(MiddlewareClassInfo middlewareClassInfo)
     {
         internal bool AnyParameters => true;
 
-        internal static (ClassInfo? classInfo, List<DiagnosticInfo> DiagnosticInfos) Create(
-            INamedTypeSymbol typeSymbol,
-            GeneratorContext context
-        )
+        internal static (
+            MiddlewareClassInfo? classInfo,
+            List<DiagnosticInfo> DiagnosticInfos
+        ) Create(INamedTypeSymbol typeSymbol, GeneratorContext context)
         {
             List<DiagnosticInfo> diagnostics = [];
 
@@ -52,10 +40,18 @@ internal static class ClassInfoExtensions
             var (constructor, constructorDiagnostics) = GetConstructor(typeSymbol, context);
             diagnostics.AddRange(constructorDiagnostics);
 
-            // handle each instance constructor on the type
-            var constructorInfo = ((INamedTypeSymbol)typeSymbol)
-                .InstanceConstructors.Select(MethodInfo.Create)
-                .ToEquatableArray();
+            // get constructor parameters
+            var parameterInfos = constructor is not null
+                ? constructor
+                    .Parameters.CollectDiagnosticResults(parameter =>
+                        MiddlewareParameterInfo.Create(parameter, context)
+                    )
+                    .Map(results =>
+                    {
+                        diagnostics.AddRange(results.Diagnostics);
+                        return results.Data;
+                    })
+                : [];
 
             // implements IDisposable
             var implementsIDisposable = context.WellKnownTypes.TypeImplementsInterface(
@@ -70,10 +66,10 @@ internal static class ClassInfoExtensions
             );
 
             return (
-                new ClassInfo(
+                new MiddlewareClassInfo(
                     globallyQualifiedName,
                     shortName,
-                    constructorInfo,
+                    parameterInfos.ToEquatableArray(),
                     implementsIDisposable,
                     implementsIAsyncDisposable
                 ),

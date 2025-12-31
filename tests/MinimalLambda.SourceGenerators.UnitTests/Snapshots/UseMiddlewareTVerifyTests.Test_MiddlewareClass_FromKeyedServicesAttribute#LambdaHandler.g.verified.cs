@@ -67,7 +67,7 @@ namespace MinimalLambda.Generated
 
             internal global::MyLambdaMiddleware Create(ILambdaInvocationContext context)
             {
-                // ParameterInfo { Type = global::IService, Name = service, Source = KeyedService, IsNullable = False, IsOptional = False, KeyedServiceKeyInfo { DisplayValue = "myKey", Type = string, BaseType = object } }
+                // MiddlewareParameterInfo { Type = global::IService, Name = service, Source = KeyedService, IsNullable = False, IsOptional = False, KeyedServiceKeyInfo { DisplayValue = "myKey", Type = string, BaseType = object } }
                 var arg0 = context.ServiceProvider.GetRequiredKeyedService<global::IService>("myKey");
                 
                 return new global::MyLambdaMiddleware(arg0);

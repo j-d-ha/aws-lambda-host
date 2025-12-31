@@ -101,6 +101,17 @@ internal static class ParameterSymbolExtensions
                 )
             );
         }
+
+        internal bool IsDecoratedWithAttribute(
+            WellKnownType attributeType,
+            GeneratorContext context
+        ) =>
+            parameterSymbol
+                .GetAttributes()
+                .Any(a =>
+                    a.AttributeClass is not null
+                    && context.WellKnownTypes.IsType(a.AttributeClass, [attributeType])
+                );
     }
 
     extension(AttributeData attributeData)

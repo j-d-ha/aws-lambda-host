@@ -11,7 +11,7 @@ namespace MinimalLambda.SourceGenerators.Models;
 
 internal record UseMiddlewareTInfo(
     string? InterceptableLocationAttribute,
-    ClassInfo? ClassInfo,
+    MiddlewareClassInfo? ClassInfo,
     EquatableArray<DiagnosticInfo> DiagnosticInfos
 );
 
@@ -52,7 +52,7 @@ internal static class UseMiddlewareTInfoExtensions
                     )
                 );
 
-            var (classInfo, diagnostics) = ClassInfo.Create(middlewareClassType, context);
+            var (classInfo, diagnostics) = MiddlewareClassInfo.Create(middlewareClassType, context);
             diagnosticInfos.AddRange(diagnostics);
 
             return new UseMiddlewareTInfo(

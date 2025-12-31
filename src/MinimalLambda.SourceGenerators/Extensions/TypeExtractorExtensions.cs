@@ -5,20 +5,28 @@ namespace MinimalLambda.SourceGenerators.Extensions;
 
 internal static class TypeExtractorExtensions
 {
-    private static readonly SymbolDisplayFormat Format =
+    private static readonly SymbolDisplayFormat NullableFormat =
         SymbolDisplayFormat.FullyQualifiedFormat.AddMiscellaneousOptions(
             SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
         );
 
-    internal static string ToGloballyQualifiedName(
-        this ITypeSymbol typeSymbol,
-        TypeSyntax? typeSyntax = null
-    )
-    {
-        var baseTypeName = typeSymbol.ToDisplayString(Format);
+    private static readonly SymbolDisplayFormat NotNullableFormat =
+        SymbolDisplayFormat.FullyQualifiedFormat.AddMiscellaneousOptions(
+            SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
+        );
 
-        return typeSyntax is NullableTypeSyntax && !baseTypeName.EndsWith("?")
-            ? baseTypeName + "?"
-            : baseTypeName;
+    extension(ITypeSymbol typeSymbol)
+    {
+        internal string ToGloballyQualifiedName(TypeSyntax? typeSyntax = null)
+        {
+            var baseTypeName = typeSymbol.ToDisplayString(NullableFormat);
+
+            return typeSyntax is NullableTypeSyntax && !baseTypeName.EndsWith("?")
+                ? baseTypeName + "?"
+                : baseTypeName;
+        }
+
+        internal string ToNotNullableGloballyQualifiedName() =>
+            typeSymbol.ToDisplayString(NotNullableFormat);
     }
 }

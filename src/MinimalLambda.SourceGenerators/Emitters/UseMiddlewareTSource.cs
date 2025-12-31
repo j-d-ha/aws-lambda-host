@@ -9,14 +9,14 @@ internal static class UseMiddlewareTSource
     {
         // var useMiddlewareTCalls = useMiddlewareTInfos.Select(useMiddlewareTInfo =>
         // {
-        //     var classInfo = useMiddlewareTInfo.ClassInfo;
+        //     var classInfo = useMiddlewareTInfo.MiddlewareClassInfo;
         //
         //     // choose what constructor to use with the following criteria:
         //     // 1. if it has a `[MiddlewareConstructor]` attribute. Multiple of these are not
         //     // valid.
         //     // 2. default to the constructor with the most arguments
         //     var constructor = classInfo
-        //         .ConstructorInfos.Select(c => (MethodInfo?)c)
+        //         .ConstructorInfos.Select(c => (MiddlewareConstructorInfo?)c)
         //         .FirstOrDefault(c =>
         //             c!.Value.AttributeInfos.Any(a =>
         //                 a.FullName == AttributeConstants.MiddlewareConstructor
@@ -59,11 +59,12 @@ internal static class UseMiddlewareTSource
         //         })
         //         .ToArray();
         //
-        //     var isDisposable = useMiddlewareTInfo.ClassInfo.IsInterfaceImplemented(
+        //     var isDisposable = useMiddlewareTInfo.MiddlewareClassInfo.IsInterfaceImplemented(
         //         TypeConstants.IDisposable
         //     );
         //
-        //     var isAsyncDisposable = useMiddlewareTInfo.ClassInfo.IsInterfaceImplemented(
+        //     var isAsyncDisposable =
+        // useMiddlewareTInfo.MiddlewareClassInfo.IsInterfaceImplemented(
         //         TypeConstants.IAsyncDisposable
         //     );
         //
@@ -92,31 +93,35 @@ internal static class UseMiddlewareTSource
         );
     }
 
-    private static ParameterArg BuildParameterAssignment(this ParameterInfo param) =>
-        new()
-        {
-            String = param.ToPublicString(),
-            Assignment = param.Source switch
-            {
-                // inject keyed service from the DI container - required
-                ParameterSource.KeyedService when param.IsRequired =>
-                    $"context.ServiceProvider.GetRequiredKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
-
-                // inject keyed service from the DI container - optional
-                ParameterSource.KeyedService =>
-                    $"context.ServiceProvider.GetKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
-
-                // default: inject service from the DI container - required
-                _ when param.IsRequired =>
-                    $"context.ServiceProvider.GetRequiredService<{param.TypeInfo.FullyQualifiedType}>()",
-
-                // default: inject service from the DI container - optional
-                _ => $"context.ServiceProvider.GetService<{param.TypeInfo.FullyQualifiedType}>()",
-            },
-        };
-
-    private static string RemoveTrailingChar(this string value, string trailing) =>
-        value.EndsWith(trailing) ? value[..^1] : value;
-
-    private readonly record struct ParameterArg(string String, string Assignment);
+    // private static ParameterArg BuildParameterAssignment(this MiddlewareParameterInfo param) =>
+    //     new()
+    //     {
+    //         String = param.ToPublicString(),
+    //         Assignment = param.ServiceSource switch
+    //         {
+    //             // inject keyed service from the DI container - required
+    //             ParameterSource.KeyedService when param.IsRequired =>
+    //
+    // $"context.ServiceProvider.GetRequiredKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
+    //
+    //             // inject keyed service from the DI container - optional
+    //             ParameterSource.KeyedService =>
+    //
+    // $"context.ServiceProvider.GetKeyedService<{param.TypeInfo.FullyQualifiedType}>({param.KeyedServiceKey?.DisplayValue})",
+    //
+    //             // default: inject service from the DI container - required
+    //             _ when param.IsRequired =>
+    //
+    // $"context.ServiceProvider.GetRequiredService<{param.TypeInfo.FullyQualifiedType}>()",
+    //
+    //             // default: inject service from the DI container - optional
+    //             _ =>
+    // $"context.ServiceProvider.GetService<{param.TypeInfo.FullyQualifiedType}>()",
+    //         },
+    //     };
+    //
+    // private static string RemoveTrailingChar(this string value, string trailing) =>
+    //     value.EndsWith(trailing) ? value[..^1] : value;
+    //
+    // private readonly record struct ParameterArg(string String, string Assignment);
 }
