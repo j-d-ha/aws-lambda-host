@@ -47,7 +47,7 @@ namespace MinimalLambda.Generated
             where T : ILambdaMiddleware
         {
             var resolver = new MyLambdaMiddlewareResolver0(args);
-            
+
             builder.Use(next =>
             {
                 return context =>
@@ -68,7 +68,7 @@ namespace MinimalLambda.Generated
 
             private int _cache2 = NotCached; // string
             private int _cache3 = NotCached; // global::IMetrics?
-            
+
             internal MyLambdaMiddlewareResolver0(object[] args) => _args = args;
 
             internal global::MyLambdaMiddleware Create(ILambdaInvocationContext context)
@@ -76,27 +76,23 @@ namespace MinimalLambda.Generated
                 if (!_cacheBuilt)
                     BuildResolutionCache();
 
-                // MiddlewareParameterInfo { Type = global::ILogger, Name = logger, Source = Service, IsNullable = False, IsOptional = False}
                 var arg0 = context.ServiceProvider.GetRequiredService<global::ILogger>();
-                
-                // MiddlewareParameterInfo { Type = global::ICache, Name = cache, Source = KeyedService, IsNullable = False, IsOptional = False, KeyedServiceKeyInfo { DisplayValue = "cache", Type = string, BaseType = object } }
+
                 var arg1 = context.ServiceProvider.GetRequiredKeyedService<global::ICache>("cache");
-                
-                // MiddlewareParameterInfo { Type = string, Name = apiKey, Source = Service, IsNullable = False, IsOptional = False}
+
                 var arg2 =
                     _cache2 >= 0
                         ? (string)_args[_cache2]
                         : throw new InvalidOperationException("Parameter 'apiKey' of type 'string' must be provided in args");
-                
-                // MiddlewareParameterInfo { Type = global::IMetrics?, Name = metrics, Source = Service, IsNullable = True, IsOptional = False}
+
                 var arg3 =
                     _cache3 >= 0
                         ? (global::IMetrics?)_args[_cache3]
                         : context.ServiceProvider.GetService<global::IMetrics?>();
-                
+
                 return new global::MyLambdaMiddleware(arg0, arg1, arg2, arg3);
             }
-            
+
             private void BuildResolutionCache()
             {
                 _cache2 = FromServices;

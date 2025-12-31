@@ -47,7 +47,7 @@ namespace MinimalLambda.Generated
             where T : ILambdaMiddleware
         {
             var resolver = new MyLambdaMiddlewareResolver0(args);
-            
+
             builder.Use(next =>
             {
                 return context =>
@@ -67,9 +67,8 @@ namespace MinimalLambda.Generated
 
             internal global::MyLambdaMiddleware Create(ILambdaInvocationContext context)
             {
-                // MiddlewareParameterInfo { Type = global::IService, Name = service, Source = Service, IsNullable = False, IsOptional = False}
                 var arg0 = context.ServiceProvider.GetRequiredService<global::IService>();
-                
+
                 return new global::MyLambdaMiddleware(arg0);
             }
         }
