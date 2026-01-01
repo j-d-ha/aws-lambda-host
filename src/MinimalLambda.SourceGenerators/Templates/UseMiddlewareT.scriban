@@ -58,7 +58,7 @@
             {{~ end ~}}
       {{ ~ if call.class_info.parameter_infos.count > 0 && !call.class_info.all_parameters_from_services ~ }}
 
-      {{~ end ~}}
+      {{ ~ end ~ }}
             internal {{ call.class_info.short_name }}Resolver{{ for.index }}(object[] args) => _args = args;
 
       internal {{ call.class_info.globally_qualified_name }} Create(ILambdaInvocationContext
