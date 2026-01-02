@@ -31,21 +31,21 @@ internal class DiagnosticResult<T>
     public DiagnosticResult<TNew> Map<TNew>(Func<T, TNew> map) =>
         IsSuccess
             ? DiagnosticResult<TNew>.Success(map(Value!))
-            : DiagnosticResult<TNew>.Failure(Error!.Value);
+            : DiagnosticResult<TNew>.Failure(Error!);
 
     public DiagnosticResult<TNew> Bind<TNew>(Func<T, DiagnosticResult<TNew>> bind) =>
-        IsSuccess ? bind(Value!) : DiagnosticResult<TNew>.Failure(Error!.Value);
+        IsSuccess ? bind(Value!) : DiagnosticResult<TNew>.Failure(Error!);
 
     public TResult Match<TResult>(
         Func<T, TResult> onSuccess,
         Func<DiagnosticInfo, TResult> onFailure
-    ) => IsSuccess ? onSuccess(Value!) : onFailure(Error!.Value);
+    ) => IsSuccess ? onSuccess(Value!) : onFailure(Error!);
 
     public void Do(Action<T> onSuccess, Action<DiagnosticInfo> onFailure)
     {
         if (IsSuccess)
             onSuccess(Value!);
         else
-            onFailure(Error!.Value);
+            onFailure(Error!);
     }
 }

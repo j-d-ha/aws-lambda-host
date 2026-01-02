@@ -1,27 +1,20 @@
-using System;
 using LayeredCraft.SourceGeneratorTools.Utilities;
 using Microsoft.CodeAnalysis;
 
 namespace MinimalLambda.SourceGenerators.Models;
 
-internal readonly struct DiagnosticInfo(
-    DiagnosticDescriptor diagnosticDescriptor,
-    LocationInfo? locationInfo = null,
-    params object?[] messageArgs
-) : IEquatable<DiagnosticInfo>
+internal sealed record DiagnosticInfo(
+    DiagnosticDescriptor DiagnosticDescriptor,
+    LocationInfo? LocationInfo = null,
+    params object?[] MessageArgs
+)
 {
-    public DiagnosticDescriptor DiagnosticDescriptor { get; } = diagnosticDescriptor;
-    public LocationInfo? LocationInfo { get; } = locationInfo;
-    public object?[] MessageArgs { get; } = messageArgs;
+    public bool Equals(DiagnosticInfo? other) =>
+        other is not null
+        && Equals(DiagnosticDescriptor.Id, other.DiagnosticDescriptor.Id)
+        && Equals(LocationInfo, other.LocationInfo);
 
-    public bool Equals(DiagnosticInfo other) =>
-        DiagnosticDescriptor.Id == other.DiagnosticDescriptor.Id
-        && LocationInfo == other.LocationInfo;
-
-    public override bool Equals(object? obj) => obj is DiagnosticInfo other && Equals(other);
-
-    public override int GetHashCode() =>
-        HashCode.Combine(DiagnosticDescriptor.Id.GetHashCode(), LocationInfo.GetHashCode());
+    public override int GetHashCode() => HashCode.Combine(DiagnosticDescriptor, LocationInfo);
 }
 
 internal static class DiagnosticInfoExtensions
