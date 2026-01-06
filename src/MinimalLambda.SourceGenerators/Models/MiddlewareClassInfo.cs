@@ -32,7 +32,7 @@ internal static class MiddlewareExtensions
             List<DiagnosticInfo> diagnostics = [];
 
             // get the globally qualified name of the class
-            var globallyQualifiedName = typeSymbol.ToGloballyQualifiedName();
+            var globallyQualifiedName = typeSymbol.QualifiedNullableName;
 
             // get short name, i.e., not qualified
             var shortName = typeSymbol.Name;

@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace MinimalLambda.SourceGenerators.Extensions;
 
@@ -17,16 +16,8 @@ internal static class TypeExtractorExtensions
 
     extension(ITypeSymbol typeSymbol)
     {
-        internal string ToGloballyQualifiedName(TypeSyntax? typeSyntax = null)
-        {
-            var baseTypeName = typeSymbol.ToDisplayString(NullableFormat);
+        internal string QualifiedName => typeSymbol.ToDisplayString(NotNullableFormat);
 
-            return typeSyntax is NullableTypeSyntax && !baseTypeName.EndsWith("?")
-                ? baseTypeName + "?"
-                : baseTypeName;
-        }
-
-        internal string ToNotNullableGloballyQualifiedName() =>
-            typeSymbol.ToDisplayString(NotNullableFormat);
+        internal string QualifiedNullableName => typeSymbol.ToDisplayString(NullableFormat);
     }
 }

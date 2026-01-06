@@ -31,11 +31,10 @@ internal static class MiddlewareParameterInfoExtensions
             var name = parameterSymbol.Name;
 
             // globally qualified type
-            var globallyQualifiedType = parameterSymbol.Type.ToGloballyQualifiedName();
+            var globallyQualifiedType = parameterSymbol.Type.QualifiedNullableName;
 
             // globally qualified type - not nullable
-            var globallyQualifiedNotNullableType =
-                parameterSymbol.Type.ToNotNullableGloballyQualifiedName();
+            var globallyQualifiedNotNullableType = parameterSymbol.Type.QualifiedName;
 
             // determine if it has a `[FromArguments]` attribute
             var fromArguments = parameterSymbol.IsDecoratedWithAttribute(

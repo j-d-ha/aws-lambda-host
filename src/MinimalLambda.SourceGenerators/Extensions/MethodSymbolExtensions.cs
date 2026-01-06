@@ -13,12 +13,12 @@ internal static class MethodSymbolExtensions
     {
         internal string GetCastableSignature()
         {
-            var returnType = methodSymbol.ReturnType.ToGloballyQualifiedName();
+            var returnType = methodSymbol.ReturnType.QualifiedNullableName;
             var parameters = methodSymbol
                 .Parameters.Select(
                     (p, i) =>
                     {
-                        var type = p.Type.ToGloballyQualifiedName();
+                        var type = p.Type.QualifiedNullableName;
                         var defaultValue = p.IsOptional ? " = default" : "";
                         return $"{type} arg{i}{defaultValue}";
                     }

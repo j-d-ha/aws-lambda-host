@@ -81,7 +81,7 @@ internal static class ParameterSymbolExtensions
             GeneratorContext context
         )
         {
-            var paramType = parameterSymbol.Type.ToGloballyQualifiedName();
+            var paramType = parameterSymbol.Type.QualifiedNullableName;
 
             var isKeyedServices = parameterSymbol.IsFromKeyedService(context, out var keyResult);
 
@@ -138,7 +138,7 @@ internal static class ParameterSymbolExtensions
                 return DiagnosticResult<string>.Failure(
                     MinimalLambda.SourceGenerators.Diagnostics.InvalidAttributeArgument,
                     attributeData.GetAttributeArgumentLocation(0),
-                    argument.Type?.ToGloballyQualifiedName()
+                    argument.Type?.QualifiedNullableName
                 );
 
             return DiagnosticResult<string>.Success(
@@ -154,10 +154,10 @@ internal static class ParameterSymbolExtensions
                         : "false",
 
                     TypedConstantKind.Primitive or TypedConstantKind.Enum =>
-                        $"({argument.Type?.ToGloballyQualifiedName()}){value}",
+                        $"({argument.Type?.QualifiedNullableName}){value}",
 
                     TypedConstantKind.Type when value is ITypeSymbol typeValue =>
-                        $"typeof({typeValue.ToGloballyQualifiedName()})",
+                        $"typeof({typeValue.QualifiedNullableName})",
 
                     _ => value.ToString(),
                 }

@@ -35,7 +35,7 @@ internal static class MapHandlerMethodInfoExtensions
         var eventAttribute = new Lazy<string>(() =>
             context
                 .WellKnownTypes.Get(WellKnownType.MinimalLambda_Builder_FromEventAttribute)
-                .ToGloballyQualifiedName()
+                .QualifiedNullableName
         );
 
         return assignments
@@ -105,7 +105,7 @@ internal static class MapHandlerMethodInfoExtensions
                 IsEventTypeStream: isEventTypeStream,
                 HasEvent: hasEvent,
                 EventType: eventType,
-                UnwrappedResponseType: unwrappedReturnType?.ToGloballyQualifiedName(),
+                UnwrappedResponseType: unwrappedReturnType?.QualifiedNullableName,
                 HasAnyFromKeyedServices: hasAnyKeyedServices,
                 DiagnosticInfos: diagnostics.ToEquatableArray()
             );

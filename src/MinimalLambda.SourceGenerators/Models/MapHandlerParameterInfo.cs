@@ -26,10 +26,10 @@ internal static class MapHandlerParameterInfoExtensions
             GeneratorContext context
         )
         {
-            var paramType = parameter.Type.ToGloballyQualifiedName();
+            var paramType = parameter.Type.QualifiedNullableName;
 
             var parameterInfo = new MapHandlerParameterInfo(
-                parameter.Type.ToGloballyQualifiedName(),
+                parameter.Type.QualifiedNullableName,
                 context.WellKnownTypes.IsTypeMatch(parameter.Type, WellKnownType.System_IO_Stream),
                 IsEvent: false,
                 IsFromKeyedService: false,
