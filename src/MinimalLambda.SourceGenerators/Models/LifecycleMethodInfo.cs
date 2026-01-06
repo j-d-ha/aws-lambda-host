@@ -86,7 +86,7 @@ internal static class LifecycleMethodInfoExtensions
 
             return new LifecycleMethodInfo(
                 MethodType: MethodType.OnInit,
-                InterceptableLocationAttribute: interceptableLocation.Value.ToInterceptsLocationAttribute(),
+                InterceptableLocationAttribute: interceptableLocation.Attribute,
                 DelegateCastType: handlerCastType,
                 DiagnosticInfos: diagnostics.ToEquatableArray(),
                 ParameterAssignments: assignments.ToEquatableArray(),
@@ -134,7 +134,7 @@ internal static class LifecycleMethodInfoExtensions
 
             return new LifecycleMethodInfo(
                 MethodType: MethodType.OnShutdown,
-                InterceptableLocationAttribute: interceptableLocation.Value.ToInterceptsLocationAttribute(),
+                InterceptableLocationAttribute: interceptableLocation.Attribute,
                 DelegateCastType: handlerCastType,
                 DiagnosticInfos: diagnostics.ToEquatableArray(),
                 ParameterAssignments: assignments.ToEquatableArray(),

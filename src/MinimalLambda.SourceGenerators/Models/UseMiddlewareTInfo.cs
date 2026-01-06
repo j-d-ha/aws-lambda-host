@@ -41,7 +41,7 @@ internal static class UseMiddlewareTInfoExtensions
                 ) ?? throw new InvalidOperationException("Interceptable location is null")
             )
                 .ToInterceptableLocationInfo()
-                .ToInterceptsLocationAttribute();
+                .Attribute;
 
             var middlewareClassType = invocationOperation
                 .TargetMethod.TypeArguments.FirstOrDefault()

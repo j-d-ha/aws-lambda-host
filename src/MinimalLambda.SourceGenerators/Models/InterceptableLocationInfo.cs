@@ -4,11 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace MinimalLambda.SourceGenerators.Models;
 
-internal readonly record struct InterceptableLocationInfo(
-    int Version,
-    string Data,
-    string DisplayLocation
-);
+internal sealed record InterceptableLocationInfo(int Version, string Data, string DisplayLocation);
 
 internal static class InterceptableLocationInfoExtensions
 {
@@ -45,7 +41,7 @@ internal static class InterceptableLocationInfoExtensions
             return true;
         }
 
-        internal string ToInterceptsLocationAttribute() =>
+        internal string Attribute =>
             $"""[InterceptsLocation({location.Version}, "{location.Data}")]""";
     }
 

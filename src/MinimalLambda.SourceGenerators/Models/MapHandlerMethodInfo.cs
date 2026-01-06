@@ -96,7 +96,7 @@ internal static class MapHandlerMethodInfoExtensions
 
             return new MapHandlerMethodInfo(
                 MethodType: MethodType.MapHandler,
-                InterceptableLocationAttribute: interceptableLocation.Value.ToInterceptsLocationAttribute(),
+                InterceptableLocationAttribute: interceptableLocation.Attribute,
                 DelegateCastType: handlerCastType,
                 ParameterAssignments: assignments.ToEquatableArray(),
                 IsAwaitable: isAwaitable,
