@@ -66,7 +66,12 @@ internal static class MinimalLambdaEmitter
 
         // add UseMiddleware<T> interceptors
         if (compilationInfo.UseMiddlewareTInfos.Count >= 1)
-            outputs.Add(UseMiddlewareTSource.Generate(compilationInfo.UseMiddlewareTInfos));
+            outputs.Add(
+                TemplateHelper.Render(
+                    GeneratorConstants.UseMiddlewareTTemplateFile,
+                    new { GeneratedCodeAttribute, Calls = compilationInfo.UseMiddlewareTInfos }
+                )
+            );
 
         // add OnInit interceptors
         if (compilationInfo.OnInitInvocationInfos.Count >= 1)
