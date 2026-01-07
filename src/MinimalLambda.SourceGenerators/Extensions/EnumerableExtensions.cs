@@ -12,18 +12,15 @@ internal static class EnumerableExtensions
             foreach (var item in enumerable)
                 action(item);
         }
-    }
 
-    extension<TIn>(IEnumerable<TIn> enumerable)
-    {
         internal (List<TOut> Data, List<DiagnosticInfo> Diagnostics) CollectDiagnosticResults<TOut>(
-            Func<TIn, DiagnosticResult<TOut>> extractor
+            Func<T, DiagnosticResult<TOut>> extractor
         ) =>
             enumerable
                 .Select(extractor)
                 .Aggregate(
                     (
-                        Successes: new List<TOut>(enumerable is ICollection<TIn> c ? c.Count : 0),
+                        Successes: new List<TOut>(enumerable is ICollection<T> c ? c.Count : 0),
                         Diagnostics: new List<DiagnosticInfo>()
                     ),
                     static (acc, result) =>

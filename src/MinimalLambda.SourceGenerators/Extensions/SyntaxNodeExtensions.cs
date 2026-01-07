@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace MinimalLambda.SourceGenerators;
 
-internal static class SyntaxExtensions
+internal static class SyntaxNodeExtensions
 {
     extension(SyntaxNode node)
     {

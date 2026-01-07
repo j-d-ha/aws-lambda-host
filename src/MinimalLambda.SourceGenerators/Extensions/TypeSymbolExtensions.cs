@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 
 namespace MinimalLambda.SourceGenerators.Extensions;
 
-internal static class TypeExtractorExtensions
+internal static class TypeSymbolExtensions
 {
     private static readonly SymbolDisplayFormat NullableFormat =
         SymbolDisplayFormat.FullyQualifiedFormat.AddMiscellaneousOptions(
