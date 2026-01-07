@@ -19,16 +19,28 @@ internal record MiddlewareClassInfo(
 
 internal static class MiddlewareExtensions
 {
-    extension(MiddlewareClassInfo middlewareClassInfo)
+    extension(MiddlewareClassInfo)
     {
-        internal bool AnyParameters => true;
-
-        internal static (
-            MiddlewareClassInfo? classInfo,
-            List<DiagnosticInfo> DiagnosticInfos
-        ) Create(INamedTypeSymbol typeSymbol, GeneratorContext context)
+        internal static (MiddlewareClassInfo? Info, List<DiagnosticInfo> Diagnostics) Create(
+            INamedTypeSymbol typeSymbol,
+            Location? location,
+            GeneratorContext context
+        )
         {
             List<DiagnosticInfo> diagnostics = [];
+
+            // validate that middleware class is a concrete -> not interface or abstract class
+            if (typeSymbol.TypeKind == TypeKind.Interface || typeSymbol.IsAbstract)
+            {
+                diagnostics.Add(
+                    DiagnosticInfo.Create(
+                        Diagnostics.MustBeConcreteType,
+                        location?.ToLocationInfo(),
+                        [typeSymbol.QualifiedName]
+                    )
+                );
+                return (null, diagnostics);
+            }
 
             // get the globally qualified name of the class
             var globallyQualifiedName = typeSymbol.QualifiedNullableName;
@@ -37,8 +49,12 @@ internal static class MiddlewareExtensions
             var shortName = typeSymbol.Name;
 
             // get constructor
-            var (constructor, constructorDiagnostics) = GetConstructor(typeSymbol, context);
-            diagnostics.AddRange(constructorDiagnostics);
+            var constructor = GetConstructor(typeSymbol, context)
+                .Map(result =>
+                {
+                    diagnostics.AddRange(result.DiagnosticInfos);
+                    return result.MethodSymbol;
+                });
 
             // get constructor parameters
             var parameterInfos = constructor is not null
@@ -93,7 +109,7 @@ internal static class MiddlewareExtensions
                         a.AttributeClass is not null
                         && context.WellKnownTypes.IsType(
                             a.AttributeClass,
-                            [WellKnownType.MinimalLambda_Builder_MiddlewareConstructorAttribute]
+                            WellKnownType.MinimalLambda_Builder_MiddlewareConstructorAttribute
                         )
                     )
             )

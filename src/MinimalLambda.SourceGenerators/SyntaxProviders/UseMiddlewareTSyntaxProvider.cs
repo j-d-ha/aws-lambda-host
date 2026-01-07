@@ -22,9 +22,9 @@ internal static class UseMiddlewareTSyntaxProvider
     {
         var context = new GeneratorContext(syntaxContext, cancellationToken);
 
-        return !TryGetInvocationOperation(context, out var targetOperation)
-            ? null
-            : UseMiddlewareTInfo.Create(targetOperation, context);
+        return TryGetInvocationOperation(context, out var targetOperation)
+            ? UseMiddlewareTInfo.Create(targetOperation, context)
+            : null;
     }
 
     private static bool TryGetInvocationOperation(

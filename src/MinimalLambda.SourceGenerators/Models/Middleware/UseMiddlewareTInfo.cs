@@ -38,7 +38,10 @@ internal static class UseMiddlewareTInfoExtensions
                 context.SemanticModel.GetInterceptableLocation(
                     invocationExpressionSyntax,
                     context.CancellationToken
-                ) ?? throw new InvalidOperationException("Interceptable location is null")
+                )
+                ?? throw new InvalidOperationException(
+                    "Interceptable location is null (Should not happen)"
+                )
             )
                 .ToInterceptableLocationInfo()
                 .Attribute;
@@ -48,12 +51,25 @@ internal static class UseMiddlewareTInfoExtensions
                 .Map(typeSymbol =>
                     typeSymbol as INamedTypeSymbol
                     ?? throw new InvalidOperationException(
-                        "Middleware class type is not INamedTypeSymbol"
+                        "Middleware class type is not INamedTypeSymbol (Should not happen)"
                     )
                 );
 
-            var (classInfo, diagnostics) = MiddlewareClassInfo.Create(middlewareClassType, context);
-            diagnosticInfos.AddRange(diagnostics);
+            var typeArgumentLocation = invocationExpressionSyntax.Expression
+                is MemberAccessExpressionSyntax
+                {
+                    Name: GenericNameSyntax { TypeArgumentList.Arguments.Count: > 0 } genericName,
+                }
+                ? genericName.TypeArgumentList.Arguments[0].GetLocation()
+                : null;
+
+            var classInfo = MiddlewareClassInfo
+                .Create(middlewareClassType, typeArgumentLocation, context)
+                .Map(result =>
+                {
+                    diagnosticInfos.AddRange(result.Diagnostics);
+                    return result.Info;
+                });
 
             return new UseMiddlewareTInfo(
                 interceptableLocation,
