@@ -27,20 +27,20 @@ internal static class MiddlewareExtensions
             GeneratorContext context
         )
         {
-            List<DiagnosticInfo> diagnostics = [];
-
             // validate that middleware class is a concrete -> not interface or abstract class
             if (typeSymbol.TypeKind == TypeKind.Interface || typeSymbol.IsAbstract)
-            {
-                diagnostics.Add(
-                    DiagnosticInfo.Create(
-                        Diagnostics.MustBeConcreteType,
-                        location?.ToLocationInfo(),
-                        [typeSymbol.QualifiedName]
-                    )
+                return (
+                    null,
+                    [
+                        DiagnosticInfo.Create(
+                            Diagnostics.MustBeConcreteType,
+                            location?.ToLocationInfo(),
+                            [typeSymbol.QualifiedName]
+                        ),
+                    ]
                 );
-                return (null, diagnostics);
-            }
+
+            List<DiagnosticInfo> diagnostics = [];
 
             // get the globally qualified name of the class
             var globallyQualifiedName = typeSymbol.QualifiedNullableName;
