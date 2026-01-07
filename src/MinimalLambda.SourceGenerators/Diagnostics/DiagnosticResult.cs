@@ -1,9 +1,10 @@
 using System;
 using Microsoft.CodeAnalysis;
+using MinimalLambda.SourceGenerators.Models;
 
 // ReSharper disable MemberCanBePrivate.Global
 
-namespace MinimalLambda.SourceGenerators.Models;
+namespace MinimalLambda.SourceGenerators;
 
 internal sealed class DiagnosticResult<T>
 {

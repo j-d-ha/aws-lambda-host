@@ -1,4 +1,5 @@
 using System.Linq;
+using MinimalLambda.SourceGenerators;
 using MinimalLambda.SourceGenerators.Models;
 
 namespace System.Collections.Generic;

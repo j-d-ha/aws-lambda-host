@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Scriban;
 
-namespace MinimalLambda.SourceGenerators;
+namespace MinimalLambda.SourceGenerators.Emitters;
 
 /// <summary>
 ///     Helper class for loading, caching, and rendering Scriban templates from embedded

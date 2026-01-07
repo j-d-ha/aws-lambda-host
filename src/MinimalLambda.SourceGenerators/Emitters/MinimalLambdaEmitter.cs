@@ -5,7 +5,7 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using MinimalLambda.SourceGenerators.Models;
 
-namespace MinimalLambda.SourceGenerators;
+namespace MinimalLambda.SourceGenerators.Emitters;
 
 internal static class MinimalLambdaEmitter
 {
