@@ -32,8 +32,6 @@ internal static class UseMiddlewareTInfoExtensions
 
             List<DiagnosticInfo> diagnosticInfos = [];
 
-            TryGetLocationInfo(invocationExpressionSyntax, out var locationInfo);
-
             var interceptableLocation = (
                 context.SemanticModel.GetInterceptableLocation(
                     invocationExpressionSyntax,
@@ -55,13 +53,7 @@ internal static class UseMiddlewareTInfoExtensions
                     )
                 );
 
-            var typeArgumentLocation = invocationExpressionSyntax.Expression
-                is MemberAccessExpressionSyntax
-                {
-                    Name: GenericNameSyntax { TypeArgumentList.Arguments.Count: > 0 } genericName,
-                }
-                ? genericName.TypeArgumentList.Arguments[0].GetLocation()
-                : null;
+            TryGetLocationInfo(invocationExpressionSyntax, out var typeArgumentLocation);
 
             var classInfo = MiddlewareClassInfo
                 .Create(middlewareClassType, typeArgumentLocation, context)
@@ -81,7 +73,7 @@ internal static class UseMiddlewareTInfoExtensions
 
     private static bool TryGetLocationInfo(
         InvocationExpressionSyntax invocationExpressionSyntax,
-        out LocationInfo? locationInfo
+        out Location? locationInfo
     )
     {
         locationInfo = null;
@@ -91,7 +83,7 @@ internal static class UseMiddlewareTInfoExtensions
         )
         {
             var typeArgument = genericName.TypeArgumentList.Arguments[0];
-            locationInfo = typeArgument.GetLocation().ToLocationInfo();
+            locationInfo = typeArgument.GetLocation();
             return true;
         }
 
