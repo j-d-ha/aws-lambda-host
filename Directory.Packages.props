@@ -18,7 +18,7 @@
     <PackageVersion Include="Basic.Reference.Assemblies.Net100" Version="1.8.4" />
     <PackageVersion Include="Basic.Reference.Assemblies.Net80" Version="1.8.4" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
-    <PackageVersion Include="LayeredCraft.SourceGeneratorTools.Generator" Version="0.1.0-beta.10" />
+    <PackageVersion Include="LayeredCraft.SourceGeneratorTools" Version="0.1.0-beta.10"/>
     <PackageVersion Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.3.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Routing" Version="2.3.0" />

@@ -9,16 +9,24 @@
     <PackageScribanIncludeSource>true</PackageScribanIncludeSource>
     <IsPackable>false</IsPackable>
     <IncludeSymbols>false</IncludeSymbols>
+    <IsAotCompatible>false</IsAotCompatible>
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="MinimalLambda.SourceGenerators.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="LayeredCraft.SourceGeneratorTools.Generator">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference
+      Include="LayeredCraft.SourceGeneratorTools"
+      PrivateAssets="all"
+      GeneratePathProperty="true"
+    />
+    <None
+      Include="$(PkgLayeredCraft_SourceGeneratorTools)\lib\netstandard2.0\*.dll"
+      Pack="true"
+      PackagePath="analyzers/dotnet/cs"
+      Visible="false"
+    />
     <PackageReference Include="PolySharp">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -40,7 +48,18 @@
     <!-- Disable PolySharp's ModuleInitializerAttribute shim -->
     <PolySharpExcludeGeneratedTypes>System.Runtime.CompilerServices.ModuleInitializerAttribute</PolySharpExcludeGeneratedTypes>
   </PropertyGroup>
+
   <PropertyGroup>
-    <IsAotCompatible>false</IsAotCompatible>
+    <GetTargetPathDependsOn>
+      $(GetTargetPathDependsOn);GetDependencyTargetPaths
+    </GetTargetPathDependsOn>
   </PropertyGroup>
+  <Target Name="GetDependencyTargetPaths">
+    <ItemGroup>
+      <TargetPathWithTargetPlatformMoniker
+        Include="$(PkgLayeredCraft_SourceGeneratorTools)\lib\netstandard2.0\*.dll"
+        IncludeRuntimeDependency="false"
+      />
+    </ItemGroup>
+  </Target>
 </Project>

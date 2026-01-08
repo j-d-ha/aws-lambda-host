@@ -59,3 +59,17 @@ tasks:
     silent: true
     cmds:
       - dotnet publish src/AotCompatibility.TestApp/AotCompatibility.TestApp.csproj /p:TreatWarningsAsErrors=true
+  
+  publish-local:
+    desc: Publish to local NuGet source for use in other solutions
+    silent: true
+    deps: [ pack ]
+    vars:
+      LOCAL_NUGET_SOURCE: '{{.LOCAL_NUGET_SOURCE | default "~/LocalNuGetPackages"}}'
+    cmds:
+      - echo "📦 Publishing to local NuGet source"
+      - mkdir -p {{.LOCAL_NUGET_SOURCE}}
+      - cp -f ./nupkg/*.nupkg {{.LOCAL_NUGET_SOURCE}}/
+      - echo "✅ Published to {{.LOCAL_NUGET_SOURCE}}"
+      - echo "💡 Add this source to your other solution with:"
+      - echo "   dotnet nuget add source {{.LOCAL_NUGET_SOURCE}} --name local"

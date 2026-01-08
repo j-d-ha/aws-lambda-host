@@ -69,6 +69,22 @@
         PackagePath="analyzers/dotnet/cs"
         Visible="false"
       />
+
+      <!-- layeredcraft.sourcegeneratortools dependency -->
+      <None
+        Include="$(USERPROFILE)\.nuget\packages\layeredcraft.sourcegeneratortools\0.1.0-beta.10\lib\netstandard2.0\LayeredCraft.SourceGeneratorTools.dll"
+        Condition="$([MSBuild]::IsOSPlatform('Windows'))"
+        Pack="true"
+        PackagePath="analyzers/dotnet/cs"
+        Visible="false"
+      />
+      <None
+        Include="$(HOME)/.nuget/packages/layeredcraft.sourcegeneratortools/0.1.0-beta.10/lib/netstandard2.0/LayeredCraft.SourceGeneratorTools.dll"
+        Condition="!$([MSBuild]::IsOSPlatform('Windows'))"
+        Pack="true"
+        PackagePath="analyzers/dotnet/cs"
+        Visible="false"
+      />
     </ItemGroup>
   </Target>
   <PropertyGroup>
