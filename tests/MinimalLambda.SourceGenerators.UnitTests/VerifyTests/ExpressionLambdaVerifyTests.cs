@@ -18,28 +18,8 @@ public class ExpressionLambdaVerifyTests
             lambda.Handle(Task (ILambdaInvocationContext context) => Task.CompletedTask);
 
             await lambda.RunAsync();
-            """
-        );
-
-    [Fact]
-    public async Task Test_ExpressionLambda_MainOverload_DeserializerSerializer_NoOp() =>
-        await GeneratorTestHelpers.Verify(
-            """
-            using System.IO;
-            using System.Threading.Tasks;
-            using Amazon.Lambda.Core;
-            using MinimalLambda;
-            using MinimalLambda.Builder;
-            using Microsoft.Extensions.Hosting;
-
-            var builder = LambdaApplication.CreateBuilder();
-
-            var lambda = builder.Build();
-
-            lambda.Handle(Task (ILambdaInvocationContext context) => Task.CompletedTask);
-
-            await lambda.RunAsync();
-            """
+            """,
+            0
         );
 
     [Fact]
@@ -282,6 +262,30 @@ public class ExpressionLambdaVerifyTests
             """
         );
 
+    [Fact]
+    public async Task Test_ExpressionLambda_NullableInput_ReturnNullableValueType() =>
+        await GeneratorTestHelpers.Verify(
+            """
+            using MinimalLambda;
+            using MinimalLambda.Builder;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+            var lambda = builder.Build();
+
+            lambda.MapHandler(([FromEvent] int? input, IService service) => service.GetMessage());
+
+            await lambda.RunAsync();
+
+            public struct MyStruct { }
+
+            public interface IService
+            {
+                MyStruct? GetMessage();
+            }
+            """
+        );
+
     // Additional handler type not shown in the examples - generic handlers with complex custom
     // types
     [Fact]
@@ -454,6 +458,28 @@ public class ExpressionLambdaVerifyTests
             lambda.MapHandler(void () => { });
 
             await lambda.RunAsync();
+            """
+        );
+
+    [Fact]
+    public async Task Test_ExpressionLambda_OptionalInjectedParam() =>
+        await GeneratorTestHelpers.Verify(
+            """
+            using MinimalLambda;
+            using MinimalLambda.Builder;
+            using Microsoft.Extensions.Hosting;
+
+            var builder = LambdaApplication.CreateBuilder();
+            var lambda = builder.Build();
+
+            lambda.MapHandler(string? (IService? service = default) => service.GetMessage());
+
+            await lambda.RunAsync();
+
+            public interface IService
+            {
+                string? GetMessage();
+            }
             """
         );
 }

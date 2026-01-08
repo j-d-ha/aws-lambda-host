@@ -1,17 +1,17 @@
-    {{ generated_code_attribute }}
+    {{ generated_code_attribute.value }}
     file static class UseMiddlewareExtensions
     {
         {{~ for call in calls ~}}
-        [InterceptsLocation({{ call.location.version }}, "{{ call.location.data }}")]
+        {{ call.interceptable_location_attribute }}
         internal static ILambdaInvocationBuilder UseMiddleware{{ for.index }}<T>(
             this ILambdaInvocationBuilder builder,
             params object[] args
         )
             where T : ILambdaMiddleware
         {
-            var resolver = new {{ call.short_middleware_class_name }}Resolver{{ for.index }}(args);
-            
-            {{~ if call.is_async_disposable ~}}
+            var resolver = new {{ call.class_info.short_name }}Resolver{{ for.index }}(args);
+
+            {{~ if call.class_info.implements_async_disposable ~}}
             builder.Use(next =>
             {
                 return async context =>
@@ -20,7 +20,7 @@
                     await middleware.InvokeAsync(context, next);
                 };
             });
-            {{~ else if call.is_disposable  ~}}
+            {{~ else if call.class_info.implements_disposable  ~}}
             builder.Use(next =>
             {
                 return async context =>
@@ -42,57 +42,56 @@
             return builder;
         }
 
-        private class {{ call.short_middleware_class_name }}Resolver{{ for.index }}
+        private class {{ call.class_info.short_name }}Resolver{{ for.index }}
         {
-            {{~ if call.any_parameters && !call.all_from_services ~}}
+            {{~ if call.class_info.parameter_infos.count > 0 && !call.class_info.all_parameters_from_services ~}}
             private const int NotCached = -1;
             private const int FromServices = -2;
             private bool _cacheBuilt = false;
             {{~ end ~}}
             private readonly object[] _args;
 
-            {{~ for parameter in call.parameters ~}}
+            {{~ for parameter in call.class_info.parameter_infos ~}}
             {{~ if !parameter.from_services ~}}
-            private int _cache{{ for.index }} = NotCached; // {{ parameter.fully_qualified_type }}
+            private int _cache{{ for.index }} = NotCached; // {{ parameter.globally_qualified_type }}
             {{~ end ~}}
             {{~ end ~}}
-            {{~ if call.any_parameters && !call.all_from_services ~}}
-            
-            {{~ end ~}}
-            internal {{ call.short_middleware_class_name }}Resolver{{ for.index }}(object[] args) => _args = args;
+            {{~ if call.class_info.parameter_infos.count > 0 && !call.class_info.all_parameters_from_services ~}}
 
-            internal {{ call.full_middleware_class_name }} Create(ILambdaInvocationContext context)
+            {{~ end ~}}
+            internal {{ call.class_info.short_name }}Resolver{{ for.index }}(object[] args) => _args = args;
+
+            internal {{ call.class_info.globally_qualified_name }} Create(ILambdaInvocationContext context)
             {
-                {{~ if call.any_parameters ~}}
-                {{~ if !call.all_from_services ~}}
+                {{~ if call.class_info.parameter_infos.count > 0 ~}}
+                {{~ if !call.class_info.all_parameters_from_services ~}}
                 if (!_cacheBuilt)
                     BuildResolutionCache();
 
                 {{~ end ~}}
-                {{~ for parameter in call.parameters ~}}
-                // {{ parameter.string }}
+                {{~ for parameter in call.class_info.parameter_infos ~}}
                 {{~ if parameter.from_services ~}}
-                var arg{{ for.index }} = {{ parameter.assignment }};
+                var arg{{ for.index }} = {{ parameter.from_services_assignment }};
                 {{~ else ~}}
                 var arg{{ for.index }} =
                     _cache{{ for.index }} >= 0
-                        ? ({{ parameter.fully_qualified_type }})_args[_cache{{ for.index }}]
+                        ? ({{ parameter.globally_qualified_type }})_args[_cache{{ for.index }}]
                         {{~ if parameter.from_arguments ~}}
-                        : throw new InvalidOperationException("Parameter '{{ parameter.name }}' of type '{{ parameter.fully_qualified_type }}' must be provided in args");
+                        : throw new InvalidOperationException("Parameter '{{ parameter.name }}' of type '{{ parameter.globally_qualified_type }}' must be provided in args");
                         {{~ else ~}}
-                        : {{ parameter.assignment }};
+                        : {{ parameter.from_services_assignment }};
                         {{~ end ~}}
                 {{~ end ~}}
-                
+
                 {{~ end ~}}
                 {{~ end ~}}
-                return new {{ call.full_middleware_class_name }}({{ for arg in call.parameters }}arg{{ for.index }}{{ if !for.last }}, {{ end }}{{ end }});
+                return new {{ call.class_info.globally_qualified_name }}({{ for arg in call.class_info.parameter_infos }}arg{{ for.index }}{{ if !for.last }}, {{ end }}{{ end }});
             }
-            {{~ if call.any_parameters && !call.all_from_services ~}}
-            
+            {{~ if call.class_info.parameter_infos.count > 0 && !call.class_info.all_parameters_from_services ~}}
+
             private void BuildResolutionCache()
             {
-                {{~ for parameter in call.parameters ~}}
+                {{~ for parameter in call.class_info.parameter_infos ~}}
                 {{~ if !parameter.from_services ~}}
                 _cache{{ for.index }} = FromServices;
                 {{~ end ~}}
@@ -106,9 +105,9 @@
 
                     switch (arg)
                     {
-                        {{~ for parameter in call.parameters ~}}
+                        {{~ for parameter in call.class_info.parameter_infos ~}}
                         {{~ if !parameter.from_services ~}}
-                        case {{ parameter.fully_qualified_type_not_null }} when _cache{{ for.index }} == FromServices:
+                        case {{ parameter.globally_qualified_not_nullable_type }} when _cache{{ for.index }} == FromServices:
                             _cache{{ for.index }} = i;
                             break;
                         {{~ end ~}}

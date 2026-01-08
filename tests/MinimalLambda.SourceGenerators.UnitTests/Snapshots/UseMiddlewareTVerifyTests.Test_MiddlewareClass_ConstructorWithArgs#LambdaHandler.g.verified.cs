@@ -47,7 +47,7 @@ namespace MinimalLambda.Generated
             where T : ILambdaMiddleware
         {
             var resolver = new MyLambdaMiddlewareResolver0(args);
-            
+
             builder.Use(next =>
             {
                 return context =>
@@ -67,7 +67,7 @@ namespace MinimalLambda.Generated
             private readonly object[] _args;
 
             private int _cache0 = NotCached; // global::IService
-            
+
             internal MyLambdaMiddlewareResolver0(object[] args) => _args = args;
 
             internal global::MyLambdaMiddleware Create(ILambdaInvocationContext context)
@@ -75,15 +75,14 @@ namespace MinimalLambda.Generated
                 if (!_cacheBuilt)
                     BuildResolutionCache();
 
-                // ParameterInfo { Type = global::IService, Name = service, Source = Service, IsNullable = False, IsOptional = False}
                 var arg0 =
                     _cache0 >= 0
                         ? (global::IService)_args[_cache0]
                         : context.ServiceProvider.GetRequiredService<global::IService>();
-                
+
                 return new global::MyLambdaMiddleware(arg0);
             }
-            
+
             private void BuildResolutionCache()
             {
                 _cache0 = FromServices;

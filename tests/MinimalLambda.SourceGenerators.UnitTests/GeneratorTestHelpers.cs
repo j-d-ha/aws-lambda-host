@@ -24,7 +24,17 @@ internal static class GeneratorTestHelpers
 
         var result = driver.GetRunResult();
 
-        // result.Diagnostics.Length.Should().Be(0);s
+        result
+            .Diagnostics.Should()
+            .BeEmpty(
+                "code should be generated without errors, but found:\n"
+                    + string.Join(
+                        "\n---\n",
+                        result.Diagnostics.Select(e =>
+                            $"  - {e.Id}: {e.GetMessage()} at {e.Location}"
+                        )
+                    )
+            );
 
         // Reparse generated trees with the same parse options as the original compilation
         // to ensure consistent syntax tree features (e.g., InterceptorsNamespaces)
@@ -135,7 +145,7 @@ internal static class GeneratorTestHelpers
             compilationOptions
         );
 
-        var generator = new MapHandlerIncrementalGenerator().AsSourceGenerator();
+        var generator = new MinimalLambdaGenerator().AsSourceGenerator();
 
         var driver = CSharpGeneratorDriver.Create(generator);
         var updatedDriver = driver.RunGenerators(compilation, CancellationToken.None);

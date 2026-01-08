@@ -48,7 +48,7 @@ namespace MinimalLambda.Generated
             Delegate handler
         )
         {
-            var castHandler = Utilities.Cast(handler, string? (string? arg0, global::IService arg1) => throw null!);
+            var castHandler = Utilities.Cast(handler, string (string? arg0, global::IService arg1) => throw null!);
 
             application.Handle(InvocationDelegate);
 
@@ -60,20 +60,18 @@ namespace MinimalLambda.Generated
             if (!application.Properties.ContainsKey(ResponseFeatureProviderKey))
                 application.Properties[ResponseFeatureProviderKey] = application.
                     Services.GetRequiredService<IResponseFeatureProviderFactory>()
-                    .Create<string?>();
+                    .Create<string>();
 
             return application;
 
             Task InvocationDelegate(ILambdaInvocationContext context)
             {
-                // ParameterInfo { Type = string?, Name = input, Source = Event, IsNullable = True, IsOptional = False}
                 var arg0 = context.GetRequiredEvent<string?>();
-                // ParameterInfo { Type = global::IService, Name = service, Source = Service, IsNullable = False, IsOptional = False}
                 var arg1 = context.ServiceProvider.GetRequiredService<global::IService>();
                 var response = castHandler.Invoke(arg0, arg1);
-                if (context.Features.Get<IResponseFeature>() is not IResponseFeature<string?> responseFeature)
+                if (context.Features.Get<IResponseFeature>() is not IResponseFeature<string> responseFeature)
                 {
-                    throw new InvalidOperationException($"Response feature for type 'string?' is not available in the collection.");
+                    throw new InvalidOperationException($"Response feature for type 'string' is not available in the collection.");
                 }
                 responseFeature.SetResponse(response);
                 return Task.CompletedTask;
