@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using MinimalLambda.SourceGenerators.Emitters;
@@ -50,44 +49,24 @@ public class MinimalLambdaGenerator : IIncrementalGenerator
             .WhereNotNull();
 
         var invocationHandlerCalls = registrationCalls
-            .Where(static c =>
-                c is MapHandlerMethodInfo
-                && c.DiagnosticInfos.All(d =>
-                    d.DiagnosticDescriptor.DefaultSeverity != DiagnosticSeverity.Error
-                )
-            )
+            .WhereNoErrors()
+            .Where(static c => c is MapHandlerMethodInfo)
             .Select(static (c, _) => (MapHandlerMethodInfo)c)
             .Collect();
 
         var onInitHandlerCalls = registrationCalls
-            .Where(static c =>
-                c is LifecycleMethodInfo l
-                && c.DiagnosticInfos.All(d =>
-                    d.DiagnosticDescriptor.DefaultSeverity != DiagnosticSeverity.Error
-                )
-                && l.MethodType == MethodType.OnInit
-            )
+            .WhereNoErrors()
+            .Where(static c => c is LifecycleMethodInfo { MethodType: MethodType.OnInit })
             .Select(static (c, _) => (LifecycleMethodInfo)c)
             .Collect();
 
         var onShutdownHandlerCalls = registrationCalls
-            .Where(static c =>
-                c is LifecycleMethodInfo l
-                && c.DiagnosticInfos.All(d =>
-                    d.DiagnosticDescriptor.DefaultSeverity != DiagnosticSeverity.Error
-                )
-                && l.MethodType == MethodType.OnShutdown
-            )
+            .WhereNoErrors()
+            .Where(static c => c is LifecycleMethodInfo { MethodType: MethodType.OnShutdown })
             .Select(static (c, _) => (LifecycleMethodInfo)c)
             .Collect();
 
-        var middlewareTCallsCollected = useMiddlewareTCalls
-            .Where(static c =>
-                c.DiagnosticInfos.All(d =>
-                    d.DiagnosticDescriptor.DefaultSeverity != DiagnosticSeverity.Error
-                )
-            )
-            .Collect();
+        var middlewareTCallsCollected = useMiddlewareTCalls.WhereNoErrors().Collect();
 
         context.RegisterSourceOutput(
             registrationCalls,
