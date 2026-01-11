@@ -49,6 +49,13 @@ jobs:
           labels: "automated,changelog,chore"
           delete-branch: true
 
+      - name: Approve PR
+        if: steps.cpr.outputs.pull-request-number
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Enable Auto-merge
         if: steps.cpr.outputs.pull-request-number
         run: gh pr merge --auto --squash "$PR_URL"
